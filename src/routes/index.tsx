@@ -1,10 +1,16 @@
 /**
  * Home / overview route ("/").
  *
- * Hosts §00 Overview (hero + install + sample output), §01 Problem statement,
- * and §02 How it works. The remaining specification sections — profiles,
- * pricing, quickstart — each live in dedicated routes so they are independently
- * shareable and indexable.
+ * Pass 3A brings the home page to depth-parity with the expanded sub-routes:
+ *   §00 Overview          hero + install + run transcript
+ *   §01 Problem statement faker vs satus diff table
+ *   §02 How it works      five-step pipeline
+ *   §03 Guarantees        the four promises the CLI makes at run time
+ *   §04 Anti-features     what satus deliberately will not do
+ *   §05 Sample output     one row across three tables from the medical profile
+ *   §06 Continue reading  links into the sub-routes
+ *
+ * Prose convention: em dashes are rare and unspaced (word—word).
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -18,7 +24,10 @@ const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "overview", n: "00", label: "Overview" },
   { id: "problem", n: "01", label: "Problem statement" },
   { id: "how", n: "02", label: "How it works" },
-  { id: "next", n: "03", label: "Continue reading" },
+  { id: "guarantees", n: "03", label: "Guarantees" },
+  { id: "anti-features", n: "04", label: "Anti-features" },
+  { id: "sample-output", n: "05", label: "Sample output" },
+  { id: "next", n: "06", label: "Continue reading" },
 ];
 
 export const Route = createFileRoute("/")({
@@ -31,7 +40,7 @@ export const Route = createFileRoute("/")({
         content:
           "A CLI that reads your Postgres schema and writes realistic seed data respecting every foreign key, constraint, and business rule. Built for demos, screenshots, and QA runs.",
       },
-      { property: "og:title", content: "satus — seed data that looks like a real business" },
+      { property: "og:title", content: "satus, seed data that looks like a real business" },
       {
         property: "og:description",
         content:
@@ -66,6 +75,9 @@ function HomePage() {
       <Overview />
       <Problem />
       <How />
+      <Guarantees />
+      <AntiFeatures />
+      <SampleOutput />
       <Next />
     </PageShell>
   );
@@ -85,7 +97,7 @@ function Overview() {
         <p>
           <Mono>satus</Mono> reads your live Postgres schema and writes rows that respect every
           foreign key, constraint, and business rule you didn&rsquo;t write down. Built for the
-          demo, the screenshot, and the QA run — not for load testing.
+          demo, the screenshot, and the QA run, not for load testing.
         </p>
       </Prose>
 
@@ -165,15 +177,15 @@ function Problem() {
       <Prose>
         <p>
           Seed data is the silent embarrassment of every product demo. Patients with negative ages.
-          Orders that don&rsquo;t sum to their line items. &ldquo;John Doe — Lorem Ipsum Corp.&rdquo;
+          Orders that don&rsquo;t sum to their line items. &ldquo;John Doe, Lorem Ipsum Corp.&rdquo;
           in the screenshot the founder is about to post.
         </p>
         <p>
           The fix isn&rsquo;t a better random-name library. The fix is data that knows your schema
-          is a <em>system</em> — that a subscription marked <code>canceled</code> needs a{" "}
-          <code>canceled_at</code> after its <code>created_at</code>, that a clinic in Vermont
-          doesn&rsquo;t employ 4,000 cardiologists, that an order&rsquo;s <code>total</code> equals
-          the sum of its rows.
+          is a <em>system</em>: a subscription marked <code>canceled</code> needs a{" "}
+          <code>canceled_at</code> after its <code>created_at</code>, a clinic in Vermont
+          doesn&rsquo;t employ 4,000 cardiologists, an order&rsquo;s <code>total</code> equals the
+          sum of its rows.
         </p>
       </Prose>
 
@@ -190,7 +202,8 @@ function Problem() {
             className={`grid grid-cols-2 ${i !== COMPARE.length - 1 ? "border-b border-[var(--hairline)]" : ""}`}
           >
             <div className="border-r border-[var(--hairline)] px-4 py-3 text-[var(--mute)]">
-              — {a}
+              <span className="mr-1">−</span>
+              {a}
             </div>
             <div className="px-4 py-3 text-[var(--ink)]">
               <span className="mr-1 text-[var(--signal)]">+</span>
@@ -208,7 +221,7 @@ function Problem() {
 const STEPS = [
   { n: "01", t: "introspect", d: "Read tables, columns, types, foreign keys, unique constraints, checks, and enums directly from pg_catalog. No annotations. No ORM plugins." },
   { n: "02", t: "plan",       d: "Build a dependency DAG from your foreign keys and topologically sort the insert order. Parents before children, always." },
-  { n: "03", t: "generate",   d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling — never free-text." },
+  { n: "03", t: "generate",   d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling, never free-text." },
   { n: "04", t: "validate",   d: "A zod schema generated from the table catches type, length, enum, unique, and invariant violations before they ever reach the database." },
   { n: "05", t: "insert",     d: "Wrap each table in a transaction. COPY FROM STDIN for large tables, parameterized inserts otherwise. One auto-repair retry, then fail loudly." },
 ];
@@ -248,7 +261,219 @@ function How() {
   );
 }
 
-/* ------------------ §03 Continue reading ------------------ */
+/* ------------------ §03 Guarantees ------------------ */
+
+/**
+ * Four invariants the CLI enforces at run time. Phrased as RFC-style MUST
+ * clauses so each line reads like a contract, not a marketing promise.
+ */
+const GUARANTEES = [
+  {
+    k: "G-01",
+    h: "Foreign-key integrity",
+    d: "Every generated row references parent keys that exist in the same run. Cycles are detected up front and either broken with nullable back-patching or fail loudly with E_FK_CYCLE.",
+  },
+  {
+    k: "G-02",
+    h: "Atomic insertion",
+    d: "All inserts for a single generate run execute inside one Postgres transaction. A failure on row 4,811 of 4,812 rolls back the entire run; your database is never left half-seeded.",
+  },
+  {
+    k: "G-03",
+    h: "Cost ceiling",
+    d: "The CLI prints an estimated token cost during the planning phase and refuses to proceed past --max-cost (default $1.00) without explicit confirmation. No silent overruns on your provider bill.",
+  },
+  {
+    k: "G-04",
+    h: "Row-data locality",
+    d: "Your row values are sent only to the LLM provider you configure with your own API key. We have no hosted runtime, no proxy, and no telemetry that includes generated content.",
+  },
+];
+
+function Guarantees() {
+  return (
+    <Section
+      id="guarantees"
+      n="03"
+      label="Guarantees"
+      title={<>four contracts the cli enforces at run time.</>}
+    >
+      <Prose>
+        <p>
+          Marketing copy is cheap. These are the four invariants the binary itself refuses to
+          violate. If any is broken in a release, it is a P0 bug.
+        </p>
+      </Prose>
+
+      <ul className="mt-8 max-w-[860px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
+        {GUARANTEES.map((g) => (
+          <li
+            key={g.k}
+            className="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[180px_1fr]"
+          >
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--signal)]">
+                guarantee
+              </div>
+              <div className="mt-1.5 font-mono text-[12.5px] text-[var(--ink)]">{g.k}</div>
+            </div>
+            <div>
+              <div className="font-mono text-[14px] font-medium text-[var(--ink)]">{g.h}</div>
+              <p className="mt-2 max-w-[62ch] text-[14.5px] leading-[1.6] text-[var(--ink)]/80">
+                {g.d}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+/* ------------------ §04 Anti-features ------------------ */
+
+/**
+ * The "what we will not build" list. Stating non-goals up front filters out
+ * the wrong customer before they file an issue, and signals taste to the
+ * right one. Each row pairs a non-goal with the better tool for that job.
+ */
+const ANTI = [
+  { not: "Production data anonymization", instead: "Use pgAnonymizer or Tonic.ai. We generate fresh data; we don't redact yours." },
+  { not: "Load-testing volume (10M+ rows)", instead: "Use pgbench or a faker pipeline. LLM calls cost too much at that scale." },
+  { not: "A graphical schema editor", instead: "Your migrations are the source of truth. We read pg_catalog, we don't replace it." },
+  { not: "ML model training datasets", instead: "Use real, licensed data. Synthetic rows are a demo aid, not a training corpus." },
+  { not: "Cross-database support (MySQL, Mongo)", instead: "Postgres-only on purpose. We use pg_catalog features that don't translate." },
+];
+
+function AntiFeatures() {
+  return (
+    <Section
+      id="anti-features"
+      n="04"
+      label="Anti-features"
+      title={<>what satus deliberately will not do.</>}
+    >
+      <Prose>
+        <p>
+          Every line item below is a feature request we&rsquo;ve already decided to decline. Stating
+          them up front saves you an issue and us a wontfix.
+        </p>
+      </Prose>
+
+      <div className="mt-8 max-w-[860px] overflow-x-auto border-y border-[var(--ink)]">
+        <table className="w-full min-w-[640px] border-collapse font-mono text-[13px]">
+          <thead>
+            <tr className="border-b border-[var(--hairline)]">
+              <th className="w-[44%] py-3 pr-6 text-left text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--mute)]">
+                not for
+              </th>
+              <th className="py-3 text-left text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--mute)]">
+                use instead
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {ANTI.map((a) => (
+              <tr key={a.not} className="border-b border-[var(--hairline)] last:border-b-0">
+                <td className="py-3 pr-6 align-top text-[var(--ink)]">
+                  <span className="mr-1 text-[var(--signal)]">✕</span>
+                  {a.not}
+                </td>
+                <td className="py-3 align-top font-sans text-[14px] leading-[1.55] text-[var(--ink)]/80">
+                  {a.instead}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Section>
+  );
+}
+
+/* ------------------ §05 Sample output ------------------ */
+
+/**
+ * Three real-shape preview rows from the medical-booking profile. Pairs the
+ * §00 CLI transcript (which shows the *count* of generated rows) with the
+ * actual *content* of those rows, so a visitor can judge realism without
+ * cloning the repo. Values are illustrative; the README and fixture suite
+ * are the source of truth at ship.
+ */
+const SAMPLE_ROWS: { table: string; cols: { k: string; v: string }[] }[] = [
+  {
+    table: "patients",
+    cols: [
+      { k: "id", v: "8e2c0a13-…" },
+      { k: "full_name", v: "Marisol Aguirre-Velez" },
+      { k: "dob", v: "1984-07-19" },
+      { k: "state", v: "CO" },
+      { k: "insurance_plan_id", v: "→ plans.id (Anthem BCBS, CO)" },
+    ],
+  },
+  {
+    table: "providers",
+    cols: [
+      { k: "id", v: "1f9d2b77-…" },
+      { k: "full_name", v: "Dr. Khalil Okonkwo, MD" },
+      { k: "specialty", v: "Family Medicine" },
+      { k: "clinic_id", v: "→ clinics.id (Westside Family Health)" },
+      { k: "working_hours", v: "Mon–Thu 08:00–17:00 MT" },
+    ],
+  },
+  {
+    table: "appointments",
+    cols: [
+      { k: "id", v: "a4c11e8f-…" },
+      { k: "patient_id", v: "→ patients.id (Marisol Aguirre-Velez)" },
+      { k: "provider_id", v: "→ providers.id (Dr. Khalil Okonkwo)" },
+      { k: "starts_at", v: "2026-06-04 14:30 America/Denver" },
+      { k: "reason", v: "annual wellness visit" },
+    ],
+  },
+];
+
+function SampleOutput() {
+  return (
+    <Section
+      id="sample-output"
+      n="05"
+      label="Sample output"
+      title={<>three rows, three tables, one consistent story.</>}
+    >
+      <Prose>
+        <p>
+          Below: the same patient referenced as a foreign key on an appointment, scheduled with a
+          provider whose specialty and working hours both check out. No detail contradicts another.
+        </p>
+      </Prose>
+
+      <div className="mt-8 grid max-w-[960px] grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-3">
+        {SAMPLE_ROWS.map((row) => (
+          <article
+            key={row.table}
+            className="border-t-2 border-[var(--ink)] pt-3 font-mono text-[12px]"
+          >
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
+              table
+            </div>
+            <div className="mt-1 text-[13px] font-medium text-[var(--ink)]">{row.table}</div>
+            <dl className="mt-4 space-y-2">
+              {row.cols.map((c) => (
+                <div key={c.k}>
+                  <dt className="text-[var(--mute)]">{c.k}</dt>
+                  <dd className="mt-0.5 break-words text-[var(--ink)]">{c.v}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* ------------------ §06 Continue reading ------------------ */
 
 const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string; desc: string }[] = [
   { to: "/profiles", label: "Reference profiles", desc: "Three hand-tuned domains: medical, e-commerce, SaaS." },
@@ -260,7 +485,7 @@ function Next() {
   return (
     <Section
       id="next"
-      n="03"
+      n="06"
       label="Continue reading"
       title={<>the rest of the specification.</>}
     >
