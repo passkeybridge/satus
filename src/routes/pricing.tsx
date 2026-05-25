@@ -95,8 +95,15 @@ function PricingPage() {
           <p>Bring-your-own LLM key on every tier. We don&rsquo;t resell tokens.</p>
         </Prose>
 
-        <div className="mt-8 max-w-[860px] overflow-x-auto">
-          <table className="w-full border-collapse font-mono text-[13px]">
+        {/* Horizontal scroll on mobile is intentional — the table is denser
+         *  than any 4-column layout we could honestly stack. The hint below
+         *  appears only when the rail isn't already showing scroll affordance. */}
+        <p className="mt-6 font-mono text-[11px] text-[var(--mute)] md:hidden">
+          scroll table →
+        </p>
+        <div className="mt-3 max-w-[860px] overflow-x-auto md:mt-8">
+          <table className="w-full min-w-[640px] border-collapse font-mono text-[13px]">
+
             <thead>
               <tr className="border-y border-[var(--ink)]">
                 <th className="w-[44%] py-3 text-left text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--mute)]">
@@ -151,7 +158,7 @@ function PricingPage() {
                 {TIERS.map((t) => (
                   <td
                     key={t.id}
-                    className={`pt-5 ${
+                    className={`pb-2 pt-5 ${
                       t.primary
                         ? "border-l border-r border-l-[var(--signal)] border-r-[var(--hairline)] px-4"
                         : "px-4"
@@ -159,7 +166,7 @@ function PricingPage() {
                   >
                     <a
                       href={t.href}
-                      className={`inline-flex h-9 items-center px-3 text-[11px] uppercase tracking-[0.16em] transition-colors ${
+                      className={`inline-flex h-9 items-center whitespace-nowrap px-3 text-[11px] uppercase tracking-[0.16em] transition-colors ${
                         t.primary
                           ? "bg-[var(--ink)] text-[var(--paper)] hover:bg-[var(--signal)]"
                           : "border border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)]"
