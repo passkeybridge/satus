@@ -28,6 +28,10 @@ export const SITE_NAV = [
   { to: "/quickstart", label: "~/quickstart" },
 ] as const;
 
+/* Single source of truth for the upstream repo URL.
+ * The CLI ships from PasskeyBridge LLC's GitHub org. */
+export const GITHUB_URL = "https://github.com/passkeybridge/satus";
+
 /* ------------------ TopBar ------------------ */
 
 export function TopBar() {
@@ -69,7 +73,7 @@ export function TopBar() {
             v0.1.0-alpha
           </span>
           <a
-            href="https://github.com"
+            href={GITHUB_URL}
             rel="noopener noreferrer"
             target="_blank"
             className="font-mono text-[12px] text-[var(--ink)] transition-opacity hover:opacity-70"
@@ -256,7 +260,7 @@ export function Footer() {
           title="resources"
           links={[
             ["quickstart", "/quickstart"],
-            ["github", "https://github.com"],
+            ["github", GITHUB_URL],
           ]}
         />
         <FooterCol

@@ -7,7 +7,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { PageShell } from "@/components/site/chrome";
+import { GITHUB_URL, PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 
 const SITE_URL = "https://satus.lovable.app";
@@ -24,7 +24,7 @@ const TIERS = [
     price: "$0",
     cadence: "open source · MIT",
     cta: "view on github",
-    href: "https://github.com",
+    href: GITHUB_URL,
     primary: false,
   },
   {
