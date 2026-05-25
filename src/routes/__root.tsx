@@ -154,6 +154,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       // SVG favicon stays sharp at any DPR; modern browsers prefer it over .ico.
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      // 180×180 PNG fallback for Safari iOS home-screen / pinned-tab. Without
+      // this Safari grabs a page screenshot, which renders the Swiss-Red shell
+      // as an illegible thumbnail.
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,

@@ -48,6 +48,14 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:url", content: SITE_URL + "/" },
       { property: "og:type", content: "website" },
+      // 1200×630 Swiss-Red spec-sheet OG card. Per project rule (and TanStack
+      // meta-dedupe behavior), og:image lives ONLY on leaf routes so the root
+      // never overrides a per-page image. Same image is reused across leaves
+      // for now since the visual identity is page-agnostic.
+      { property: "og:image", content: SITE_URL + "/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:image", content: SITE_URL + "/og-image.png" },
     ],
     links: [{ rel: "canonical", href: SITE_URL + "/" }],
     scripts: [
