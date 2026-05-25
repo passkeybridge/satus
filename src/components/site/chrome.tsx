@@ -32,8 +32,8 @@ export const SITE_NAV = [
 
 export function TopBar() {
   return (
-    <header className="sticky top-0 z-40 h-14 border-b border-[var(--hairline)] bg-[var(--paper)]/95 backdrop-blur-[2px]">
-      <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between px-6 lg:px-10">
+    <header className="sticky top-0 z-40 border-b border-[var(--hairline)] bg-[var(--paper)]/95 backdrop-blur-[2px]">
+      <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between px-6 lg:px-10">
         <Link
           to="/"
           className="flex items-baseline gap-0 font-mono text-[15px] font-medium tracking-tight text-[var(--ink)]"
@@ -75,6 +75,29 @@ export function TopBar() {
           </a>
         </div>
       </div>
+
+      {/* Mobile-only secondary nav row. The primary <nav> above is md:flex
+       *  (hidden < 768px) because four monospace nav items don't fit alongside
+       *  the wordmark and the github link on phones. This strip keeps the
+       *  routes one tap away without a hamburger menu — on-brand for a
+       *  documentation-style site. */}
+      <nav
+        aria-label="Primary mobile"
+        className="flex items-center gap-5 overflow-x-auto border-t border-[var(--hairline)] bg-[var(--paper)] px-6 py-2 font-mono text-[12px] text-[var(--mute)] md:hidden"
+      >
+        {SITE_NAV.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            activeOptions={{ exact: true }}
+            activeProps={{ className: "text-[var(--ink)]" }}
+            inactiveProps={{ className: "hover:text-[var(--ink)]" }}
+            className="shrink-0 transition-colors"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }
