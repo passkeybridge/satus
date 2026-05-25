@@ -73,6 +73,12 @@ export const Route = createFileRoute("/api/public/waitlist")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
+      GET: async () =>
+        new Response("Method Not Allowed", {
+          status: 405,
+          headers: { Allow: "POST, OPTIONS", ...CORS },
+        }),
+
       POST: async ({ request }) => {
         // Parse body defensively; malformed JSON should not crash the route.
         let raw: unknown;
