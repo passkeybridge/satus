@@ -18,7 +18,7 @@ import { useState } from "react";
 import { PageShell } from "@/components/site/chrome";
 import { Mono, Prose, Section, type SectionMeta } from "@/components/site/primitives";
 
-const SITE_URL = "https://satus.lovable.app";
+const SITE_URL = "https://satus.sh";
 
 const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "overview", n: "00", label: "Overview" },

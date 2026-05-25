@@ -1,5 +1,5 @@
 /**
- * Shared primitives for satus.ai marketing site.
+ * Shared primitives for satus.sh marketing site.
  *
  * Section: numbered §xx block with label + lowercase headline, hairline rule,
  *          and content slot. Renders the page's content units consistently.

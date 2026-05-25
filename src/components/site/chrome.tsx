@@ -41,7 +41,7 @@ export function TopBar() {
         <Link
           to="/"
           className="flex items-baseline gap-0 font-mono text-[15px] font-medium tracking-tight text-[var(--ink)]"
-          aria-label="satus.ai home"
+          aria-label="satus.sh home"
         >
           <span>satus</span>
           <span className="text-[var(--signal)]">.</span>
@@ -216,7 +216,7 @@ export function LeftRail({
             }
           />
           <Meta k="updated" v="2026-05-25" />
-          <Meta k="author" v="satus.ai" />
+          <Meta k="author" v="satus.sh" />
         </dl>
       </div>
     </aside>
@@ -265,12 +265,12 @@ export function Footer() {
         />
         <FooterCol
           title="legal"
-          links={[["contact", "mailto:hello@satus.ai"]]}
+          links={[["contact", "mailto:hello@satus.sh"]]}
         />
       </div>
       <div className="border-t border-[var(--hairline)]">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-6 py-4 font-mono text-[11px] text-[var(--mute)] lg:px-10">
-          <span>© {new Date().getFullYear()} satus.ai. A PasskeyBridge LLC service.</span>
+          <span>© {new Date().getFullYear()} satus.sh. A PasskeyBridge LLC service.</span>
           <span>built in plain text · no cookies on this page</span>
         </div>
       </div>

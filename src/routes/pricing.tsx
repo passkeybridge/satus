@@ -11,7 +11,7 @@ import { GITHUB_URL, PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 import { WaitlistForm } from "@/components/site/WaitlistForm";
 
-const SITE_URL = "https://satus.lovable.app";
+const SITE_URL = "https://satus.sh";
 
 const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "tiers", n: "04", label: "Tiers" },

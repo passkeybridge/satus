@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://satus.lovable.app/sitemap.xml
+Sitemap: https://satus.sh/sitemap.xml

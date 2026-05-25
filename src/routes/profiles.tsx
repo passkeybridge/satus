@@ -11,7 +11,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 
-const SITE_URL = "https://satus.lovable.app";
+const SITE_URL = "https://satus.sh";
 
 /* Per-profile spec. Kept as data so the TOC + body stay in lockstep. */
 type Profile = {
