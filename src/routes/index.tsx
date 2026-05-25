@@ -673,7 +673,7 @@ function Footer() {
       </div>
       <div className="border-t border-[var(--hairline)]">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-6 py-4 font-mono text-[11px] text-[var(--mute)] lg:px-10">
-          <span>© {new Date().getFullYear()} satus.ai</span>
+          <span>© {new Date().getFullYear()} satus.ai. A PasskeyBridge LLC service.</span>
           <span>built in plain text · no cookies on this page</span>
         </div>
       </div>
