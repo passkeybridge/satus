@@ -69,7 +69,7 @@ export function TopBar() {
             v0.1.0-alpha
           </span>
           <a
-            href="https://github.com"
+            href={GITHUB_URL}
             rel="noopener noreferrer"
             target="_blank"
             className="font-mono text-[12px] text-[var(--ink)] transition-opacity hover:opacity-70"
@@ -256,7 +256,7 @@ export function Footer() {
           title="resources"
           links={[
             ["quickstart", "/quickstart"],
-            ["github", "https://github.com"],
+            ["github", GITHUB_URL],
           ]}
         />
         <FooterCol
