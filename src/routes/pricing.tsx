@@ -9,12 +9,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GITHUB_URL, PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
+import { WaitlistForm } from "@/components/site/WaitlistForm";
 
 const SITE_URL = "https://satus.lovable.app";
 
 const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "tiers", n: "04", label: "Tiers" },
-  { id: "faq", n: "05", label: "FAQ" },
+  { id: "waitlist", n: "05", label: "Waitlist" },
+  { id: "faq", n: "06", label: "FAQ" },
 ];
 
 const TIERS = [
@@ -33,7 +35,9 @@ const TIERS = [
     price: "$19",
     cadence: "per month · or $190/yr",
     cta: "start with pro",
-    href: "#",
+    // Pro CTA scrolls to the inline waitlist form (Stripe checkout lands
+    // here once the tier ships; the same anchor keeps deep links stable).
+    href: "#waitlist",
     primary: true,
   },
   {
@@ -42,7 +46,7 @@ const TIERS = [
     price: "$49",
     cadence: "per seat · later",
     cta: "join waitlist",
-    href: "#",
+    href: "#waitlist",
     primary: false,
   },
 ];
@@ -230,8 +234,24 @@ function PricingPage() {
       </Section>
 
       <Section
-        id="faq"
+        id="waitlist"
         n="05"
+        label="Waitlist"
+        title={<>two fields, no marketing list.</>}
+      >
+        <Prose>
+          <p>
+            Pro is live for early access; Team opens when ten organizations have
+            asked for it. Drop your email, pick the tier, and that&rsquo;s the
+            entire ceremony. One email when your tier ships; nothing else.
+          </p>
+        </Prose>
+        <WaitlistForm />
+      </Section>
+
+      <Section
+        id="faq"
+        n="06"
         label="FAQ"
         title={<>questions we get before the receipt.</>}
       >
