@@ -113,6 +113,10 @@ export const Route = createFileRoute("/pricing")({
       },
       { property: "og:url", content: SITE_URL + "/pricing" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: SITE_URL + "/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:image", content: SITE_URL + "/og-image.png" },
     ],
     links: [{ rel: "canonical", href: SITE_URL + "/pricing" }],
     scripts: [

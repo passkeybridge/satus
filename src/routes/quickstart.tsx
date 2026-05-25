@@ -39,6 +39,10 @@ export const Route = createFileRoute("/quickstart")({
       },
       { property: "og:url", content: SITE_URL + "/quickstart" },
       { property: "og:type", content: "article" },
+      { property: "og:image", content: SITE_URL + "/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:image", content: SITE_URL + "/og-image.png" },
     ],
     links: [{ rel: "canonical", href: SITE_URL + "/quickstart" }],
     scripts: [
