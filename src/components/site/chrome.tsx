@@ -52,7 +52,10 @@ export function TopBar() {
               key={item.to}
               to={item.to}
               activeOptions={{ exact: true }}
-              activeProps={{ className: "text-[var(--ink)]" }}
+              activeProps={{
+                className: "text-[var(--ink)]",
+                "aria-current": "page",
+              }}
               inactiveProps={{ className: "hover:text-[var(--ink)]" }}
               className="transition-colors"
             >
@@ -90,7 +93,10 @@ export function TopBar() {
             key={item.to}
             to={item.to}
             activeOptions={{ exact: true }}
-            activeProps={{ className: "text-[var(--ink)]" }}
+            activeProps={{
+              className: "text-[var(--ink)]",
+              "aria-current": "page",
+            }}
             inactiveProps={{ className: "hover:text-[var(--ink)]" }}
             className="shrink-0 transition-colors"
           >
@@ -148,6 +154,7 @@ export function LeftRail({
             <li key={s.id}>
               <a
                 href={`#${s.id}`}
+                aria-current={isActive ? "location" : undefined}
                 className={`flex items-baseline gap-3 px-2 py-1.5 font-mono text-[12.5px] transition-colors ${
                   isActive
                     ? "bg-[var(--ink)] text-[var(--paper)]"

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!--
+    satus.ai favicon. Swiss Red on paper. Mono lowercase "s" with a signal-red
+    period. SVG so it stays crisp at every retina pixel ratio; modern browsers
+    pick this over .ico when both are advertised.
+  -->
+  <rect width="64" height="64" fill="#fafaf7"/>
+  <text x="9" y="46"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+        font-size="40" font-weight="500" fill="#0a0a0a">s</text>
+  <rect x="35" y="40" width="7" height="7" fill="#dc2626"/>
+</svg>

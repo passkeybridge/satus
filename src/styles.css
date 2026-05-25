@@ -138,6 +138,15 @@
     border-top: 1px solid var(--hairline);
     margin: 0;
   }
+
+  /* A11y: visible keyboard focus on every interactive element. The default
+   * browser ring is suppressed by Tailwind preflight; we restore an explicit
+   * Swiss-Red ring so tab navigation is always obvious. Mouse clicks don't
+   * trigger :focus-visible, so this never appears on hover/click flows. */
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+  }
 }
 
 /* Animated underline used on inline links */
@@ -170,4 +179,22 @@
 }
 .satus-fade {
   animation: satus-fade-in 200ms ease both;
+}
+
+/* A11y: respect reduced-motion preference. Cancel the entrance fade and
+ * underline transition so vestibular-sensitive users see static UI. */
+@media (prefers-reduced-motion: reduce) {
+  .satus-fade {
+    animation: none;
+  }
+  .link-underline::after {
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
