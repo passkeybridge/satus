@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      waitlist_signups: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_hash: string | null
+          note: string | null
+          source: string | null
+          tier: Database["public"]["Enums"]["waitlist_tier"]
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_hash?: string | null
+          note?: string | null
+          source?: string | null
+          tier: Database["public"]["Enums"]["waitlist_tier"]
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_hash?: string | null
+          note?: string | null
+          source?: string | null
+          tier?: Database["public"]["Enums"]["waitlist_tier"]
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +55,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      waitlist_tier: "pro" | "team"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +182,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      waitlist_tier: ["pro", "team"],
+    },
   },
 } as const
