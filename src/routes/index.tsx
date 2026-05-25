@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -21,654 +21,674 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-/* ----------------------------------------------------------------
+/* ============================================================
+ * Specification sections (single source of truth for TOC + scroll-spy)
+ * ============================================================ */
+
+const SECTIONS = [
+  { id: "overview",   n: "00", label: "Overview" },
+  { id: "problem",    n: "01", label: "Problem statement" },
+  { id: "how",        n: "02", label: "How it works" },
+  { id: "profiles",   n: "03", label: "Reference profiles" },
+  { id: "pricing",    n: "04", label: "Pricing" },
+  { id: "quickstart", n: "05", label: "Quickstart" },
+] as const;
+
+/* ============================================================
  * Primitives
- * ---------------------------------------------------------------- */
+ * ============================================================ */
 
-function Container({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mx-auto w-full max-w-[1180px] px-6 md:px-10 ${className}`}>{children}</div>;
+function Mono({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <span className={`font-mono ${className}`}>{children}</span>;
 }
 
-function SectionLabel({ index, children }: { index: string; children: React.ReactNode }) {
+function Section({
+  id,
+  n,
+  label,
+  title,
+  children,
+}: {
+  id: string;
+  n: string;
+  label: string;
+  title: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-      <span>{index}</span>
-      <span className="h-px w-8 bg-border" />
-      <span>{children}</span>
-    </div>
-  );
-}
-
-function Rule() {
-  return <div className="h-px w-full bg-border" />;
-}
-
-/* ----------------------------------------------------------------
- * Nav
- * ---------------------------------------------------------------- */
-
-function Nav() {
-  return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-sm">
-      <Container className="flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="grid h-5 w-5 place-items-center border border-foreground">
-            <span className="h-1.5 w-1.5 bg-foreground" />
-          </span>
-          <span className="font-serif text-xl leading-none tracking-tight">satus</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            v0.1 · beta
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-7 font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground md:flex">
-          <a href="#problem" className="transition-colors hover:text-foreground">Why</a>
-          <a href="#how" className="transition-colors hover:text-foreground">How</a>
-          <a href="#profiles" className="transition-colors hover:text-foreground">Profiles</a>
-          <a href="#pricing" className="transition-colors hover:text-foreground">Pricing</a>
-          <a href="#docs" className="transition-colors hover:text-foreground">Docs</a>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <a
-            href="https://github.com"
-            className="hidden font-mono text-[12px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground sm:inline"
-          >
-            GitHub
-          </a>
-          <a
-            href="#install"
-            className="inline-flex h-8 items-center border border-foreground bg-foreground px-3 font-mono text-[11px] uppercase tracking-[0.14em] text-background transition-opacity hover:opacity-90"
-          >
-            Install
-          </a>
-        </div>
-      </Container>
-    </header>
-  );
-}
-
-/* ----------------------------------------------------------------
- * Hero — the institutional headline, then the install line
- * ---------------------------------------------------------------- */
-
-function Hero() {
-  return (
-    <section className="relative border-b border-border bg-grain">
-      <Container className="grid gap-16 py-20 md:grid-cols-12 md:py-28">
-        <div className="md:col-span-7">
-          <SectionLabel index="00">Postgres only · CLI only · single binary</SectionLabel>
-
-          <h1 className="mt-7 font-serif text-[clamp(2.75rem,6.2vw,5.25rem)] leading-[1.02] tracking-[-0.015em]">
-            Seed data that looks like a{" "}
-            <em className="text-[color:var(--marker)] not-italic">real business</em>,
-            <br />
-            not a faker dump.
-          </h1>
-
-          <p className="mt-7 max-w-[52ch] text-[17px] leading-relaxed text-muted-foreground">
-            <span className="font-mono text-foreground">satus</span> reads your live Postgres schema and
-            writes rows that respect every foreign key, constraint, and business rule you didn&rsquo;t write down.
-            Built for the demo, the screenshot, and the QA run &mdash; not for load testing.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center gap-3">
-            <a
-              href="#install"
-              className="inline-flex h-11 items-center border border-foreground bg-foreground px-5 font-mono text-[12px] uppercase tracking-[0.16em] text-background transition-opacity hover:opacity-90"
-            >
-              Install the CLI
-            </a>
-            <a
-              href="#how"
-              className="inline-flex h-11 items-center border border-border px-5 font-mono text-[12px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-secondary"
-            >
-              See how it works
-            </a>
-          </div>
-
-          <div id="install" className="mt-12">
-            <InstallBlock />
-          </div>
-        </div>
-
-        <aside className="md:col-span-5">
-          <TerminalCard />
-        </aside>
-      </Container>
+    <section id={id} className="scroll-mt-20 border-t border-[var(--hairline)] py-16 first:border-t-0 first:pt-0">
+      <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--mute)]">
+        <span className="text-[var(--signal)]">§{n}</span>
+        <span className="mx-3 text-[var(--hairline)]">|</span>
+        <span>{label}</span>
+      </div>
+      <h2 className="mt-5 font-mono text-[26px] font-medium leading-[1.2] tracking-tight text-[var(--ink)] md:text-[32px]">
+        {title}
+      </h2>
+      <hr className="mt-6" />
+      <div className="mt-8">{children}</div>
     </section>
   );
 }
 
-function InstallBlock() {
+function Prose({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="max-w-[62ch] text-[15.5px] leading-[1.7] text-[var(--ink)]/85 [&_code]:font-mono [&_code]:text-[14px] [&_code]:text-[var(--ink)] [&_em]:not-italic [&_em]:text-[var(--ink)] [&_strong]:font-medium [&_strong]:text-[var(--ink)] [&_p]:mb-4 last:[&_p]:mb-0">
+      {children}
+    </div>
+  );
+}
+
+/* ============================================================
+ * Top bar
+ * ============================================================ */
+
+function TopBar() {
+  return (
+    <header className="sticky top-0 z-40 h-14 border-b border-[var(--hairline)] bg-[var(--paper)]/95 backdrop-blur-[2px]">
+      <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between px-6 lg:px-10">
+        <Link to="/" className="flex items-baseline gap-0 font-mono text-[15px] font-medium tracking-tight text-[var(--ink)]">
+          <span>satus</span>
+          <span className="text-[var(--signal)]">.</span>
+        </Link>
+
+        <nav className="hidden items-center gap-7 font-mono text-[12px] text-[var(--mute)] md:flex">
+          {SECTIONS.slice(0, 5).map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className="transition-colors hover:text-[var(--ink)]"
+            >
+              ~/{s.id}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-5">
+          <span className="hidden font-mono text-[11px] text-[var(--mute)] sm:inline">
+            v0.1.0-alpha
+          </span>
+          <a
+            href="https://github.com"
+            className="font-mono text-[12px] text-[var(--ink)] transition-opacity hover:opacity-70"
+          >
+            github ↗
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ============================================================
+ * Left rail — TOC + scroll-spy + metadata
+ * ============================================================ */
+
+function LeftRail() {
+  const [active, setActive] = useState<string>(SECTIONS[0].id);
+
+  useEffect(() => {
+    const els = SECTIONS.map((s) => document.getElementById(s.id)).filter(Boolean) as HTMLElement[];
+    if (els.length === 0) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-20% 0px -65% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-[240px] shrink-0 border-r border-[var(--hairline)] py-10 pr-6 lg:block">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
+        Table of contents
+      </div>
+      <ol className="mt-5 space-y-px">
+        {SECTIONS.map((s) => {
+          const isActive = active === s.id;
+          return (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                className={`flex items-baseline gap-3 px-2 py-1.5 font-mono text-[12.5px] transition-colors ${
+                  isActive
+                    ? "bg-[var(--ink)] text-[var(--paper)]"
+                    : "text-[var(--mute)] hover:text-[var(--ink)]"
+                }`}
+              >
+                <span className={isActive ? "text-[var(--paper)]/70" : "text-[var(--mute)]"}>{s.n}</span>
+                <span className="truncate">{s.label}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="mt-10 border-t border-[var(--hairline)] pt-5">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
+          Document
+        </div>
+        <dl className="mt-3 space-y-1.5 font-mono text-[11.5px] text-[var(--mute)]">
+          <Meta k="spec"    v="satus/0.1" />
+          <Meta k="status"  v={<span><span className="text-[var(--signal)]">●</span> draft</span>} />
+          <Meta k="updated" v="2025-05-25" />
+          <Meta k="author"  v="satus.ai" />
+        </dl>
+      </div>
+    </aside>
+  );
+}
+
+function Meta({ k, v }: { k: string; v: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt>{k}</dt>
+      <dd className="text-[var(--ink)]">{v}</dd>
+    </div>
+  );
+}
+
+/* ============================================================
+ * §00 — Overview / hero
+ * ============================================================ */
+
+function Overview() {
+  return (
+    <Section
+      id="overview"
+      n="00"
+      label="RFC · SATUS-001"
+      title={<>seed data that looks like a real business, not a faker dump.</>}
+    >
+      <Prose>
+        <p>
+          <Mono>satus</Mono> reads your live Postgres schema and writes rows that respect every foreign key,
+          constraint, and business rule you didn&rsquo;t write down. Built for the demo, the screenshot, and
+          the QA run — not for load testing.
+        </p>
+      </Prose>
+
+      <div className="mt-8 max-w-[520px]">
+        <InstallLine />
+      </div>
+
+      <a href="#quickstart" className="link-underline mt-6 inline-flex font-mono text-[13px]">
+        read the quickstart →
+      </a>
+
+      <div className="mt-10 max-w-[640px] border-t border-[var(--hairline)] pt-6">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
+          example output · satus generate --profile medical-booking
+        </div>
+        <pre className="mt-3 overflow-x-auto font-mono text-[12.5px] leading-[1.75] text-[var(--ink)]">
+{`$ satus generate --profile medical-booking
+  introspecting schema           14 tables · 38 FKs
+  planning insert order          topological
+  generating · clinics              12 rows
+  generating · providers            48 rows
+  generating · patients            420 rows
+  generating · appointments      1,840 rows
+  validating invariants          ok
+  inserting (transaction)        ok
+`}
+          <span className="text-[var(--signal)]">✓</span>{" "}
+          <span>2,320 rows · $0.04 · 7.2s</span>
+        </pre>
+      </div>
+    </Section>
+  );
+}
+
+function InstallLine() {
   const [copied, setCopied] = useState(false);
   const cmd = "npm i -g satus";
   return (
-    <div className="flex items-stretch border border-border bg-card">
-      <div className="grid place-items-center border-r border-border px-3 font-mono text-[11px] text-muted-foreground">
+    <div className="flex items-stretch border border-[var(--ink)] bg-[var(--paper)]">
+      <div className="grid w-9 place-items-center border-r border-[var(--ink)] font-mono text-[12px] text-[var(--mute)]">
         $
       </div>
-      <code className="flex-1 px-4 py-3 font-mono text-[14px] text-foreground">{cmd}</code>
+      <code className="flex-1 px-3 py-2.5 font-mono text-[13.5px] text-[var(--ink)]">{cmd}</code>
       <button
         onClick={() => {
           navigator.clipboard.writeText(cmd);
           setCopied(true);
           setTimeout(() => setCopied(false), 1400);
         }}
-        className="border-l border-border px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        className="border-l border-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--mute)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
       >
-        {copied ? "Copied" : "Copy"}
+        {copied ? "copied" : "copy"}
       </button>
     </div>
   );
 }
 
-function TerminalCard() {
-  return (
-    <div className="border border-border bg-card shadow-[0_1px_0_0_rgba(0,0,0,0.02),0_24px_60px_-30px_rgba(0,0,0,0.18)]">
-      <div className="flex items-center justify-between border-b border-border px-3.5 py-2">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full border border-border" />
-          <span className="h-2 w-2 rounded-full border border-border" />
-          <span className="h-2 w-2 rounded-full border border-border" />
-        </div>
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          satus generate · medical-booking
-        </span>
-        <span className="font-mono text-[10px] text-muted-foreground">0.8s</span>
-      </div>
-      <pre className="overflow-x-auto px-4 py-4 font-mono text-[12.5px] leading-[1.65]">
-        <Line c="muted">$ satus generate --profile medical-booking</Line>
-        <Line>
-          <span className="text-muted-foreground">→ </span>
-          introspecting schema
-          <span className="text-muted-foreground"> (14 tables, 38 FKs)</span>
-        </Line>
-        <Line>
-          <span className="text-muted-foreground">→ </span>
-          planning insert order
-          <span className="text-muted-foreground"> (topological)</span>
-        </Line>
-        <Line c="marker">→ generating · clinics       12 rows</Line>
-        <Line c="marker">→ generating · providers     48 rows</Line>
-        <Line c="marker">→ generating · patients     420 rows</Line>
-        <Line c="marker">→ generating · appointments 1,840 rows</Line>
-        <Line c="muted">  ↳ validating invariants … ok</Line>
-        <Line c="muted">  ↳ inserting (transaction) … ok</Line>
-        <Line>
-          <span className="text-[color:var(--marker)]">✓</span> 2,320 rows · $0.04 ·{" "}
-          <span className="text-muted-foreground">7.2s</span>
-        </Line>
-      </pre>
-    </div>
-  );
-}
-
-function Line({ children, c }: { children: React.ReactNode; c?: "muted" | "marker" }) {
-  const cls = c === "muted" ? "text-muted-foreground" : c === "marker" ? "text-foreground" : "text-foreground";
-  return <div className={cls}>{children}</div>;
-}
-
-/* ----------------------------------------------------------------
- * Problem — the read on the market, kept dry on purpose
- * ---------------------------------------------------------------- */
+/* ============================================================
+ * §01 — Problem statement
+ * ============================================================ */
 
 function Problem() {
   return (
-    <section id="problem" className="border-b border-border">
-      <Container className="grid gap-12 py-24 md:grid-cols-12 md:gap-16">
-        <div className="md:col-span-4">
-          <SectionLabel index="01">The problem</SectionLabel>
-          <h2 className="mt-6 font-serif text-4xl leading-[1.05] tracking-[-0.01em] md:text-[44px]">
-            Faker writes strings. <br />
-            Your customers read businesses.
-          </h2>
+    <Section
+      id="problem"
+      n="01"
+      label="Problem statement"
+      title={<>faker writes strings. your customers read businesses.</>}
+    >
+      <Prose>
+        <p>
+          Seed data is the silent embarrassment of every product demo. Patients with negative ages.
+          Orders that don&rsquo;t sum to their line items. &ldquo;John Doe — Lorem Ipsum Corp.&rdquo; in the
+          screenshot the founder is about to post.
+        </p>
+        <p>
+          The fix isn&rsquo;t a better random-name library. The fix is data that knows your schema is a
+          <em> system</em> — that a subscription marked <code>canceled</code> needs a{" "}
+          <code>canceled_at</code> after its <code>created_at</code>, that a clinic in Vermont doesn&rsquo;t
+          employ 4,000 cardiologists, that an order&rsquo;s <code>total</code> equals the sum of its rows.
+        </p>
+      </Prose>
+
+      <div className="mt-10 max-w-[720px] overflow-hidden border border-[var(--hairline)] font-mono text-[12.5px]">
+        <div className="grid grid-cols-2 border-b border-[var(--hairline)] bg-[var(--ink)] text-[var(--paper)]">
+          <div className="border-r border-[var(--paper)]/20 px-4 py-2.5 text-[10px] uppercase tracking-[0.22em]">
+            faker / factory_bot
+          </div>
+          <div className="px-4 py-2.5 text-[10px] uppercase tracking-[0.22em]">
+            satus
+          </div>
         </div>
-        <div className="space-y-8 md:col-span-7 md:col-start-6">
-          <Para>
-            Seed data is the silent embarrassment of every product demo. Patients with negative ages.
-            Orders that don&rsquo;t sum to their line items. &ldquo;John Doe &mdash; Lorem Ipsum Corp.&rdquo; in the
-            screenshot the founder is about to post.
-          </Para>
-          <Para>
-            The fix isn&rsquo;t a better random-name library. The fix is data that knows your schema is a
-            <em> system</em> &mdash; that a subscription marked <code>canceled</code> needs a{" "}
-            <code>canceled_at</code> after its <code>created_at</code>, that a clinic in Vermont doesn&rsquo;t
-            employ 4,000 cardiologists, that an order&rsquo;s <code>total</code> equals the sum of its rows.
-          </Para>
-          <Para>
-            <span className="font-mono text-foreground">satus</span> is built around that one belief.
-            Everything else &mdash; the LLM, the validator, the insert path &mdash; is in service of it.
-          </Para>
-        </div>
-      </Container>
-    </section>
+        {COMPARE.map(([a, b], i) => (
+          <div
+            key={i}
+            className={`grid grid-cols-2 ${i !== COMPARE.length - 1 ? "border-b border-[var(--hairline)]" : ""}`}
+          >
+            <div className="border-r border-[var(--hairline)] px-4 py-3 text-[var(--mute)]">— {a}</div>
+            <div className="px-4 py-3 text-[var(--ink)]">
+              <span className="mr-1 text-[var(--signal)]">+</span>
+              {b}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 
-function Para({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[17px] leading-[1.65] text-muted-foreground [&_code]:rounded-sm [&_code]:bg-secondary [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[14px] [&_code]:text-foreground [&_em]:text-foreground">
-      {children}
-    </p>
-  );
-}
+const COMPARE: [string, string][] = [
+  ["random strings per column",    "rows that reference real parents"],
+  ["ignores foreign keys",         "topological insert from pg_catalog"],
+  ["John Doe, Acme, Lorem Ipsum",  "Maren Holloway, Northwind, Burlington VT"],
+  ["constraints fail at runtime",  "zod validation before any INSERT"],
+  ["one shape per table",          "tone & distribution from a profile"],
+];
 
-/* ----------------------------------------------------------------
- * How it works
- * ---------------------------------------------------------------- */
+/* ============================================================
+ * §02 — How it works
+ * ============================================================ */
 
 const steps = [
-  {
-    n: "01",
-    t: "Introspect",
-    d: "Read tables, columns, types, foreign keys, unique constraints, checks, and enums directly from pg_catalog. No annotations. No ORM plugins.",
-  },
-  {
-    n: "02",
-    t: "Plan",
-    d: "Build a dependency DAG from your foreign keys and topologically sort the insert order. Parents before children, always.",
-  },
-  {
-    n: "03",
-    t: "Generate",
-    d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling — never free-text.",
-  },
-  {
-    n: "04",
-    t: "Validate",
-    d: "A zod schema generated from the table catches type, length, enum, unique, and invariant violations before they ever reach the database.",
-  },
-  {
-    n: "05",
-    t: "Insert",
-    d: "Wrap each table in a transaction. COPY FROM STDIN for large tables, parameterized inserts otherwise. One auto-repair retry, then fail loudly.",
-  },
+  { n: "01", t: "introspect", d: "Read tables, columns, types, foreign keys, unique constraints, checks, and enums directly from pg_catalog. No annotations. No ORM plugins." },
+  { n: "02", t: "plan",       d: "Build a dependency DAG from your foreign keys and topologically sort the insert order. Parents before children, always." },
+  { n: "03", t: "generate",   d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling — never free-text." },
+  { n: "04", t: "validate",   d: "A zod schema generated from the table catches type, length, enum, unique, and invariant violations before they ever reach the database." },
+  { n: "05", t: "insert",     d: "Wrap each table in a transaction. COPY FROM STDIN for large tables, parameterized inserts otherwise. One auto-repair retry, then fail loudly." },
 ];
 
 function How() {
   return (
-    <section id="how" className="border-b border-border">
-      <Container className="py-24">
-        <div className="grid gap-12 md:grid-cols-12">
-          <div className="md:col-span-4">
-            <SectionLabel index="02">How it works</SectionLabel>
-            <h2 className="mt-6 font-serif text-4xl leading-[1.05] tracking-[-0.01em] md:text-[44px]">
-              Five quiet steps. <br />
-              No magic. No daemons.
-            </h2>
-            <p className="mt-6 max-w-[40ch] text-[15px] leading-relaxed text-muted-foreground">
-              The CLI runs on your machine and talks to your database. There is no hosted runtime, no
-              telemetry of your row data, and no surprise infrastructure.
-            </p>
-          </div>
+    <Section
+      id="how"
+      n="02"
+      label="How it works"
+      title={<>five quiet steps. no magic. no daemons.</>}
+    >
+      <Prose>
+        <p>
+          The CLI runs on your machine and talks to your database. There is no hosted runtime, no telemetry
+          of your row data, and no surprise infrastructure.
+        </p>
+      </Prose>
 
-          <ol className="md:col-span-8">
-            {steps.map((s, i) => (
-              <li
-                key={s.n}
-                className={`grid grid-cols-[auto_1fr] gap-x-8 gap-y-2 py-7 ${
-                  i !== steps.length - 1 ? "border-b border-border" : ""
-                }`}
-              >
-                <div className="font-mono text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
-                  {s.n}
-                </div>
-                <div>
-                  <h3 className="font-serif text-2xl leading-tight tracking-tight">{s.t}</h3>
-                  <p className="mt-2 max-w-[58ch] text-[15.5px] leading-[1.6] text-muted-foreground">
-                    {s.d}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </Container>
-    </section>
+      <ol className="mt-8 max-w-[760px]">
+        {steps.map((s, i) => (
+          <li
+            key={s.n}
+            className={`grid grid-cols-[40px_140px_1fr] items-baseline gap-x-6 py-4 ${
+              i !== steps.length - 1 ? "border-b border-[var(--hairline)]" : ""
+            }`}
+          >
+            <span className="font-mono text-[12px] text-[var(--mute)]">{s.n}</span>
+            <span className="font-mono text-[14px] font-medium tracking-tight text-[var(--ink)]">
+              {s.t}
+            </span>
+            <span className="text-[15px] leading-[1.6] text-[var(--ink)]/85">{s.d}</span>
+          </li>
+        ))}
+      </ol>
+    </Section>
   );
 }
 
-/* ----------------------------------------------------------------
- * Profiles — the moat, presented as a small catalog
- * ---------------------------------------------------------------- */
+/* ============================================================
+ * §03 — Reference profiles
+ * ============================================================ */
 
 const profiles = [
   {
     id: "medical-booking",
-    name: "Medical Booking",
-    bullets: ["Clinics, providers, patients", "Appointments on business hours", "Insurance plans & coverage"],
-    sample: [
-      ["patient", "Maren Holloway, 41, Burlington VT"],
-      ["provider", "Dr. R. Okafor — Family Medicine"],
-      ["appointment", "2025-04-12 09:30 · 30m · annual"],
-    ],
+    name: "Medical booking",
+    desc: "Clinics, providers, patients, insurance plans. Appointments on real business hours.",
+    tables: ["clinics", "providers", "patients", "appointments", "insurance_plans"],
   },
   {
     id: "e-commerce",
-    name: "E-Commerce",
-    bullets: ["Stores, products, variants", "Inventory & order line items", "Reviews with realistic prose"],
-    sample: [
-      ["product", "Linen Field Shirt — Slate · M"],
-      ["order", "#10428 · $184.00 · 3 items"],
-      ["review", "★★★★☆ Fits true. Wash cold."],
-    ],
+    name: "E-commerce",
+    desc: "Stores, products, variants, inventory, orders, line items, reviews with realistic prose.",
+    tables: ["stores", "products", "variants", "orders", "order_items", "reviews"],
   },
   {
     id: "saas-subscriptions",
-    name: "SaaS Subscriptions",
-    bullets: ["Orgs, users, role membership", "Plans, subscriptions, invoices", "Usage events that add up"],
-    sample: [
-      ["org", "Northwind Logistics · 42 seats"],
-      ["subscription", "team_annual · active · 2025-09-01"],
-      ["invoice", "INV-00891 · $1,896.00 · paid"],
-    ],
+    name: "SaaS subscriptions",
+    desc: "Orgs, users, role membership, plans, subscriptions, invoices, usage events that add up.",
+    tables: ["orgs", "users", "memberships", "subscriptions", "invoices", "usage_events"],
   },
 ];
 
 function Profiles() {
   return (
-    <section id="profiles" className="border-b border-border bg-secondary/40">
-      <Container className="py-24">
-        <div className="flex items-end justify-between gap-8">
-          <div>
-            <SectionLabel index="03">Profiles</SectionLabel>
-            <h2 className="mt-6 max-w-[18ch] font-serif text-4xl leading-[1.05] tracking-[-0.01em] md:text-[44px]">
-              Three domains, hand-tuned.
-            </h2>
-          </div>
-          <p className="hidden max-w-[34ch] text-[14px] leading-relaxed text-muted-foreground md:block">
-            A profile is the domain context the model uses &mdash; tone, locale, distributions, business rules. Ship-ready in v1; fork yours locally.
-          </p>
-        </div>
+    <Section
+      id="profiles"
+      n="03"
+      label="Reference profiles"
+      title={<>three domains, hand-tuned. fork yours locally.</>}
+    >
+      <Prose>
+        <p>
+          A profile is the domain context the model uses — tone, locale, distributions, business rules.
+          Ship-ready in v1. Stored as plain markdown + JSON; fork the one closest to your schema and
+          edit it like any other file in your repo.
+        </p>
+      </Prose>
 
-        <div className="mt-12 grid gap-px overflow-hidden border border-border bg-border md:grid-cols-3">
-          {profiles.map((p) => (
-            <article key={p.id} className="bg-background p-7">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                  {p.id}
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--marker)]">
-                  Official
-                </span>
+      <div className="mt-8 max-w-[860px] border-t border-[var(--hairline)]">
+        {profiles.map((p) => (
+          <article
+            key={p.id}
+            className="grid grid-cols-1 gap-x-8 gap-y-2 border-b border-[var(--hairline)] py-6 md:grid-cols-[200px_1fr]"
+          >
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--signal)]">
+                official
               </div>
-              <h3 className="mt-4 font-serif text-[28px] leading-tight tracking-tight">{p.name}</h3>
-
-              <ul className="mt-5 space-y-1.5 text-[14px] text-muted-foreground">
-                {p.bullets.map((b) => (
-                  <li key={b} className="flex gap-2.5">
-                    <span className="mt-2 h-px w-3 bg-border" />
-                    <span>{b}</span>
-                  </li>
+              <div className="mt-1.5 font-mono text-[14px] font-medium text-[var(--ink)]">{p.id}</div>
+              <div className="mt-0.5 text-[13px] text-[var(--mute)]">{p.name}</div>
+            </div>
+            <div>
+              <p className="text-[15px] leading-[1.6] text-[var(--ink)]/85">{p.desc}</p>
+              <div className="mt-3 font-mono text-[12px] text-[var(--mute)]">
+                <span className="text-[var(--ink)]">schema · </span>
+                {p.tables.map((t, i) => (
+                  <span key={t}>
+                    {t}
+                    {i < p.tables.length - 1 && <span className="text-[var(--hairline)]"> · </span>}
+                  </span>
                 ))}
-              </ul>
-
-              <div className="mt-6 border-t border-border pt-5">
-                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Sample row
-                </div>
-                <dl className="mt-3 space-y-2 font-mono text-[12px]">
-                  {p.sample.map(([k, v]) => (
-                    <div key={k} className="grid grid-cols-[88px_1fr] gap-3">
-                      <dt className="text-muted-foreground">{k}</dt>
-                      <dd className="text-foreground">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
               </div>
-            </article>
-          ))}
-        </div>
-      </Container>
-    </section>
+            </div>
+          </article>
+        ))}
+      </div>
+    </Section>
   );
 }
 
-/* ----------------------------------------------------------------
- * Pricing
- * ---------------------------------------------------------------- */
+/* ============================================================
+ * §04 — Pricing
+ * ============================================================ */
 
 const tiers = [
   {
+    id: "free",
     name: "Free",
     price: "$0",
     cadence: "open source · MIT",
-    features: ["CLI core", "Bring-your-own LLM key", "Community profiles", "Single workstation"],
-    cta: "View on GitHub",
+    cta: "view on github",
     href: "https://github.com",
     primary: false,
   },
   {
+    id: "pro",
     name: "Pro",
     price: "$19",
     cadence: "per month · or $190/yr",
-    features: [
-      "Three official profiles",
-      "Hosted profile updates",
-      "License key, 14-day offline grace",
-      "Priority issue triage",
-    ],
-    cta: "Start with Pro",
+    cta: "start with pro",
     href: "#",
     primary: true,
   },
   {
+    id: "team",
     name: "Team",
     price: "$49",
     cadence: "per seat · later",
-    features: ["Shared profiles", "CI mode", "Audit log", "Invoiced billing"],
-    cta: "Join waitlist",
+    cta: "join waitlist",
     href: "#",
     primary: false,
   },
 ];
 
+type Cell = string | { mark: true } | null;
+const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
+  { label: "CLI core",                       row: [{ mark: true }, { mark: true }, { mark: true }] },
+  { label: "Bring-your-own LLM key",         row: [{ mark: true }, { mark: true }, { mark: true }] },
+  { label: "Community profiles",             row: [{ mark: true }, { mark: true }, { mark: true }] },
+  { label: "Three official profiles",        row: [null,            { mark: true }, { mark: true }] },
+  { label: "Hosted profile updates",         row: [null,            { mark: true }, { mark: true }] },
+  { label: "License, 14-day offline grace",  row: [null,            { mark: true }, { mark: true }] },
+  { label: "Priority issue triage",          row: [null,            { mark: true }, { mark: true }] },
+  { label: "Shared team profiles",           row: [null,            null,            { mark: true }] },
+  { label: "CI mode",                        row: [null,            null,            { mark: true }] },
+  { label: "Audit log",                      row: [null,            null,            { mark: true }] },
+  { label: "Invoiced billing",               row: [null,            null,            { mark: true }] },
+];
+
 function Pricing() {
   return (
-    <section id="pricing" className="border-b border-border">
-      <Container className="py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <SectionLabel index="04">
-            <span className="mx-auto">Pricing</span>
-          </SectionLabel>
-          <h2 className="mt-6 font-serif text-4xl leading-[1.05] tracking-[-0.01em] md:text-[44px]">
-            Honest, narrow, easy to leave.
-          </h2>
-          <p className="mt-5 text-[15.5px] leading-relaxed text-muted-foreground">
-            Bring-your-own LLM key on every tier. We don&rsquo;t resell tokens.
-          </p>
-        </div>
+    <Section
+      id="pricing"
+      n="04"
+      label="Pricing"
+      title={<>honest, narrow, easy to leave.</>}
+    >
+      <Prose>
+        <p>Bring-your-own LLM key on every tier. We don&rsquo;t resell tokens.</p>
+      </Prose>
 
-        <div className="mt-14 grid gap-px overflow-hidden border border-border bg-border md:grid-cols-3">
-          {tiers.map((t) => (
-            <div
-              key={t.name}
-              className={`flex flex-col bg-background p-8 ${
-                t.primary ? "relative bg-foreground text-background" : ""
-              }`}
-            >
-              {t.primary && (
-                <span className="absolute right-6 top-6 font-mono text-[10px] uppercase tracking-[0.18em] text-background/70">
-                  Recommended
-                </span>
-              )}
-              <div className={`font-mono text-[11px] uppercase tracking-[0.18em] ${t.primary ? "text-background/70" : "text-muted-foreground"}`}>
-                {t.name}
-              </div>
-              <div className="mt-6 flex items-baseline gap-2">
-                <span className="font-serif text-[56px] leading-none tracking-tight">{t.price}</span>
-              </div>
-              <div className={`mt-1 font-mono text-[11px] uppercase tracking-[0.14em] ${t.primary ? "text-background/60" : "text-muted-foreground"}`}>
-                {t.cadence}
-              </div>
-
-              <ul className={`mt-8 space-y-2.5 text-[14.5px] ${t.primary ? "text-background/85" : "text-muted-foreground"}`}>
-                {t.features.map((f) => (
-                  <li key={f} className="flex gap-3">
-                    <span className={`mt-[10px] h-px w-3 ${t.primary ? "bg-background/40" : "bg-border"}`} />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href={t.href}
-                className={`mt-10 inline-flex h-11 items-center justify-center border font-mono text-[12px] uppercase tracking-[0.16em] transition-colors ${
-                  t.primary
-                    ? "border-background bg-background text-foreground hover:opacity-90"
-                    : "border-foreground text-foreground hover:bg-foreground hover:text-background"
-                }`}
-              >
-                {t.cta}
-              </a>
-            </div>
-          ))}
-        </div>
-      </Container>
-    </section>
+      <div className="mt-8 max-w-[860px] overflow-x-auto">
+        <table className="w-full border-collapse font-mono text-[13px]">
+          <thead>
+            <tr className="border-y border-[var(--ink)]">
+              <th className="w-[44%] py-3 text-left font-medium text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
+                Feature
+              </th>
+              {tiers.map((t) => (
+                <th
+                  key={t.id}
+                  className={`py-3 text-left text-[11px] uppercase tracking-[0.18em] ${
+                    t.primary ? "border-l border-r border-l-[var(--signal)] border-r-[var(--hairline)] text-[var(--ink)]" : "text-[var(--mute)]"
+                  }`}
+                >
+                  <div className="px-4">
+                    <div className="text-[var(--ink)]">{t.name}</div>
+                    <div className="mt-1 font-sans text-[11px] normal-case tracking-normal text-[var(--mute)]">
+                      <span className="text-[var(--ink)]">{t.price}</span> · {t.cadence}
+                    </div>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {FEATURES.map((f, i) => (
+              <tr key={i} className="border-b border-[var(--hairline)]">
+                <td className="py-2.5 pr-4 text-[var(--ink)]/85">{f.label}</td>
+                {f.row.map((cell, ci) => {
+                  const isPrimary = tiers[ci].primary;
+                  return (
+                    <td
+                      key={ci}
+                      className={`py-2.5 ${
+                        isPrimary
+                          ? "border-l border-r border-l-[var(--signal)] border-r-[var(--hairline)] px-4"
+                          : "px-4"
+                      }`}
+                    >
+                      {cell && typeof cell === "object" ? (
+                        <span className="text-[var(--signal)]">●</span>
+                      ) : (
+                        <span className="text-[var(--hairline)]">—</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+            <tr>
+              <td />
+              {tiers.map((t) => (
+                <td
+                  key={t.id}
+                  className={`pt-5 ${
+                    t.primary
+                      ? "border-l border-r border-l-[var(--signal)] border-r-[var(--hairline)] px-4"
+                      : "px-4"
+                  }`}
+                >
+                  <a
+                    href={t.href}
+                    className={`inline-flex h-9 items-center px-3 text-[11px] uppercase tracking-[0.16em] transition-colors ${
+                      t.primary
+                        ? "bg-[var(--ink)] text-[var(--paper)] hover:bg-[var(--signal)]"
+                        : "border border-[var(--ink)] text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+                    }`}
+                  >
+                    {t.cta}
+                  </a>
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </Section>
   );
 }
 
-/* ----------------------------------------------------------------
- * Docs / quickstart preview
- * ---------------------------------------------------------------- */
+/* ============================================================
+ * §05 — Quickstart
+ * ============================================================ */
 
-function Docs() {
+function Quickstart() {
   return (
-    <section id="docs" className="border-b border-border bg-secondary/40">
-      <Container className="grid gap-12 py-24 md:grid-cols-12">
-        <div className="md:col-span-4">
-          <SectionLabel index="05">Quickstart</SectionLabel>
-          <h2 className="mt-6 font-serif text-4xl leading-[1.05] tracking-[-0.01em] md:text-[44px]">
-            From zero to a seeded database in under a minute.
-          </h2>
-          <p className="mt-6 max-w-[36ch] text-[15px] leading-relaxed text-muted-foreground">
-            Point it at any Postgres &mdash; Supabase, Neon, Railway, RDS, local. It refuses to run against
-            a database with more than 10,000 user rows unless you explicitly say so.
-          </p>
-        </div>
+    <Section
+      id="quickstart"
+      n="05"
+      label="Quickstart"
+      title={<>from zero to a seeded database in under a minute.</>}
+    >
+      <Prose>
+        <p>
+          Point it at any Postgres — Supabase, Neon, Railway, RDS, local. It refuses to run against
+          a database with more than 10,000 user rows unless you explicitly say so.
+        </p>
+      </Prose>
 
-        <div className="md:col-span-8">
-          <div className="border border-border bg-background">
-            <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                quickstart.sh
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                bash
-              </span>
-            </div>
-            <pre className="overflow-x-auto px-5 py-5 font-mono text-[13px] leading-[1.7]">
-              <Comment># 1 · install</Comment>
-              <Code>npm i -g satus</Code>
-              <br />
-              <Comment># 2 · point at your database & pick a profile</Comment>
-              <Code>export DATABASE_URL="postgres://user:pass@localhost:5432/app"</Code>
-              <Code>satus init --profile e-commerce</Code>
-              <br />
-              <Comment># 3 · preview before you commit</Comment>
-              <Code>satus generate --dry &gt; satus-output.sql</Code>
-              <br />
-              <Comment># 4 · ship it</Comment>
-              <Code>satus generate</Code>
-              <Output>✓ 4,812 rows · $0.07 · 11.4s</Output>
-            </pre>
-          </div>
-        </div>
-      </Container>
-    </section>
+      <div className="mt-8 max-w-[760px] border-t border-b border-[var(--ink)]">
+        <pre className="overflow-x-auto px-1 py-6 font-mono text-[13px] leading-[1.85]">
+          <Cmt>{`# 1 · install`}</Cmt>
+          <Shell>{`npm i -g satus`}</Shell>
+          <Blank />
+          <Cmt>{`# 2 · point at your database & pick a profile`}</Cmt>
+          <Shell>{`export DATABASE_URL="postgres://user:pass@localhost:5432/app"`}</Shell>
+          <Shell>{`satus init --profile e-commerce`}</Shell>
+          <Blank />
+          <Cmt>{`# 3 · preview before you commit`}</Cmt>
+          <Shell>{`satus generate --dry > satus-output.sql`}</Shell>
+          <Blank />
+          <Cmt>{`# 4 · ship it`}</Cmt>
+          <Shell>{`satus generate`}</Shell>
+          <Out>{`✓ 4,812 rows · $0.07 · 11.4s`}</Out>
+        </pre>
+      </div>
+
+      <p className="mt-10 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
+        satus.ai — built for engineers who hate seeing John Doe in their demo data.
+      </p>
+    </Section>
   );
 }
 
-function Comment({ children }: { children: React.ReactNode }) {
-  return <div className="text-muted-foreground">{children}</div>;
+function Cmt({ children }: { children: React.ReactNode }) {
+  return <div className="px-4 text-[var(--mute)]">{children}</div>;
 }
-function Code({ children }: { children: React.ReactNode }) {
+function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <span className="text-muted-foreground">$ </span>
-      <span className="text-foreground">{children}</span>
+    <div className="px-4 text-[var(--ink)]">
+      <span className="text-[var(--mute)]">$ </span>
+      {children}
     </div>
   );
 }
-function Output({ children }: { children: React.ReactNode }) {
-  return <div className="text-[color:var(--marker)]">{children}</div>;
+function Out({ children }: { children: React.ReactNode }) {
+  return <div className="px-4 text-[var(--signal)]">{children}</div>;
+}
+function Blank() {
+  return <div className="h-3" />;
 }
 
-/* ----------------------------------------------------------------
- * Closing — small, dry, confident
- * ---------------------------------------------------------------- */
-
-function Closing() {
-  return (
-    <section className="border-b border-border">
-      <Container className="py-28 text-center">
-        <p className="font-serif text-[clamp(2rem,5vw,3.75rem)] leading-[1.08] tracking-[-0.015em]">
-          Demo data, finally, <br />
-          worth showing the customer.
-        </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="#install"
-            className="inline-flex h-11 items-center border border-foreground bg-foreground px-6 font-mono text-[12px] uppercase tracking-[0.16em] text-background transition-opacity hover:opacity-90"
-          >
-            Install satus
-          </a>
-          <a
-            href="https://github.com"
-            className="inline-flex h-11 items-center border border-border px-6 font-mono text-[12px] uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-secondary"
-          >
-            Read the source
-          </a>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-/* ----------------------------------------------------------------
+/* ============================================================
  * Footer
- * ---------------------------------------------------------------- */
+ * ============================================================ */
 
 function Footer() {
   return (
-    <footer>
-      <Container className="grid gap-10 py-14 md:grid-cols-12">
-        <div className="md:col-span-5">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-5 w-5 place-items-center border border-foreground">
-              <span className="h-1.5 w-1.5 bg-foreground" />
-            </span>
-            <span className="font-serif text-xl leading-none tracking-tight">satus</span>
+    <footer className="mt-16 border-t border-[var(--ink)]">
+      <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-10 font-mono text-[12px] md:grid-cols-4 lg:px-10">
+        <div>
+          <div className="flex items-baseline">
+            <span className="text-[14px] font-medium text-[var(--ink)]">satus</span>
+            <span className="text-[var(--signal)]">.</span>
           </div>
-          <p className="mt-4 max-w-[40ch] text-[13.5px] leading-relaxed text-muted-foreground">
-            <em>Satus</em> &mdash; Latin: a beginning, a planting, a sown thing. A CLI for seeding Postgres
-            with data that respects your schema.
+          <p className="mt-3 max-w-[34ch] font-sans text-[13px] leading-[1.6] text-[var(--mute)]">
+            <em className="not-italic text-[var(--ink)]">Satus</em> — Latin: a beginning, a planting, a sown thing.
           </p>
         </div>
-
-        <FooterCol title="Product" links={[["How it works", "#how"], ["Profiles", "#profiles"], ["Pricing", "#pricing"], ["Changelog", "#"]]} />
-        <FooterCol title="Developers" links={[["Docs", "#docs"], ["GitHub", "https://github.com"], ["CLI reference", "#"], ["Status", "#"]]} />
-        <FooterCol title="Company" links={[["About", "#"], ["Privacy", "#"], ["Terms", "#"], ["Contact", "mailto:hello@satus.ai"]]} />
-      </Container>
-      <Rule />
-      <Container className="flex flex-wrap items-center justify-between gap-3 py-5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-        <span>© {new Date().getFullYear()} satus.ai · all rights reserved</span>
-        <span>Built in plain text · No cookies on this page</span>
-      </Container>
+        <FooterCol title="product"   links={[["how it works", "#how"], ["profiles", "#profiles"], ["pricing", "#pricing"], ["changelog", "#"]]} />
+        <FooterCol title="resources" links={[["quickstart", "#quickstart"], ["github", "https://github.com"], ["cli reference", "#"], ["status", "#"]]} />
+        <FooterCol title="legal"     links={[["privacy", "#"], ["terms", "#"], ["contact", "mailto:hello@satus.ai"]]} />
+      </div>
+      <div className="border-t border-[var(--hairline)]">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-6 py-4 font-mono text-[11px] text-[var(--mute)] lg:px-10">
+          <span>© {new Date().getFullYear()} satus.ai</span>
+          <span>built in plain text · no cookies on this page</span>
+        </div>
+      </div>
     </footer>
   );
 }
 
 function FooterCol({ title, links }: { title: string; links: [string, string][] }) {
   return (
-    <div className="md:col-span-2">
-      <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{title}</div>
-      <ul className="mt-4 space-y-2 text-[14px]">
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">{title}</div>
+      <ul className="mt-3 space-y-1.5">
         {links.map(([label, href]) => (
           <li key={label}>
-            <a href={href} className="text-foreground/85 transition-colors hover:text-foreground">
+            <a href={href} className="text-[var(--ink)]/85 transition-colors hover:text-[var(--signal)]">
               {label}
             </a>
           </li>
@@ -678,20 +698,26 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   );
 }
 
-/* ---------------------------------------------------------------- */
+/* ============================================================
+ * Page
+ * ============================================================ */
 
 function Landing() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <Nav />
-      <Hero />
-      <Problem />
-      <How />
-      <Profiles />
-      <Pricing />
-      <Docs />
-      <Closing />
+    <div className="satus-fade min-h-screen bg-[var(--paper)] text-[var(--ink)]">
+      <TopBar />
+      <div className="mx-auto flex max-w-[1280px] px-6 lg:px-10">
+        <LeftRail />
+        <main className="min-w-0 flex-1 py-10 lg:pl-12">
+          <Overview />
+          <Problem />
+          <How />
+          <Profiles />
+          <Pricing />
+          <Quickstart />
+        </main>
+      </div>
       <Footer />
-    </main>
+    </div>
   );
 }
