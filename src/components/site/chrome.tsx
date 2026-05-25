@@ -52,7 +52,10 @@ export function TopBar() {
               key={item.to}
               to={item.to}
               activeOptions={{ exact: true }}
-              activeProps={{ className: "text-[var(--ink)]" }}
+              activeProps={{
+                className: "text-[var(--ink)]",
+                "aria-current": "page",
+              }}
               inactiveProps={{ className: "hover:text-[var(--ink)]" }}
               className="transition-colors"
             >
@@ -90,7 +93,10 @@ export function TopBar() {
             key={item.to}
             to={item.to}
             activeOptions={{ exact: true }}
-            activeProps={{ className: "text-[var(--ink)]" }}
+            activeProps={{
+              className: "text-[var(--ink)]",
+              "aria-current": "page",
+            }}
             inactiveProps={{ className: "hover:text-[var(--ink)]" }}
             className="shrink-0 transition-colors"
           >
