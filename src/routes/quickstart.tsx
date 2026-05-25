@@ -11,7 +11,7 @@ import type { ReactNode } from "react";
 import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 
-const SITE_URL = "https://satus.lovable.app";
+const SITE_URL = "https://satus.sh";
 
 const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "install", n: "01", label: "Install" },
@@ -210,7 +210,7 @@ function QuickstartPage() {
         </ul>
 
         <p className="mt-10 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-          satus.ai — built for engineers who hate seeing John Doe in their demo data.
+          satus.sh — built for engineers who hate seeing John Doe in their demo data.
         </p>
       </Section>
     </PageShell>

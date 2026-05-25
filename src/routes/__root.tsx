@@ -143,7 +143,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "A CLI that reads your Postgres schema and produces realistic, relationally-coherent seed data in seconds. Postgres only. CLI only.",
       },
-      { name: "author", content: "satus.ai" },
+      { name: "author", content: "satus.sh" },
       { name: "theme-color", content: "#fafaf7" },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "satus" },
