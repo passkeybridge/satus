@@ -1,0 +1,1 @@
+DELETE FROM public.waitlist_signups WHERE email = 'qa+test@example.com' AND source = 'qa-script';
