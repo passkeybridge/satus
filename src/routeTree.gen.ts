@@ -13,6 +13,7 @@ import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicWaitlistRouteImport } from './routes/api/public/waitlist'
 
 const QuickstartRoute = QuickstartRouteImport.update({
   id: '/quickstart',
@@ -34,18 +35,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWaitlistRoute = ApiPublicWaitlistRouteImport.update({
+  id: '/api/public/waitlist',
+  path: '/api/public/waitlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/api/public/waitlist': typeof ApiPublicWaitlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/api/public/waitlist': typeof ApiPublicWaitlistRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,25 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/api/public/waitlist': typeof ApiPublicWaitlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/pricing' | '/profiles' | '/quickstart'
+  fullPaths:
+    | '/'
+    | '/pricing'
+    | '/profiles'
+    | '/quickstart'
+    | '/api/public/waitlist'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/pricing' | '/profiles' | '/quickstart'
-  id: '__root__' | '/' | '/pricing' | '/profiles' | '/quickstart'
+  to: '/' | '/pricing' | '/profiles' | '/quickstart' | '/api/public/waitlist'
+  id:
+    | '__root__'
+    | '/'
+    | '/pricing'
+    | '/profiles'
+    | '/quickstart'
+    | '/api/public/waitlist'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +87,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ProfilesRoute: typeof ProfilesRoute
   QuickstartRoute: typeof QuickstartRoute
+  ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/waitlist': {
+      id: '/api/public/waitlist'
+      path: '/api/public/waitlist'
+      fullPath: '/api/public/waitlist'
+      preLoaderRoute: typeof ApiPublicWaitlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,7 +135,18 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ProfilesRoute: ProfilesRoute,
   QuickstartRoute: QuickstartRoute,
+  ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
