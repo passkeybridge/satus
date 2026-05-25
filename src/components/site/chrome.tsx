@@ -28,6 +28,10 @@ export const SITE_NAV = [
   { to: "/quickstart", label: "~/quickstart" },
 ] as const;
 
+/* Single source of truth for the upstream repo URL.
+ * The CLI ships from PasskeyBridge LLC's GitHub org. */
+export const GITHUB_URL = "https://github.com/passkeybridge/satus";
+
 /* ------------------ TopBar ------------------ */
 
 export function TopBar() {
