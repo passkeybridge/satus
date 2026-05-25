@@ -154,6 +154,7 @@ export function LeftRail({
             <li key={s.id}>
               <a
                 href={`#${s.id}`}
+                aria-current={isActive ? "location" : undefined}
                 className={`flex items-baseline gap-3 px-2 py-1.5 font-mono text-[12.5px] transition-colors ${
                   isActive
                     ? "bg-[var(--ink)] text-[var(--paper)]"
