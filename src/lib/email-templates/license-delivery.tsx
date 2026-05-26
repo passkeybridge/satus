@@ -47,6 +47,17 @@ const LicenseDeliveryEmail = ({
     <Preview>Your {SITE_NAME} license key.</Preview>
     <Body style={main}>
       <Container style={container}>
+        {/* Wordmark, matching the site header: "satus" + signal-red period.
+         *  The mark anchors the email; the §OK status chip sits below it as a
+         *  spec-style label. Rendered with inline styles because mail clients
+         *  drop classes and many drop @font-face. */}
+        <Section style={brandRow}>
+          <Text style={wordmark}>
+            <span>satus</span>
+            <span style={wordmarkDot}>.</span>
+          </Text>
+        </Section>
+
         <Text style={label}>
           <span style={signal}>§OK</span>
           <span style={pipe}> | </span>
@@ -58,6 +69,7 @@ const LicenseDeliveryEmail = ({
         </Heading>
 
         <Hr style={hr} />
+
 
         <Text style={paragraph}>
           Thank you for subscribing. Below is the license key required to
@@ -148,6 +160,26 @@ const container = {
   padding: '32px 28px',
   backgroundColor: '#fafaf7',
   border: '1px solid #e5e5e0',
+}
+/* Wordmark row: matches the site header. The dot is the only saturated
+ * color in the entire email until you hit the §OK chip, which gives the
+ * mark presence without ever feeling like marketing chrome. */
+const brandRow = {
+  margin: '0 0 28px',
+  paddingBottom: '20px',
+  borderBottom: '1px solid #e5e5e0',
+}
+const wordmark = {
+  fontFamily: monoStack,
+  fontSize: '20px',
+  fontWeight: 500,
+  letterSpacing: '-0.01em',
+  color: '#0a0a0a',
+  margin: 0,
+  lineHeight: 1,
+}
+const wordmarkDot = {
+  color: '#dc2626',
 }
 const label = {
   fontFamily: monoStack,
