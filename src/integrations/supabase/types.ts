@@ -101,6 +101,54 @@ export type Database = {
         }
         Relationships: []
       }
+      licenses: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          email: string
+          environment: string
+          id: string
+          license_key: string
+          plan: string
+          revoked_at: string | null
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          email: string
+          environment?: string
+          id?: string
+          license_key: string
+          plan: string
+          revoked_at?: string | null
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          email?: string
+          environment?: string
+          id?: string
+          license_key?: string
+          plan?: string
+          revoked_at?: string | null
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

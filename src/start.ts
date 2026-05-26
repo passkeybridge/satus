@@ -1,6 +1,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -19,4 +20,8 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware],
+  // attachSupabaseAuth forwards the user's bearer token on every serverFn
+  // RPC; required by routes that use requireSupabaseAuth (e.g. /account
+  // billing-portal handoff).
+  functionMiddleware: [attachSupabaseAuth],
 }));

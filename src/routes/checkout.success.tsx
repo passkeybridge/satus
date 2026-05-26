@@ -42,10 +42,14 @@ function CheckoutSuccessPage() {
         </h1>
         <hr className="mt-6" />
         <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
-          Stripe has confirmed the charge. A receipt is on its way to the
-          email you entered at checkout. License keys and install instructions
-          will follow from <span className="font-mono">hello@satus.sh</span>{" "}
-          within one business day while we finish wiring transactional email.
+          Stripe has confirmed the charge. Your license key is on its way to
+          the email you entered at checkout, sent from{" "}
+          <span className="font-mono">notify@satus.sh</span>. If it hasn't
+          arrived in a few minutes, check spam, then visit{" "}
+          <Link to="/account" className="text-[var(--signal)] underline hover:opacity-80">
+            /account
+          </Link>{" "}
+          to sign in and request a re-send.
         </p>
 
         {sessionId && (
@@ -65,10 +69,10 @@ function CheckoutSuccessPage() {
             read the quickstart
           </Link>
           <Link
-            to="/"
+            to="/account"
             className="inline-flex h-10 items-center whitespace-nowrap border border-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
           >
-            go home
+            manage billing
           </Link>
         </div>
       </div>

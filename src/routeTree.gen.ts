@@ -9,16 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicWaitlistRouteImport } from './routes/api/public/waitlist'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
 
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuickstartRoute = QuickstartRouteImport.update({
   id: '/quickstart',
   path: '/quickstart',
@@ -39,9 +52,19 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
@@ -54,100 +77,191 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   path: '/cancel',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWaitlistRoute = ApiPublicWaitlistRouteImport.update({
   id: '/api/public/waitlist',
   path: '/api/public/waitlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicLicenseVerifyRoute = ApiPublicLicenseVerifyRouteImport.update({
+  id: '/api/public/license/verify',
+  path: '/api/public/license/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/checkout'
     | '/pricing'
     | '/profiles'
     | '/quickstart'
+    | '/unsubscribe'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/email/unsubscribe'
     | '/api/public/waitlist'
+    | '/lovable/email/suppression'
+    | '/api/public/license/verify'
+    | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/checkout'
     | '/pricing'
     | '/profiles'
     | '/quickstart'
+    | '/unsubscribe'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/email/unsubscribe'
     | '/api/public/waitlist'
+    | '/lovable/email/suppression'
+    | '/api/public/license/verify'
+    | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/checkout'
     | '/pricing'
     | '/profiles'
     | '/quickstart'
+    | '/unsubscribe'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/email/unsubscribe'
     | '/api/public/waitlist'
+    | '/lovable/email/suppression'
+    | '/api/public/license/verify'
+    | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   PricingRoute: typeof PricingRoute
   ProfilesRoute: typeof ProfilesRoute
   QuickstartRoute: typeof QuickstartRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quickstart': {
       id: '/quickstart'
       path: '/quickstart'
@@ -176,11 +290,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/success': {
@@ -197,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/waitlist': {
       id: '/api/public/waitlist'
       path: '/api/public/waitlist'
@@ -204,11 +339,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWaitlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/license/verify': {
+      id: '/api/public/license/verify'
+      path: '/api/public/license/verify'
+      fullPath: '/api/public/license/verify'
+      preLoaderRoute: typeof ApiPublicLicenseVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -230,12 +393,20 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   PricingRoute: PricingRoute,
   ProfilesRoute: ProfilesRoute,
   QuickstartRoute: QuickstartRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
