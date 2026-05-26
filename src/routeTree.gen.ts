@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CliRouteImport } from './routes/cli'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
@@ -50,6 +52,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecipesRoute = RecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuickstartRoute = QuickstartRouteImport.update({
   id: '/quickstart',
   path: '/quickstart',
@@ -73,6 +80,11 @@ const PricingRoute = PricingRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CliRoute = CliRouteImport.update({
@@ -169,11 +181,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/cli': typeof CliRoute
+  '/compare': typeof CompareRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/recipes': typeof RecipesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -196,11 +210,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/cli': typeof CliRoute
+  '/compare': typeof CompareRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/recipes': typeof RecipesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -224,11 +240,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/cli': typeof CliRoute
+  '/compare': typeof CompareRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/recipes': typeof RecipesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -253,11 +271,13 @@ export interface FileRouteTypes {
     | '/'
     | '/checkout'
     | '/cli'
+    | '/compare'
     | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
     | '/quickstart'
+    | '/recipes'
     | '/sitemap.xml'
     | '/terms'
     | '/unsubscribe'
@@ -280,11 +300,13 @@ export interface FileRouteTypes {
     | '/'
     | '/checkout'
     | '/cli'
+    | '/compare'
     | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
     | '/quickstart'
+    | '/recipes'
     | '/sitemap.xml'
     | '/terms'
     | '/unsubscribe'
@@ -307,11 +329,13 @@ export interface FileRouteTypes {
     | '/'
     | '/checkout'
     | '/cli'
+    | '/compare'
     | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
     | '/quickstart'
+    | '/recipes'
     | '/sitemap.xml'
     | '/terms'
     | '/unsubscribe'
@@ -335,11 +359,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CliRoute: typeof CliRoute
+  CompareRoute: typeof CompareRoute
   DocsRoute: typeof DocsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfilesRoute: typeof ProfilesRoute
   QuickstartRoute: typeof QuickstartRoute
+  RecipesRoute: typeof RecipesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -380,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recipes': {
+      id: '/recipes'
+      path: '/recipes'
+      fullPath: '/recipes'
+      preLoaderRoute: typeof RecipesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quickstart': {
       id: '/quickstart'
       path: '/quickstart'
@@ -413,6 +446,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cli': {
@@ -555,11 +595,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   CliRoute: CliRoute,
+  CompareRoute: CompareRoute,
   DocsRoute: DocsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfilesRoute: ProfilesRoute,
   QuickstartRoute: QuickstartRoute,
+  RecipesRoute: RecipesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
@@ -579,3 +621,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
