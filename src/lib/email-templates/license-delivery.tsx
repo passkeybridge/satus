@@ -121,7 +121,11 @@ const LicenseDeliveryEmail = ({
         <Hr style={hr} />
 
         <Text style={footer}>
-          {SITE_NAME} · A PasskeyBridge LLC service ·{' '}
+          {SITE_NAME} · A{' '}
+          <Link href="https://passkeybridge.io" style={footerLink}>
+            PasskeyBridge LLC
+          </Link>{' '}
+          service ·{' '}
           <Link href={`mailto:support@satus.sh`} style={footerLink}>
             support@satus.sh
           </Link>

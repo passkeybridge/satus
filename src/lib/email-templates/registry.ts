@@ -14,7 +14,11 @@ export interface TemplateEntry {
  * Import and register new templates here after creating them in this directory.
  */
 import { template as licenseDelivery } from './license-delivery'
+import { template as subscriptionCanceled } from './subscription-canceled'
+import { template as subscriptionExpired } from './subscription-expired'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'license-delivery': licenseDelivery,
+  'subscription-canceled': subscriptionCanceled,
+  'subscription-expired': subscriptionExpired,
 }
