@@ -3,8 +3,11 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
-  const request = globalThis.__placeholder as never
+const errorMiddleware = createMiddleware().server(async ({ next, pathname }) => {
+  if (pathname.startsWith("/lovable/")) {
+    return await next();
+  }
+
   try {
     return await next();
   } catch (error) {
