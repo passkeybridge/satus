@@ -9,9 +9,15 @@
  *   - checkout.session.completed       → issue license, enqueue email
  *   - customer.subscription.updated    → sync status, period, cancel flag
  *   - customer.subscription.deleted    → revoke license
+ *   - charge.refunded                  → revoke license tied to refunded
+ *                                        charge's subscription (covers
+ *                                        partial/standalone refunds that
+ *                                        don't cancel the subscription)
  *
  * Idempotency: subscription rows key on `stripe_subscription_id` UNIQUE.
- * A repeated event upserts the same row, never duplicates.
+ * A repeated event upserts the same row, never duplicates. Refund
+ * revocation is idempotent: repeat events rewrite the same status/
+ * revoked_at and skip the email if already revoked.
  */
 
 import { createFileRoute } from '@tanstack/react-router'
