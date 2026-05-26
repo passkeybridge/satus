@@ -7,7 +7,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { GITHUB_URL, PageShell } from "@/components/site/chrome";
+import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 import { WaitlistForm } from "@/components/site/WaitlistForm";
 
