@@ -9,6 +9,9 @@
  * Validation here is intentionally strict: a malformed post is a build-time
  * error, not a runtime surprise.
  */
+/* Side-effect import: installs a Buffer shim in browser bundles before
+ * gray-matter evaluates. ES-module hoisting guarantees this runs first. */
+import "./buffer-shim";
 
 import matter from "gray-matter";
 import { marked } from "marked";
