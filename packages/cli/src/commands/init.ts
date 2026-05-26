@@ -1,18 +1,58 @@
+/**
+ * `satus init` — scaffold satus.config.json in the current working
+ * directory. Uses Node's built-in readline so we don't pull a prompt
+ * library into the bundle. Existing config is preserved unless --force.
+ */
 import { Command } from 'commander'
 import pc from 'picocolors'
+import { createInterface } from 'node:readline/promises'
+import { stdin, stdout } from 'node:process'
+import { access } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { CONFIG_FILE, writeConfig, ConfigSchema } from '../generate/config.js'
 
-/**
- * `satus init` — scaffold a satus.config.json in the current directory.
- *
- * TODO(v0.1): write a real config file with DSN prompt, profile selection
- * (saas / ecommerce / b2b), and optional BYO LLM key.
- */
 export function registerInit(program: Command): void {
   program
     .command('init')
     .description('Scaffold satus.config.json in the current directory')
-    .action(async () => {
-      console.log(pc.yellow('satus init is not implemented yet (v0.0.1 stub).'))
-      console.log('Roadmap: prompt for Postgres DSN, profile, and LLM key, then write satus.config.json.')
+    .option('--force', 'overwrite existing satus.config.json')
+    .action(async (opts: { force?: boolean }) => {
+      const path = resolve(process.cwd(), CONFIG_FILE)
+      const exists = await access(path).then(() => true).catch(() => false)
+      if (exists && !opts.force) {
+        console.error(pc.red(`${CONFIG_FILE} already exists. Use --force to overwrite.`))
+        process.exit(1)
+      }
+
+      const rl = createInterface({ input: stdin, output: stdout })
+      const ask = async (q: string, def: string) => {
+        const answer = (await rl.question(`${q} ${pc.dim(`[${def}]`)} `)).trim()
+        return answer.length === 0 ? def : answer
+      }
+
+      console.log(pc.bold('\nsatus init\n'))
+      const databaseUrl = await ask(
+        'Postgres connection string (leave blank to read from $DATABASE_URL):',
+        '',
+      )
+      const schema = await ask('Schema to seed:', 'public')
+      const profile = await ask('Reference profile (saas | ecommerce | b2b):', 'saas')
+      const model = await ask('OpenAI model:', 'gpt-4o-mini')
+      rl.close()
+
+      const cfg = ConfigSchema.parse({
+        databaseUrl: databaseUrl || undefined,
+        schema,
+        profile,
+        model,
+        exclude: [],
+      })
+      const written = await writeConfig(cfg)
+      console.log(pc.green('\n✓ ') + `wrote ${pc.bold(written)}`)
+      console.log(
+        pc.dim(
+          '\nNext: export OPENAI_API_KEY=sk-... and run `satus generate --rows 25 --dry-run`',
+        ),
+      )
     })
 }
