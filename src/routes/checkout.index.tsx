@@ -23,7 +23,7 @@ const TIER_LABELS: Record<string, { name: string; price: string }> = {
   satus_live_smoke_test: { name: "satus.sh — Live Smoke Test", price: "$0.50 one-time" },
 };
 
-export const Route = createFileRoute("/checkout")({
+export const Route = createFileRoute("/checkout/")({
   validateSearch: (search: Record<string, unknown>): { price?: string; qty?: number } => ({
     price: typeof search.price === "string" ? search.price : undefined,
     qty: typeof search.qty === "number" && Number.isFinite(search.qty) ? search.qty : undefined,
