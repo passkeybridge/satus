@@ -15,7 +15,7 @@
 ## Install
 
 ```bash
-npm install -g satus-cli
+npm install -g satus
 ```
 
 Requires Node.js 20+.

@@ -142,7 +142,7 @@ function Overview() {
 
 function InstallLine() {
   const [copied, setCopied] = useState(false);
-  const cmd = "npm i -g satus-cli";
+  const cmd = "npm i -g satus";
   return (
     <div className="flex items-stretch border border-[var(--ink)] bg-[var(--paper)]">
       <div className="grid w-9 place-items-center border-r border-[var(--ink)] font-mono text-[12px] text-[var(--mute)]">
