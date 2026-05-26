@@ -1,0 +1,1 @@
+DELETE FROM public.licenses WHERE email LIKE 'audit+%@satus.sh';
