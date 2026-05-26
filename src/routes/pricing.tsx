@@ -232,6 +232,14 @@ function PricingPage() {
                     >
                       {t.cta}
                     </a>
+                    {t.secondary && (
+                      <a
+                        href={t.secondary.href}
+                        className="mt-2 block font-mono text-[11px] text-[var(--mute)] underline-offset-2 hover:text-[var(--signal)] hover:underline"
+                      >
+                        {t.secondary.label}
+                      </a>
+                    )}
                   </td>
                 ))}
               </tr>
