@@ -45,11 +45,15 @@ function CheckoutSuccessPage() {
           Stripe has confirmed the charge. Your license key is on its way to
           the email you entered at checkout, sent from{" "}
           <span className="font-mono">notify@satus.sh</span>. If it hasn't
-          arrived in a few minutes, check spam, then visit{" "}
-          <Link to="/account" className="text-[var(--signal)] underline hover:opacity-80">
-            /account
-          </Link>{" "}
-          to sign in and request a re-send.
+          arrived in a few minutes, check spam, then email{" "}
+          <a
+            href="mailto:hello@satus.sh"
+            className="text-[var(--signal)] underline hover:opacity-80"
+          >
+            hello@satus.sh
+          </a>{" "}
+          and we'll re-send it. To change payment method or cancel, the same
+          address routes to the Stripe billing portal.
         </p>
 
         {sessionId && (
@@ -67,12 +71,6 @@ function CheckoutSuccessPage() {
             className="inline-flex h-10 items-center whitespace-nowrap bg-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--paper)] transition-colors hover:bg-[var(--signal)]"
           >
             read the quickstart
-          </Link>
-          <Link
-            to="/account"
-            className="inline-flex h-10 items-center whitespace-nowrap border border-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
-          >
-            manage billing
           </Link>
         </div>
       </div>

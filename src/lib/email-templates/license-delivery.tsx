@@ -2,7 +2,7 @@
  * License delivery email.
  *
  * Sent after a successful Stripe checkout. Carries the license key the
- * customer needs to activate the CLI, plus a pointer to /account where
+ * customer needs to activate the CLI, plus a contact address where
  * they manage billing via Stripe Customer Portal.
  *
  * Visual system: Swiss-Red on paper. Mono headings (web-safe stack since
@@ -99,13 +99,11 @@ const LicenseDeliveryEmail = ({
         </Heading>
         <Text style={paragraph}>
           To change payment method, download invoices, switch plan, or
-          cancel, visit your account page. We send a one-time link to this
-          email address; no password to remember.
-        </Text>
-        <Text style={paragraph}>
-          <Link href={`${SITE_URL}/account`} style={linkStyle}>
-            {SITE_URL}/account →
+          cancel, reply to this email or write to{' '}
+          <Link href="mailto:hello@satus.sh" style={linkStyle}>
+            hello@satus.sh
           </Link>
+          . We route you to the Stripe billing portal for this subscription.
         </Text>
 
         <Hr style={hr} />

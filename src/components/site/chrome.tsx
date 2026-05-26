@@ -264,10 +264,9 @@ export function Footer() {
           ]}
         />
         <FooterCol
-          title="account"
+          title="contact"
           links={[
-            ["billing", "/account"],
-            ["contact", "mailto:hello@satus.sh"],
+            ["hello@satus.sh", "mailto:hello@satus.sh"],
           ]}
         />
       </div>
