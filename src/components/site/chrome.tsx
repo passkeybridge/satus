@@ -263,6 +263,8 @@ export function Footer() {
             ["docs", "/docs"],
             ["quickstart", "/quickstart"],
             ["cli reference", "/cli"],
+            ["recipes", "/recipes"],
+            ["compare", "/compare"],
             ["blog", "/blog"],
             ["rss", "/blog/rss.xml"],
             ["github", GITHUB_URL],

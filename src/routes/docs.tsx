@@ -126,6 +126,18 @@ function DocsPage() {
             body="Synopsis, environment variables, every subcommand (init, plan, generate), every flag, every exit code."
           />
           <Card
+            to="/recipes"
+            kicker="how-to"
+            title="Recipes"
+            body="Copy-paste guides for the most common integrations: preview branches, GitHub Actions, E2E resets, Neon branching."
+          />
+          <Card
+            to="/compare"
+            kicker="positioning"
+            title="vs Snaplet, Tonic, faker"
+            body="Honest, category-by-category comparison against the alternatives developers most often weigh."
+          />
+          <Card
             to="/pricing"
             kicker="commercial"
             title="Pricing &amp; tiers"

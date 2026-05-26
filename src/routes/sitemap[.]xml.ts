@@ -26,6 +26,8 @@ const STATIC_ROUTES: Entry[] = [
   { path: "/docs", changefreq: "monthly", priority: "0.9" },
   { path: "/quickstart", changefreq: "monthly", priority: "0.9" },
   { path: "/cli", changefreq: "monthly", priority: "0.8" },
+  { path: "/recipes", changefreq: "monthly", priority: "0.7" },
+  { path: "/compare", changefreq: "monthly", priority: "0.7" },
   { path: "/blog", changefreq: "weekly", priority: "0.7" },
   { path: "/terms", changefreq: "yearly", priority: "0.3" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
