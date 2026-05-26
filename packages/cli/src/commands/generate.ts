@@ -78,7 +78,16 @@ export function registerGenerate(program: Command): void {
       const model = opts.model ?? cfg?.model ?? 'gpt-4o-mini'
       const exclude = cfg?.exclude ?? []
 
-      const client = new Client({ connectionString: dsn })
+      // Hosted Postgres (Supabase, Neon, RDS) terminates TLS with certs that
+      // node-postgres can't verify out of the box. If the DSN asks for SSL or
+      // points at a known managed host, enable TLS without strict CA check.
+      const wantsSsl =
+        /\bsslmode=(require|verify-ca|verify-full|prefer)\b/i.test(dsn) ||
+        /(supabase\.co|neon\.tech|rds\.amazonaws\.com|render\.com)/i.test(dsn)
+      const client = new Client({
+        connectionString: dsn,
+        ...(wantsSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+      })
       try {
         await client.connect()
       } catch (err) {
