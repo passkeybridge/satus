@@ -26,6 +26,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
+import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -116,6 +117,11 @@ const ApiPublicLicenseVerifyRoute = ApiPublicLicenseVerifyRouteImport.update({
   path: '/api/public/license/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksE2eHealthRoute = ApiPublicHooksE2eHealthRouteImport.update({
+  id: '/api/public/hooks/e2e-health',
+  path: '/api/public/hooks/e2e-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
     | '/lovable/email/queue/process'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
   ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLicenseVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/e2e-health': {
+      id: '/api/public/hooks/e2e-health'
+      path: '/api/public/hooks/e2e-health'
+      fullPath: '/api/public/hooks/e2e-health'
+      preLoaderRoute: typeof ApiPublicHooksE2eHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -402,6 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,
   ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
