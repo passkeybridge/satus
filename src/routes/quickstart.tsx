@@ -153,7 +153,7 @@ function QuickstartPage() {
         </Prose>
         <Terminal>
           <Cmt>{`# write the planned inserts to a file`}</Cmt>
-          <Shell>{`satus generate --dry > satus-output.sql`}</Shell>
+          <Shell>{`satus generate --profile e-commerce --dry > satus-output.sql`}</Shell>
           <Out>{`✓ planned 4,812 rows across 14 tables`}</Out>
           <Out>{`✓ estimated cost · $0.07`}</Out>
         </Terminal>
@@ -172,7 +172,7 @@ function QuickstartPage() {
           </p>
         </Prose>
         <Terminal>
-          <Shell>{`satus generate`}</Shell>
+          <Shell>{`satus generate --profile e-commerce`}</Shell>
           <Out>{`✓ 4,812 rows · $0.07 · 11.4s`}</Out>
         </Terminal>
       </Section>
