@@ -44,20 +44,24 @@ function planLabel(plan: string | null | undefined): string {
   return PLAN_LABELS[plan] ?? plan
 }
 
-function isoDateOnly(ts: number | null | undefined): string | null {
+function isoDateOnly(ts: number | string | null | undefined): string | null {
   if (!ts) return null
-  return new Date(ts * 1000).toISOString().slice(0, 10)
+  const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts)
+  return d.toISOString().slice(0, 10)
 }
 
-async function enqueueLicenseEmail(args: {
+/**
+ * Enqueue a transactional email via the internal send route. Same auth
+ * pattern as license-delivery: service-role bearer, idempotency keyed off
+ * the subscription id + template so retries from Stripe never duplicate.
+ */
+async function enqueueTransactionalEmail(args: {
+  templateName: string
   recipientEmail: string
-  licenseKey: string
-  plan: string
-  currentPeriodEnd: number | null
-  subscriptionId: string
+  idempotencyKey: string
+  templateData: Record<string, unknown>
 }) {
-  const origin =
-    process.env.PUBLIC_SITE_URL ?? 'https://satus.sh'
+  const origin = process.env.PUBLIC_SITE_URL ?? 'https://satus.sh'
   const res = await fetch(`${origin}/lovable/email/transactional/send`, {
     method: 'POST',
     headers: {
@@ -65,22 +69,18 @@ async function enqueueLicenseEmail(args: {
       Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
     },
     body: JSON.stringify({
-      templateName: 'license-delivery',
+      templateName: args.templateName,
       recipientEmail: args.recipientEmail,
-      idempotencyKey: `license-${args.subscriptionId}`,
-      templateData: {
-        licenseKey: args.licenseKey,
-        planLabel: planLabel(args.plan),
-        renewsOn: isoDateOnly(args.currentPeriodEnd),
-      },
+      idempotencyKey: args.idempotencyKey,
+      templateData: args.templateData,
     }),
   }).catch((err) => {
-    console.error('[payments-webhook] email enqueue failed', err)
+    console.error('[payments-webhook] email enqueue failed', args.templateName, err)
     return null
   })
   if (res && !res.ok) {
     const body = await res.text().catch(() => '')
-    console.error('[payments-webhook] email enqueue non-2xx', res.status, body)
+    console.error('[payments-webhook] email enqueue non-2xx', args.templateName, res.status, body)
   }
 }
 
