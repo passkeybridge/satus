@@ -123,8 +123,10 @@ function PrivacyPage() {
           <p>
             <strong>License telemetry.</strong> The CLI sends your license key to{" "}
             <code>/api/public/license/verify</code> to confirm it is valid. The verification request
-            includes only the license key and a generic User-Agent string. We do not log your IP
-            address against the key, your machine ID, or any project metadata.
+            includes only the license key and a generic User-Agent string. To rate-limit abuse,
+            the request IP is hashed in memory (SHA-256, truncated) for the lifetime of the Worker
+            isolate and discarded; we do not persist your IP, your machine ID, or any project
+            metadata against your key.
           </p>
           <p>
             <strong>Web analytics.</strong> The marketing site uses Ahrefs Web Analytics, a
