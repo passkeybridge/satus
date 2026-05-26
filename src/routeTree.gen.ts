@@ -21,8 +21,8 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CliRouteImport } from './routes/cli'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
@@ -99,14 +99,14 @@ const CliRoute = CliRouteImport.update({
   path: '/cli',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -191,7 +191,6 @@ const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRoute
@@ -210,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -222,7 +222,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRoute
@@ -241,6 +240,7 @@ export interface FileRoutesByTo {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog': typeof BlogIndexRoute
+  '/checkout': typeof CheckoutIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -254,7 +254,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRoute
@@ -273,6 +272,7 @@ export interface FileRoutesById {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -287,7 +287,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/checkout'
     | '/cli'
     | '/compare'
     | '/docs'
@@ -306,6 +305,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/blog/'
+    | '/checkout/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -318,7 +318,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/checkout'
     | '/cli'
     | '/compare'
     | '/docs'
@@ -337,6 +336,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/blog'
+    | '/checkout'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -349,7 +349,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/checkout'
     | '/cli'
     | '/compare'
     | '/docs'
@@ -368,6 +367,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/blog/'
+    | '/checkout/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -381,7 +381,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
   CliRoute: typeof CliRoute
   CompareRoute: typeof CompareRoute
   DocsRoute: typeof DocsRoute
@@ -398,6 +397,7 @@ export interface RootRouteChildren {
   BlogRssDotxmlRoute: typeof BlogRssDotxmlRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
@@ -495,18 +495,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CliRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/': {
@@ -617,23 +617,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CheckoutRouteChildren {
-  CheckoutCancelRoute: typeof CheckoutCancelRoute
-  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutCancelRoute: CheckoutCancelRoute,
-  CheckoutSuccessRoute: CheckoutSuccessRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
   CliRoute: CliRoute,
   CompareRoute: CompareRoute,
   DocsRoute: DocsRoute,
@@ -650,6 +635,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRssDotxmlRoute: BlogRssDotxmlRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   BlogIndexRoute: BlogIndexRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,
@@ -663,3 +649,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
