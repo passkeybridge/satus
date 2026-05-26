@@ -21,6 +21,7 @@ import { introspect } from '../generate/introspect.js'
 import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
+import { newRunId, reportRun } from '../generate/telemetry.js'
 import { readCachedLicense } from '../license.js'
 
 const FREE_MAX_ROWS = 25
