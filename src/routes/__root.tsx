@@ -160,6 +160,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       // as an illegible thumbnail.
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
     ],
+    scripts: [
+      // Ahrefs Web Analytics. Privacy-respecting, cookieless pageview
+      // tracking. Loaded async so it never blocks the document; the data-key
+      // binds the script to the satus.sh property in the Ahrefs dashboard.
+      {
+        src: "https://analytics.ahrefs.com/analytics.js",
+        "data-key": "rwXxEkXYUzPB4EEg0oXcPw",
+        async: true,
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

@@ -1,0 +1,24 @@
+# CODEOWNERS for satus.sh
+#
+# GitHub uses this file to auto-request reviews on pull requests. Even
+# with a single maintainer today, declaring ownership signals process
+# maturity to acquirers and keeps the door open for additional reviewers
+# without restructuring later.
+#
+# Syntax: <path-pattern>  <owner>
+# Owners are GitHub usernames or teams (prefixed with the org name).
+
+# Default owner for everything in the repo.
+*                           @passkeybridge
+
+# Critical surfaces. Keep these explicit so they survive a future
+# wildcard relaxation.
+/src/routes/api/            @passkeybridge
+/src/lib/                   @passkeybridge
+/supabase/migrations/       @passkeybridge
+/src/integrations/          @passkeybridge
+
+# Legal, security, and licensing artifacts.
+/LICENSE                    @passkeybridge
+/SECURITY.md                @passkeybridge
+/CODEOWNERS                 @passkeybridge
