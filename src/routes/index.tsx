@@ -38,7 +38,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "A CLI that reads your Postgres schema and writes realistic seed data respecting every foreign key, constraint, and business rule. Built for demos, screenshots, and QA runs.",
+          "Reads your Postgres schema and writes realistic seed data that respects every foreign key, constraint, and business rule. Built for demos and QA.",
       },
       { property: "og:title", content: "satus, seed data that looks like a real business" },
       {

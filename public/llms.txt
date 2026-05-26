@@ -1,0 +1,23 @@
+# satus
+
+> A CLI that reads your Postgres schema and writes realistic, relationally-coherent seed data that respects every foreign key, constraint, and business rule. Postgres only. CLI only.
+
+satus is distributed as the npm package `@passkeybridge/satus` (binary: `satus`). It introspects your live Postgres schema, builds a dependency DAG from foreign keys, and emits inserts that load on the first try. Three built-in domain profiles (medical, e-commerce, SaaS) shape values so demo and QA data looks like a real business instead of `John Doe` and `Lorem Ipsum Corp`.
+
+## Pages
+
+- [Overview](/): What satus is, how the pipeline works, and what it deliberately will not do.
+- [Quickstart](/quickstart): Install the CLI and generate your first seed file in under five minutes.
+- [Docs](/docs): Full reference for configuration, profiles, and run modes.
+- [CLI reference](/cli): Every flag, subcommand, and exit code.
+- [Profiles](/profiles): The three built-in domain profiles and what each one generates.
+- [Recipes](/recipes): Common patterns: PR preview environments, CI fixtures, screenshot data.
+- [Compare](/compare): satus vs faker, vs hand-written fixtures, vs database snapshots.
+- [Pricing](/pricing): Free CLI tier and paid license tiers.
+- [Blog](/blog): Articles on Postgres seed data, schema-aware testing, and related topics.
+
+## Optional
+
+- [Security](/security): Vulnerability disclosure policy and supported versions.
+- [Terms](/terms): Terms of service.
+- [Privacy](/privacy): Privacy policy.
