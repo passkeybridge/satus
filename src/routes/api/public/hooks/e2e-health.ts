@@ -195,7 +195,7 @@ async function runE2E(triggeredBy: string) {
   await supabaseAdmin.from('e2e_health_log').insert({
     status,
     duration_ms,
-    checks: checks as unknown as object,
+    checks: JSON.parse(JSON.stringify(checks)),
     error_message:
       failed.length === 0
         ? null
