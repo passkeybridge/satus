@@ -74,8 +74,8 @@ Cost is estimated up-front and capped by `--max-cost` (default `$1.00` per run).
 ## Development
 
 ```bash
-git clone git@github.com:passkeybridge/satus-cli.git
-cd satus-cli
+git clone git@github.com:passkeybridge/satus.git
+cd satus/packages/cli
 npm install
 npm run dev       # tsup --watch
 npm test
