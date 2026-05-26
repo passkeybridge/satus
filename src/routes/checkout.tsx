@@ -10,7 +10,7 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StripeEmbeddedCheckout } from "@/components/site/StripeEmbeddedCheckout";
-import { GITHUB_URL } from "@/components/site/chrome";
+import { PageShell as _PageShell } from "@/components/site/chrome";
 
 const SITE_URL = "https://satus.sh";
 
