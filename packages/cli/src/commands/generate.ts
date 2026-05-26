@@ -151,7 +151,6 @@ export function registerGenerate(program: Command): void {
         const startedAt = Date.now()
         const env = (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live'
         const baseTelemetry = {
-          license_key: license?.key,
           profile,
           model,
           target_schema: schemaName,
