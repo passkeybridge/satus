@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /lovable/
+Disallow: /email/
+Disallow: /checkout/success
+Disallow: /unsubscribe
 
 Sitemap: https://satus.sh/sitemap.xml
