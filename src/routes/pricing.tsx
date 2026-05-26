@@ -19,6 +19,8 @@ const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "faq", n: "06", label: "FAQ" },
 ];
 
+/* CTA hrefs route to the embedded checkout. The server function holds the
+ * source-of-truth whitelist of priceIds; this table just hands them off. */
 const TIERS = [
   {
     id: "free",
@@ -28,26 +30,27 @@ const TIERS = [
     cta: "view on github",
     href: GITHUB_URL,
     primary: false,
+    secondary: null as null | { label: string; href: string },
   },
   {
     id: "pro",
     name: "Pro",
     price: "$19",
     cadence: "per month · or $190/yr",
-    cta: "start with pro",
-    // Pro CTA scrolls to the inline waitlist form (Stripe checkout lands
-    // here once the tier ships; the same anchor keeps deep links stable).
-    href: "#waitlist",
+    cta: "subscribe monthly",
+    href: "/checkout?price=satus_pro_monthly",
     primary: true,
+    secondary: { label: "or pay annually ($190)", href: "/checkout?price=satus_pro_yearly" },
   },
   {
     id: "team",
     name: "Team",
     price: "$49",
-    cadence: "per seat · later",
-    cta: "join waitlist",
-    href: "#waitlist",
+    cadence: "per seat · monthly",
+    cta: "buy seats",
+    href: "/checkout?price=satus_team_seat_monthly",
     primary: false,
+    secondary: null,
   },
 ];
 
@@ -229,6 +232,14 @@ function PricingPage() {
                     >
                       {t.cta}
                     </a>
+                    {t.secondary && (
+                      <a
+                        href={t.secondary.href}
+                        className="mt-2 block font-mono text-[11px] text-[var(--mute)] underline-offset-2 hover:text-[var(--signal)] hover:underline"
+                      >
+                        {t.secondary.label}
+                      </a>
+                    )}
                   </td>
                 ))}
               </tr>
@@ -245,9 +256,10 @@ function PricingPage() {
       >
         <Prose>
           <p>
-            Pro is live for early access; Team opens when ten organizations have
-            asked for it. Drop your email, pick the tier, and that&rsquo;s the
-            entire ceremony. One email when your tier ships; nothing else.
+            Pro is live, billable on the card above. Team opens when ten
+            organizations have asked for it. Drop your email, pick the tier,
+            and that&rsquo;s the entire ceremony. One email when your tier
+            ships; nothing else.
           </p>
         </Prose>
         <WaitlistForm />
