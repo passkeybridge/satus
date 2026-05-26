@@ -67,7 +67,6 @@ export const Route = createFileRoute("/security")({
             "@type": "CreativeWork",
             name: "Coordinated vulnerability disclosure policy",
             url: SITE_URL + "/security",
-            sameAs: SECURITY_MD_URL,
           },
         }),
       },
