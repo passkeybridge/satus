@@ -66,7 +66,7 @@ export const Route = createFileRoute("/")({
           "@type": "SoftwareApplication",
           name: "satus",
           applicationCategory: "DeveloperApplication",
-          operatingSystem: "macOS, Linux, Windows",
+          operatingSystem: "macOS, Linux",
           description:
             "CLI that generates relationally-coherent seed data for Postgres databases.",
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
