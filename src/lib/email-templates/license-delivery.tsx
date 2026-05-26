@@ -47,6 +47,17 @@ const LicenseDeliveryEmail = ({
     <Preview>Your {SITE_NAME} license key.</Preview>
     <Body style={main}>
       <Container style={container}>
+        {/* Wordmark, matching the site header: "satus" + signal-red period.
+         *  The mark anchors the email; the §OK status chip sits below it as a
+         *  spec-style label. Rendered with inline styles because mail clients
+         *  drop classes and many drop @font-face. */}
+        <Section style={brandRow}>
+          <Text style={wordmark}>
+            <span>satus</span>
+            <span style={wordmarkDot}>.</span>
+          </Text>
+        </Section>
+
         <Text style={label}>
           <span style={signal}>§OK</span>
           <span style={pipe}> | </span>
@@ -58,6 +69,7 @@ const LicenseDeliveryEmail = ({
         </Heading>
 
         <Hr style={hr} />
+
 
         <Text style={paragraph}>
           Thank you for subscribing. Below is the license key required to
