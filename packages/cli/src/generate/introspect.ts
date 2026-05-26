@@ -81,22 +81,29 @@ const PK_SQL = `
   order by kcu.table_name, kcu.ordinal_position
 `
 
+// FK introspection via pg_catalog. We deliberately avoid
+// information_schema.constraint_column_usage because that view is
+// privilege-filtered: a role that can read the table but not the parent
+// table will see zero FK rows, which silently breaks the topo sort.
+// pg_catalog returns FK metadata for any role that can see the table.
 const FK_SQL = `
   select
-    kcu.table_name      as table_name,
-    kcu.column_name     as column_name,
-    ccu.table_schema    as ref_schema,
-    ccu.table_name      as ref_table,
-    ccu.column_name     as ref_column
-  from information_schema.table_constraints tc
-  join information_schema.key_column_usage kcu
-    on tc.constraint_schema = kcu.constraint_schema
-   and tc.constraint_name   = kcu.constraint_name
-  join information_schema.constraint_column_usage ccu
-    on tc.constraint_schema = ccu.constraint_schema
-   and tc.constraint_name   = ccu.constraint_name
-  where tc.table_schema = $1
-    and tc.constraint_type = 'FOREIGN KEY'
+    cls.relname        as table_name,
+    att.attname        as column_name,
+    fns.nspname        as ref_schema,
+    fcls.relname       as ref_table,
+    fatt.attname       as ref_column
+  from pg_constraint con
+  join pg_class cls    on cls.oid = con.conrelid
+  join pg_namespace ns on ns.oid = cls.relnamespace
+  join pg_class fcls   on fcls.oid = con.confrelid
+  join pg_namespace fns on fns.oid = fcls.relnamespace
+  join lateral unnest(con.conkey)  with ordinality as ck(attnum, ord) on true
+  join lateral unnest(con.confkey) with ordinality as fk(attnum, ord) on fk.ord = ck.ord
+  join pg_attribute att  on att.attrelid  = cls.oid  and att.attnum  = ck.attnum
+  join pg_attribute fatt on fatt.attrelid = fcls.oid and fatt.attnum = fk.attnum
+  where con.contype = 'f'
+    and ns.nspname = $1
 `
 
 // Single-column unique constraints. We deliberately ignore multi-col uniques
