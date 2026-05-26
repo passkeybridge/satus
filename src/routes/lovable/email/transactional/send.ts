@@ -53,10 +53,17 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
 
         const token = authHeader.slice('Bearer '.length).trim()
         const supabase = createClient(supabaseUrl, supabaseServiceKey)
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
-        if (authError || !user) {
-          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        // Server-to-server bypass: trusted internal callers (e.g. the Stripe
+        // payments webhook) present the service-role key directly. The key
+        // is never exposed to the browser, so equality is sufficient. All
+        // other callers must present a valid Supabase user JWT.
+        const isServiceRoleCaller = token === supabaseServiceKey
+        if (!isServiceRoleCaller) {
+          const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+          if (authError || !user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 })
+          }
         }
 
         // Parse request body
