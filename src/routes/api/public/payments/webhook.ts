@@ -9,9 +9,15 @@
  *   - checkout.session.completed       → issue license, enqueue email
  *   - customer.subscription.updated    → sync status, period, cancel flag
  *   - customer.subscription.deleted    → revoke license
+ *   - charge.refunded                  → revoke license tied to refunded
+ *                                        charge's subscription (covers
+ *                                        partial/standalone refunds that
+ *                                        don't cancel the subscription)
  *
  * Idempotency: subscription rows key on `stripe_subscription_id` UNIQUE.
- * A repeated event upserts the same row, never duplicates.
+ * A repeated event upserts the same row, never duplicates. Refund
+ * revocation is idempotent: repeat events rewrite the same status/
+ * revoked_at and skip the email if already revoked.
  */
 
 import { createFileRoute } from '@tanstack/react-router'
@@ -238,6 +244,78 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
   }
 }
 
+/**
+ * Resolve the subscription id behind a refunded charge. Stripe puts it on
+ * the invoice, not the charge — so we follow charge → invoice → subscription.
+ * Returns null for one-time charges or any shape we can't trace back.
+ */
+async function subscriptionIdFromCharge(
+  charge: any,
+  env: StripeEnv,
+): Promise<string | null> {
+  const invoiceField = charge?.invoice
+  if (!invoiceField) return null
+  if (typeof invoiceField === 'object') {
+    const sub = invoiceField.subscription
+    return typeof sub === 'string' ? sub : sub?.id ?? null
+  }
+  const stripe = createStripeClient(env)
+  const invoice = await stripe.invoices.retrieve(invoiceField as string)
+  const sub = (invoice as any).subscription
+  return typeof sub === 'string' ? sub : sub?.id ?? null
+}
+
+async function handleChargeRefunded(charge: any, env: StripeEnv) {
+  const subscriptionId = await subscriptionIdFromCharge(charge, env)
+  if (!subscriptionId) {
+    // One-time charge or untraceable; nothing to revoke. Logged so we
+    // notice if a real subscription refund ever lands here.
+    console.log('[payments-webhook] charge.refunded with no subscription', charge.id)
+    return
+  }
+
+  const { data: existing } = await supabaseAdmin
+    .from('licenses')
+    .select('email, plan, revoked_at')
+    .eq('stripe_subscription_id', subscriptionId)
+    .eq('environment', env)
+    .maybeSingle()
+
+  if (!existing) {
+    console.log('[payments-webhook] charge.refunded: no license for', subscriptionId)
+    return
+  }
+
+  // Already revoked (e.g. earlier refund or subscription.deleted ran
+  // first). Skip the write and email so retries stay quiet.
+  if (existing.revoked_at) return
+
+  const { error } = await supabaseAdmin
+    .from('licenses')
+    .update({
+      status: 'refunded',
+      revoked_at: new Date().toISOString(),
+    })
+    .eq('stripe_subscription_id', subscriptionId)
+    .eq('environment', env)
+
+  if (error) {
+    console.error('[payments-webhook] refund revoke failed', error)
+    return
+  }
+
+  if (existing.email) {
+    await enqueueTransactionalEmail({
+      templateName: 'subscription-expired',
+      recipientEmail: existing.email as string,
+      idempotencyKey: `refunded-${subscriptionId}`,
+      templateData: {
+        planLabel: planLabel(existing.plan as string | null),
+      },
+    })
+  }
+}
+
 export const Route = createFileRoute('/api/public/payments/webhook')({
   server: {
     handlers: {
@@ -267,6 +345,9 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
               break
             case 'customer.subscription.deleted':
               await handleSubscriptionDeleted(event.data.object, env)
+              break
+            case 'charge.refunded':
+              await handleChargeRefunded(event.data.object, env)
               break
             default:
               break
