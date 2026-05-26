@@ -1,4 +1,4 @@
-# satus.ai — Visual overhaul
+# satus.sh — Visual overhaul
 
 Keep all current content verbatim. Replace the visual system, the page chrome, and the section composition. No new sections, no new copy, no logic changes.
 
@@ -42,7 +42,7 @@ What it must NOT look like:
 - Left rail: 240px sticky, hairline right border. Contains a monospace table of contents — numbered (`01 · 02 · 03 …`), scroll-spy active state shown by inverting the row (ink background, paper text). Below the TOC: small metadata block (`status: draft  ·  updated: 2025-05-25  ·  spec: satus/0.1`).
 - Right column: content, max-width `~720px`, left-aligned, never centered.
 
-**Footer**: a single hairline-bordered strip with three monospace columns (`product · resources · legal`) and a final line `satus.ai — built for engineers who hate seeing John Doe in their demo data.`
+**Footer**: a single hairline-bordered strip with three monospace columns (`product · resources · legal`) and a final line `satus.sh — built for engineers who hate seeing John Doe in their demo data.`
 
 ## Section composition (re-using existing copy)
 
