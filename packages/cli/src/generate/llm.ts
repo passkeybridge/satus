@@ -58,9 +58,8 @@ export interface ChatResponse<T> {
 }
 
 function priceFor(model: string) {
-  // Allow loose matching: "gpt-4o-mini-2024-07-18" -> "gpt-4o-mini"
   for (const key of Object.keys(PRICING)) {
-    if (model.startsWith(key)) return PRICING[key]
+    if (model.startsWith(key)) return PRICING[key] ?? FALLBACK_PRICE
   }
   return FALLBACK_PRICE
 }

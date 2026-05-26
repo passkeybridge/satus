@@ -65,7 +65,7 @@ export function planRun(tables: Table[], opts: RunOptions): TablePlan[] {
 }
 
 function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
+  return arr[Math.floor(Math.random() * arr.length)] as T
 }
 
 export async function runGenerate(
