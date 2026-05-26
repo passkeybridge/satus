@@ -138,7 +138,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "satus — relationally-coherent seed data for Postgres" },
+      { title: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
       {
         name: "description",
         content:
@@ -150,6 +150,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "satus" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@satusdev" },
+      { property: "og:title", content: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
+      { name: "twitter:title", content: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
+      { name: "description", content: "Generate realistic seed data for any Postgres schema. satus reads your foreign keys, resolves dependencies, and produces inserts that load on the first try." },
+      { property: "og:description", content: "Generate realistic seed data for any Postgres schema. satus reads your foreign keys, resolves dependencies, and produces inserts that load on the first try." },
+      { name: "twitter:description", content: "Generate realistic seed data for any Postgres schema. satus reads your foreign keys, resolves dependencies, and produces inserts that load on the first try." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4c3546f1-cd19-4ab0-95ee-60b2c5a9e883" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4c3546f1-cd19-4ab0-95ee-60b2c5a9e883" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
