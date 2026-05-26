@@ -78,7 +78,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which LLM providers are supported?",
-    a: "OpenAI is the only supported provider at launch. Anthropic and Google Gemini land in 0.2. The CLI uses structured outputs (tool calling), so any provider that supports a JSON-schema response can be added — open an issue if your stack needs one.",
+    a: "OpenAI is the only supported provider at launch. Anthropic and Google Gemini land in 0.2. The CLI uses structured outputs (tool calling), so any provider that supports a JSON-schema response can be added. Email support@satus.sh if your stack needs one.",
   },
   {
     q: "Is there a free trial on Pro?",
