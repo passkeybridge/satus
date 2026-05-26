@@ -97,14 +97,12 @@ function ComparePage() {
           </p>
           <p>
             We link to each vendor's own documentation as the source of truth.
-            If you spot a stale or incorrect characterisation, open an issue on{" "}
+            If you spot a stale or incorrect characterisation, email{" "}
             <a
-              href="https://github.com/passkeybridge/satus/issues"
-              target="_blank"
-              rel="noopener"
+              href="mailto:support@satus.sh?subject=Compare%20page%20correction"
               className="underline decoration-[var(--signal)] underline-offset-4"
             >
-              GitHub
+              support@satus.sh
             </a>{" "}
             and we'll fix it.
           </p>
