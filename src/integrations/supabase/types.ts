@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      e2e_health_log: {
+        Row: {
+          checks: Json
+          created_at: string
+          duration_ms: number
+          error_message: string | null
+          id: string
+          status: string
+          triggered_by: string
+        }
+        Insert: {
+          checks: Json
+          created_at?: string
+          duration_ms: number
+          error_message?: string | null
+          id?: string
+          status: string
+          triggered_by?: string
+        }
+        Update: {
+          checks?: Json
+          created_at?: string
+          duration_ms?: number
+          error_message?: string | null
+          id?: string
+          status?: string
+          triggered_by?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
