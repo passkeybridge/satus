@@ -346,6 +346,9 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
             case 'customer.subscription.deleted':
               await handleSubscriptionDeleted(event.data.object, env)
               break
+            case 'charge.refunded':
+              await handleChargeRefunded(event.data.object, env)
+              break
             default:
               break
           }
