@@ -265,7 +265,6 @@ export function Footer() {
             ["recipes", "/recipes"],
             ["blog", "/blog"],
             ["rss", "/blog/rss.xml"],
-            ["github", GITHUB_URL],
           ]}
         />
         <FooterCol
