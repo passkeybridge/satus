@@ -21,7 +21,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware],
   // attachSupabaseAuth forwards the user's bearer token on every serverFn
-  // RPC; required by routes that use requireSupabaseAuth (e.g. /account
-  // billing-portal handoff).
+  // RPC. No protected serverFns ship in v1, but the middleware is harmless
+  // and keeps any future requireSupabaseAuth route working out of the box.
   functionMiddleware: [attachSupabaseAuth],
 }));
