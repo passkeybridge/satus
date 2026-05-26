@@ -9,13 +9,9 @@
  * Validation here is intentionally strict: a malformed post is a build-time
  * error, not a runtime surprise.
  */
-
-/* gray-matter calls Buffer.isBuffer at module init. Node has Buffer; the
- * browser bundle does not. A 3-line shim satisfies the check without a
- * 50 KB polyfill. Must run before the gray-matter import is evaluated. */
-if (typeof globalThis !== "undefined" && typeof (globalThis as { Buffer?: unknown }).Buffer === "undefined") {
-  (globalThis as { Buffer?: unknown }).Buffer = class { static isBuffer() { return false; } };
-}
+/* Side-effect import: installs a Buffer shim in browser bundles before
+ * gray-matter evaluates. ES-module hoisting guarantees this runs first. */
+import "./buffer-shim";
 
 import matter from "gray-matter";
 import { marked } from "marked";
