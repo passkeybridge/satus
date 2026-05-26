@@ -7,7 +7,7 @@
  * content. Keeps a single source of truth per topic.
  */
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
@@ -223,8 +223,8 @@ function Card({
   body: string;
 }) {
   return (
-    <Link
-      to={to}
+    <a
+      href={to}
       className="group block bg-[var(--paper)] p-6 transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
     >
       <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--signal)]">
@@ -239,6 +239,6 @@ function Card({
       <div className="mt-4 font-mono text-[11px] text-[var(--mute)] group-hover:text-[var(--paper)]/60">
         {to} ↗
       </div>
-    </Link>
+    </a>
   );
 }
