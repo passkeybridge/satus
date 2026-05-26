@@ -1,6 +1,6 @@
 {
-  "name": "satus",
-  "version": "0.1.0",
+  "name": "@passkeybridge/satus",
+  "version": "0.1.1",
   "description": "Generate realistic seed data for Postgres. Respects foreign keys, constraints, and your schema.",
   "license": "SEE LICENSE IN LICENSE",
   "author": "PasskeyBridge LLC <support@satus.sh>",

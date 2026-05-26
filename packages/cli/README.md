@@ -15,8 +15,10 @@
 ## Install
 
 ```bash
-npm install -g satus
+npm install -g @passkeybridge/satus
 ```
+
+The package is published under the PasskeyBridge namespace on npm. The binary it installs is `satus`, so all commands below are typed as `satus ...`.
 
 Requires Node.js 20+.
 
