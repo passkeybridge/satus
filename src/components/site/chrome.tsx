@@ -26,6 +26,7 @@ export const SITE_NAV = [
   { to: "/profiles", label: "~/profiles" },
   { to: "/pricing", label: "~/pricing" },
   { to: "/quickstart", label: "~/quickstart" },
+  { to: "/blog", label: "~/blog" },
 ] as const;
 
 /* Single source of truth for the upstream repo URL.
@@ -260,6 +261,8 @@ export function Footer() {
           title="resources"
           links={[
             ["quickstart", "/quickstart"],
+            ["blog", "/blog"],
+            ["rss", "/blog/rss.xml"],
             ["github", GITHUB_URL],
           ]}
         />
