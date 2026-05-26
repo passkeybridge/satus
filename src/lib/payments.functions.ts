@@ -60,7 +60,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const stripePrice = prices.data[0];
     const isRecurring = stripePrice.type === "recurring";
 
-    const session = await stripe.checkout.sessions.create({
+    // `managed_params` is the full-compliance handling toggle. The Stripe
+    // SDK types in 22.0.2 don't yet include it (the API supports it), so
+    // we widen the params object once at the call site.
+    const params = {
       line_items: [{ price: stripePrice.id, quantity: data.quantity }],
       mode: isRecurring ? "subscription" : "payment",
       ui_mode: "embedded_page",
@@ -78,7 +81,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
           metadata: { source: "satus.sh", price_id: data.priceId },
         },
       }),
-    });
+    } as unknown as Parameters<typeof stripe.checkout.sessions.create>[0];
 
+    const session = await stripe.checkout.sessions.create(params);
     return session.client_secret;
   });
