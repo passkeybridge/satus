@@ -106,7 +106,7 @@ This comes up in every other support ticket, so it gets its own section.
 When the seed run finishes, the database has to be **observationally indistinguishable from a database that was filled by your application running normally**. If satus disables constraints and re-enables them at the end, two bad things happen:
 
 - A failed pass 2 can leave the database in a state where constraints get re-enabled over invalid rows. Postgres will accept this; the next `pg_dump` and restore will fail.
-- CHECK constraints implemented as triggers (very common in audit columns: `created_at = now()`) get silently bypassed, which means the seeded fixture lies about what real inserts look like.
+- Validation logic implemented as triggers (very common for audit columns and cross-row invariants Postgres CHECK cannot express) gets silently bypassed, which means the seeded fixture lies about what real inserts look like.
 
 The whole point of schema-aware seeding is that the data passes every constraint the application would have passed it through. The moment a tool starts disabling things, it has stopped being a seeder and started being a `pg_restore` for fake data.
 
@@ -122,7 +122,7 @@ The [quickstart](/quickstart) shows the full setup. The [saas-subscriptions prof
 
 ## References
 
-- PostgreSQL documentation, [CREATE TABLE — REFERENCES and DEFERRABLE clauses](https://www.postgresql.org/docs/current/ddl-constraints.html).
+- PostgreSQL documentation, [Constraints (foreign keys, DEFERRABLE)](https://www.postgresql.org/docs/current/ddl-constraints.html).
 - PostgreSQL documentation, [SET CONSTRAINTS](https://www.postgresql.org/docs/current/sql-set-constraints.html).
 - PostgreSQL documentation, [pg_catalog.pg_constraint](https://www.postgresql.org/docs/current/catalog-pg-constraint.html).
 - Kahn, A. B. (1962). [Topological sorting of large networks](https://dl.acm.org/doi/10.1145/368996.369025). *Communications of the ACM*, 5(11), 558–562.
