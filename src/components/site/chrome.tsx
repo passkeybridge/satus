@@ -264,8 +264,11 @@ export function Footer() {
           ]}
         />
         <FooterCol
-          title="legal"
-          links={[["contact", "mailto:hello@satus.sh"]]}
+          title="account"
+          links={[
+            ["billing", "/account"],
+            ["contact", "mailto:hello@satus.sh"],
+          ]}
         />
       </div>
       <div className="border-t border-[var(--hairline)]">
