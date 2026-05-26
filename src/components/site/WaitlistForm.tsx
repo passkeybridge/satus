@@ -154,7 +154,7 @@ export function WaitlistForm({ defaultTier = "pro" }: { defaultTier?: Tier }) {
           )}
           {status === "error" && (
             <span className="text-[var(--signal)]">
-              ● could not record signup. please retry or email hello@satus.sh.
+              ● could not record signup. please retry or email support@satus.sh.
             </span>
           )}
         </p>

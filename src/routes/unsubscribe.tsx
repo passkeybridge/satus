@@ -91,7 +91,7 @@ function UnsubscribePage() {
           {state === 'already' &&
             'This address was previously unsubscribed. Nothing to do.'}
           {state === 'invalid' &&
-            'This link is not valid or has expired. If you keep receiving unwanted mail, contact hello@satus.sh.'}
+            'This link is not valid or has expired. If you keep receiving unwanted mail, contact support@satus.sh.'}
         </p>
 
         {state === 'ready' && (

@@ -47,10 +47,10 @@ function CheckoutSuccessPage() {
           <span className="font-mono">notify@satus.sh</span>. If it hasn't
           arrived in a few minutes, check spam, then email{" "}
           <a
-            href="mailto:hello@satus.sh"
+            href="mailto:support@satus.sh"
             className="text-[var(--signal)] underline hover:opacity-80"
           >
-            hello@satus.sh
+            support@satus.sh
           </a>{" "}
           and we'll re-send it. To change payment method or cancel, the same
           address routes to the Stripe billing portal.

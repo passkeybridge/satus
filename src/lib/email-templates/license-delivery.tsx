@@ -100,8 +100,8 @@ const LicenseDeliveryEmail = ({
         <Text style={paragraph}>
           To change payment method, download invoices, switch plan, or
           cancel, reply to this email or write to{' '}
-          <Link href="mailto:hello@satus.sh" style={linkStyle}>
-            hello@satus.sh
+          <Link href="mailto:support@satus.sh" style={linkStyle}>
+            support@satus.sh
           </Link>
           . We route you to the Stripe billing portal for this subscription.
         </Text>
@@ -110,8 +110,8 @@ const LicenseDeliveryEmail = ({
 
         <Text style={footer}>
           {SITE_NAME} · A PasskeyBridge LLC service ·{' '}
-          <Link href={`mailto:hello@satus.sh`} style={footerLink}>
-            hello@satus.sh
+          <Link href={`mailto:support@satus.sh`} style={footerLink}>
+            support@satus.sh
           </Link>
         </Text>
       </Container>

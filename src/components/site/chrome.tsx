@@ -266,7 +266,7 @@ export function Footer() {
         <FooterCol
           title="contact"
           links={[
-            ["hello@satus.sh", "mailto:hello@satus.sh"],
+            ["support@satus.sh", "mailto:support@satus.sh"],
           ]}
         />
       </div>
