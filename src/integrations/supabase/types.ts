@@ -179,6 +179,60 @@ export type Database = {
         }
         Relationships: []
       }
+      satus_runs: {
+        Row: {
+          cli_version: string | null
+          created_at: string
+          duration_ms: number | null
+          environment: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          license_key: string | null
+          model: string | null
+          profile: string | null
+          status: string
+          tables: Json | null
+          target_schema: string | null
+          total_cost_usd: number | null
+          total_rows: number | null
+        }
+        Insert: {
+          cli_version?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          environment?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          license_key?: string | null
+          model?: string | null
+          profile?: string | null
+          status?: string
+          tables?: Json | null
+          target_schema?: string | null
+          total_cost_usd?: number | null
+          total_rows?: number | null
+        }
+        Update: {
+          cli_version?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          environment?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          license_key?: string | null
+          model?: string | null
+          profile?: string | null
+          status?: string
+          tables?: Json | null
+          target_schema?: string | null
+          total_cost_usd?: number | null
+          total_rows?: number | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

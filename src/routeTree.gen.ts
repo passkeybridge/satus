@@ -37,6 +37,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
 import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
+import { Route as ApiPublicCliRunRouteImport } from './routes/api/public/cli/run'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -182,6 +183,11 @@ const ApiPublicHooksE2eHealthRoute = ApiPublicHooksE2eHealthRouteImport.update({
   path: '/api/public/hooks/e2e-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
+  id: '/api/public/cli/run',
+  path: '/api/public/cli/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -299,6 +308,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
   ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
   ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -594,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksE2eHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cli/run': {
+      id: '/api/public/cli/run'
+      path: '/api/public/cli/run'
+      fullPath: '/api/public/cli/run'
+      preLoaderRoute: typeof ApiPublicCliRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -632,6 +652,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicCliRunRoute: ApiPublicCliRunRoute,
   ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,
   ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,

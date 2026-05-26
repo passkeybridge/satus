@@ -21,6 +21,7 @@ import { introspect } from '../generate/introspect.js'
 import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
+import { newRunId, reportRun } from '../generate/telemetry.js'
 import { readCachedLicense } from '../license.js'
 
 const FREE_MAX_ROWS = 25
@@ -77,7 +78,16 @@ export function registerGenerate(program: Command): void {
       const model = opts.model ?? cfg?.model ?? 'gpt-4o-mini'
       const exclude = cfg?.exclude ?? []
 
-      const client = new Client({ connectionString: dsn })
+      // Hosted Postgres (Supabase, Neon, RDS) terminates TLS with certs that
+      // node-postgres can't verify out of the box. If the DSN asks for SSL or
+      // points at a known managed host, enable TLS without strict CA check.
+      const wantsSsl =
+        /\bsslmode=(require|verify-ca|verify-full|prefer)\b/i.test(dsn) ||
+        /(supabase\.co|neon\.tech|rds\.amazonaws\.com|render\.com)/i.test(dsn)
+      const client = new Client({
+        connectionString: dsn,
+        ...(wantsSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+      })
       try {
         await client.connect()
       } catch (err) {
@@ -146,6 +156,17 @@ export function registerGenerate(program: Command): void {
           return
         }
 
+        const runId = newRunId()
+        const startedAt = Date.now()
+        const env = (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live'
+        const baseTelemetry = {
+          profile,
+          model,
+          target_schema: schemaName,
+          environment: env,
+        }
+        await reportRun(runId, { ...baseTelemetry, status: 'running' })
+
         await client.query('begin')
         try {
           if (opts.truncate) {
@@ -165,8 +186,25 @@ export function registerGenerate(program: Command): void {
           const total = Object.values(report.inserted).reduce((a, b) => a + b, 0)
           console.log(pc.green(`\n✓ inserted ${total} rows across ${Object.keys(report.inserted).length} tables`))
           console.log(pc.dim(`  spent: $${report.spentUsd.toFixed(4)}`))
+          await reportRun(runId, {
+            ...baseTelemetry,
+            status: 'success',
+            tables: Object.entries(report.inserted).map(([name, rows_generated]) => ({
+              name,
+              rows_generated,
+            })),
+            total_rows: total,
+            total_cost_usd: Number(report.spentUsd.toFixed(6)),
+            duration_ms: Date.now() - startedAt,
+          })
         } catch (err) {
           await client.query('rollback').catch(() => {})
+          await reportRun(runId, {
+            ...baseTelemetry,
+            status: 'failed',
+            error_message: (err as Error).message?.slice(0, 1900),
+            duration_ms: Date.now() - startedAt,
+          })
           throw err
         }
       } finally {
