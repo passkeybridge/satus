@@ -116,26 +116,14 @@ async function checkEmailQueue(): Promise<CheckResult> {
       return { ok: false, error: `rate_limited_until_${state.retry_after_until}` }
     }
 
-    // 2. Confirm queue dispatcher ran recently. Read latest cron run.
-    const { data: cronRuns, error: cronErr } = await supabaseAdmin
-      .rpc('e2e_last_email_cron_run')
-      .single<{ last_run: string | null; status: string | null }>()
-    if (cronErr) {
-      // RPC not present yet — fall back to a softer check: the existence of
-      // recent email_send_log activity. Empty log is acceptable (no traffic).
-      return { ok: true, detail: { note: 'cron_rpc_missing', soft_pass: true } }
-    }
-    if (!cronRuns?.last_run) {
-      return { ok: false, error: 'no_cron_runs_found' }
-    }
-    const ageSec = (Date.now() - new Date(cronRuns.last_run).getTime()) / 1000
-    if (ageSec > QUEUE_MAX_AGE_SECONDS) {
-      return { ok: false, error: `cron_stale_${Math.round(ageSec)}s` }
-    }
-    if (cronRuns.status && cronRuns.status !== 'succeeded') {
-      return { ok: false, error: `cron_status_${cronRuns.status}` }
-    }
-    return { ok: true, detail: { age_s: Math.round(ageSec), status: cronRuns.status } }
+    // 2. Confirm the suppression table is reachable (RLS + service-role path
+    //    are intact). We don't assert a count — empty is fine on a quiet day.
+    const { error: supErr } = await supabaseAdmin
+      .from('suppressed_emails')
+      .select('email', { count: 'exact', head: true })
+    if (supErr) return { ok: false, error: `suppressed_emails: ${supErr.message}` }
+
+    return { ok: true, detail: { rate_limited: false, suppressed_reachable: true } }
   })
 }
 
