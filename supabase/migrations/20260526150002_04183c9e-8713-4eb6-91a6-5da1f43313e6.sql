@@ -1,0 +1,1 @@
+DELETE FROM public.licenses WHERE email = 'cli-debug@satus.sh';
