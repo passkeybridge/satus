@@ -22,3 +22,7 @@
 /LICENSE                    @passkeybridge
 /SECURITY.md                @passkeybridge
 /CODEOWNERS                 @passkeybridge
+
+# CLI package (separate npm publish target; same owner today, kept
+# explicit so an external maintainer can be added without restructuring).
+/packages/cli/              @passkeybridge
