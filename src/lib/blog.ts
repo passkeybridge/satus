@@ -3,26 +3,28 @@
  *
  * Posts live as `.md` files under `src/content/blog/` and are bundled into
  * the Worker at build time via `import.meta.glob`. No filesystem reads at
- * runtime — Cloudflare Workers safe.
+ * runtime, Cloudflare Workers safe.
  *
  * Frontmatter contract is documented in `src/content/blog/README.md`.
- * Validation here is intentionally strict: a malformed post is a build-time
+ * Validation is intentionally strict: a malformed post is a build-time
  * error, not a runtime surprise.
+ *
+ * Frontmatter parsing is intentionally hand-rolled. The third-party
+ * gray-matter package depends on Node's Buffer global, which is absent in
+ * the browser bundle and stubbed unevenly in the Worker runtime. Our
+ * frontmatter dialect is a tiny, controlled subset of YAML (scalars,
+ * inline arrays, booleans, ISO dates), so a 30-line parser is both safer
+ * and a smaller dependency surface for acquisition review.
  */
-/* Side-effect import: installs a Buffer shim in browser bundles before
- * gray-matter evaluates. ES-module hoisting guarantees this runs first. */
-import "./buffer-shim";
 
-import matter from "gray-matter";
 import { marked } from "marked";
 import { z } from "zod";
 
-/* Single shared parser config. GFM gives us tables + autolinks; pedantic
- * off so we accept the lightly-extended CommonMark engineers actually write. */
+/* GFM gives us tables + autolinks; pedantic off so we accept the lightly
+ * extended CommonMark engineers actually write. */
 marked.setOptions({ gfm: true, breaks: false });
 
-/* Zod is overkill for three required string fields, but it gives us a
- * single source of truth for the frontmatter contract and emits an actual
+/* Single source of truth for the frontmatter contract. Zod emits an actual
  * error path on malformed posts (e.g. "title: Required at draft.md"). */
 const FrontmatterSchema = z.object({
   slug: z
@@ -42,7 +44,7 @@ const FrontmatterSchema = z.object({
 export type PostFrontmatter = z.infer<typeof FrontmatterSchema>;
 
 export interface Post extends PostFrontmatter {
-  /** Pre-rendered HTML body. Safe to inject — content is authored in-house. */
+  /** Pre-rendered HTML body. Safe to inject, content is authored in-house. */
   html: string;
   /** Plain-text body, derived from markdown. Used for RSS description. */
   excerpt: string;
@@ -51,23 +53,70 @@ export interface Post extends PostFrontmatter {
 }
 
 /* eager:true bundles content at build time. query:'?raw' pulls the markdown
- * source as a string instead of trying to module-load it. We exclude the
- * README so it doesn't ship as a (malformed) post. */
+ * source as a string instead of trying to module-load it. The README is
+ * filtered out by filename so it doesn't ship as a (malformed) post. */
 const modules = import.meta.glob("/src/content/blog/*.md", {
   eager: true,
   query: "?raw",
   import: "default",
 }) as Record<string, string>;
 
-function parsePost(rawPath: string, raw: string): Post {
-  const parsed = matter(raw);
-  /* gray-matter parses YAML 1.1, which auto-coerces unquoted ISO dates into
-   * JS Date objects. Normalize back to a YYYY-MM-DD string before validation
-   * so authors don't have to remember to quote the date. */
-  const data: Record<string, unknown> = { ...parsed.data };
-  if (data.date instanceof Date) {
-    data.date = data.date.toISOString().slice(0, 10);
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
+
+/**
+ * Minimal YAML-ish frontmatter parser.
+ *
+ * Supports the exact shapes our posts use:
+ *   key: scalar              (string, number, boolean, ISO date)
+ *   key: "quoted string"     (double or single quotes)
+ *   key: [a, b, c]           (inline arrays of bare strings)
+ *
+ * Does NOT support block sequences, anchors, multi-line strings, or any
+ * other YAML feature. If a post needs one of those, write it inline or
+ * extend this parser.
+ */
+function parseFrontmatter(raw: string): { data: Record<string, unknown>; body: string } {
+  const match = raw.match(FRONTMATTER_RE);
+  if (!match) return { data: {}, body: raw };
+  const [, fm, body] = match;
+  const data: Record<string, unknown> = {};
+  for (const line of fm.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const colon = trimmed.indexOf(":");
+    if (colon === -1) continue;
+    const key = trimmed.slice(0, colon).trim();
+    const value = trimmed.slice(colon + 1).trim();
+    data[key] = parseScalar(value);
   }
+  return { data, body };
+}
+
+function parseScalar(value: string): unknown {
+  if (value === "") return "";
+  if (value === "true") return true;
+  if (value === "false") return false;
+  /* Inline array: [a, b, c]. Strip brackets, split on commas, trim quotes. */
+  if (value.startsWith("[") && value.endsWith("]")) {
+    const inner = value.slice(1, -1).trim();
+    if (!inner) return [];
+    return inner.split(",").map((s) => stripQuotes(s.trim()));
+  }
+  return stripQuotes(value);
+}
+
+function stripQuotes(s: string): string {
+  if (
+    (s.startsWith('"') && s.endsWith('"')) ||
+    (s.startsWith("'") && s.endsWith("'"))
+  ) {
+    return s.slice(1, -1);
+  }
+  return s;
+}
+
+function parsePost(rawPath: string, raw: string): Post {
+  const { data, body } = parseFrontmatter(raw);
   const result = FrontmatterSchema.safeParse(data);
   if (!result.success) {
     throw new Error(
@@ -77,11 +126,10 @@ function parsePost(rawPath: string, raw: string): Post {
     );
   }
   const fm = result.data;
-  const html = marked.parse(parsed.content, { async: false }) as string;
+  const html = marked.parse(body, { async: false }) as string;
   /* Crude but adequate plain-text derivation for the RSS <description> and
-   * the index-page dek. We never render this as HTML, so stripping tags is
-   * the safe path. */
-  const plain = parsed.content
+   * the index-page dek. Never rendered as HTML, so stripping tags is safe. */
+  const plain = body
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/[#*_`>\-[\]()!]/g, " ")
     .replace(/\s+/g, " ")
@@ -97,7 +145,7 @@ function parsePost(rawPath: string, raw: string): Post {
 }
 
 /* Parse once at module-eval time. Module is cached per Worker isolate, so
- * subsequent requests pay nothing. The README is filtered out by filename. */
+ * subsequent requests pay nothing. */
 const POSTS: Post[] = Object.entries(modules)
   .filter(([path]) => !path.endsWith("/README.md"))
   .map(([path, raw]) => parsePost(path, raw))
