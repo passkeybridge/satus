@@ -1,0 +1,1 @@
+SELECT cron.unschedule('satus-e2e-health') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'satus-e2e-health');
