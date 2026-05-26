@@ -88,8 +88,8 @@ function RecipesPage() {
         </Prose>
 
         <Terminal>
-          <Cmt>{`# pull the branch URL from the supabase CLI`}</Cmt>
-          <Shell>{`export DATABASE_URL=$(supabase --experimental branches get $BRANCH --json | jq -r .db_url)`}</Shell>
+          <Cmt>{`# pull the postgres url from the supabase CLI`}</Cmt>
+          <Shell>{`export DATABASE_URL=$(supabase --experimental branches get $BRANCH --output json | jq -r .POSTGRES_URL)`}</Shell>
           <Shell>{`export OPENAI_API_KEY=$OPENAI_API_KEY`}</Shell>
           <Blank />
           <Cmt>{`# seed it. one transaction. all-or-nothing.`}</Cmt>
@@ -198,7 +198,7 @@ function RecipesPage() {
 
         <Terminal>
           <Cmt>{`# create a branch and capture its connection string`}</Cmt>
-          <Shell>{`BRANCH=$(neon branches create --name pr-$PR --project-id $NEON_PROJECT_ID -o json)`}</Shell>
+          <Shell>{`BRANCH=$(neon branches create --name pr-$PR --project-id $NEON_PROJECT_ID --output json)`}</Shell>
           <Shell>{`export DATABASE_URL=$(echo "$BRANCH" | jq -r .connection_uris[0].connection_uri)`}</Shell>
           <Blank />
           <Cmt>{`# seed`}</Cmt>

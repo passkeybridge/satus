@@ -124,19 +124,28 @@ function ComparePage() {
         <Prose>
           <p>
             <strong>Snaplet</strong> built the original "seed from your schema"
-            category. In late 2024 they{" "}
+            category. In August 2024 the company shut down its hosted service
+            and open-sourced its tooling; the Seed library now lives at{" "}
             <a
-              href="https://www.snaplet.dev/post/snaplet-is-shutting-down-seed-is-going-open-source"
+              href="https://github.com/supabase-community/seed"
               target="_blank"
               rel="noopener"
               className="underline decoration-[var(--signal)] underline-offset-4"
             >
-              announced
+              github.com/supabase-community/seed
             </a>{" "}
-            that the company would wind down and that Snaplet Seed would
-            continue as an open-source project. If you need an MIT-licensed
-            library that runs entirely in your process and has no vendor
-            lifecycle risk, Seed is a reasonable choice.
+            (
+            <a
+              href="https://supabase.com/blog/snaplet-is-now-open-source"
+              target="_blank"
+              rel="noopener"
+              className="underline decoration-[var(--signal)] underline-offset-4"
+            >
+              announcement
+            </a>
+            ). If you want an MIT-licensed library that embeds directly in your
+            codebase and you're comfortable with a community-maintained
+            cadence, Seed is a reasonable choice.
           </p>
         </Prose>
 
@@ -144,14 +153,14 @@ function ComparePage() {
           theirs={[
             "Open-source library; embeds in your codebase.",
             "Generates data via heuristics and TypeScript-defined relations.",
-            "No vendor; no commercial roadmap as of the 2024 wind-down.",
+            "Community-maintained since the 2024 sunset; no published roadmap.",
           ]}
           ours={[
-            "CLI, not a library — drops into any stack without code changes.",
+            "CLI, not a library; drops into any stack without code changes.",
             "LLM-driven generation gives plausible content (names, addresses, copy) tuned per profile.",
             "Commercial roadmap backed by PasskeyBridge LLC; support inbox with SLA.",
           ]}
-          verdict="Pick Snaplet Seed if you want a zero-dependency open-source library and are comfortable owning maintenance. Pick satus if you want plausible content out of the box and a vendor on the other end of an email."
+          verdict="Pick Snaplet Seed if you want a zero-dependency open-source library and can accept a slower release cadence. Pick satus if you want plausible content out of the box and a vendor on the other end of an email."
         />
       </Section>
 
