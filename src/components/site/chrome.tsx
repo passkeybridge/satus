@@ -277,7 +277,18 @@ export function Footer() {
       </div>
       <div className="border-t border-[var(--hairline)]">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-6 py-4 font-mono text-[11px] text-[var(--mute)] lg:px-10">
-          <span>© {new Date().getFullYear()} satus.sh. A PasskeyBridge LLC service.</span>
+          <span>
+            © {new Date().getFullYear()} satus.sh. A{" "}
+            <a
+              href="https://passkeybridge.io"
+              target="_blank"
+              rel="noopener"
+              className="underline decoration-[var(--signal)] underline-offset-4 hover:text-[var(--ink)]"
+            >
+              PasskeyBridge LLC
+            </a>{" "}
+            service.
+          </span>
           <span>built in plain text · no cookies on this page</span>
         </div>
       </div>
