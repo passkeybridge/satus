@@ -15,9 +15,7 @@
 ## Install
 
 ```bash
-npm install -g satus
-# or, once published:
-brew install passkeybridge/tap/satus
+npm install -g satus-cli
 ```
 
 Requires Node.js 20+.
