@@ -76,7 +76,10 @@ export async function verifyLicense(
     return { valid: false, reason: 'network_unavailable', cachedAt: Date.now() }
   }
 
-  if (response.status >= 500) {
+  // Treat 5xx AND 429 (rate limited) as transient: prefer a fresh-enough
+  // cache hit over failing the user's run. 4xx other than 429 indicates the
+  // request itself is wrong (bad key, malformed JSON), so do NOT fall back.
+  if (response.status >= 500 || response.status === 429) {
     const cached = await readCachedLicense()
     if (cached) return cached
   }
@@ -85,7 +88,8 @@ export async function verifyLicense(
   const result: LicenseResult = {
     valid: Boolean(body.valid),
     plan: body.plan,
-    reason: body.reason,
+    // Always surface SOMETHING actionable instead of "License invalid: undefined".
+    reason: body.reason ?? (response.ok ? 'unknown' : `http_${response.status}`),
     cachedAt: Date.now(),
   }
   if (result.valid) await writeCachedLicense(result)
