@@ -62,6 +62,6 @@
     "developer-tools"
   ],
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   }
 }
