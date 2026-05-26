@@ -194,8 +194,8 @@ function QuickstartPage() {
         <ul className="mt-8 max-w-[760px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
           <Issue
             code="E_FK_CYCLE"
-            title="Foreign-key cycle detected"
-            body="Your schema has a cycle in its FK graph (e.g. users.manager_id → users.id with a NOT NULL constraint). Mark one side as nullable, or pass --allow-cycles to let satus break the cycle by inserting nulls first and back-patching."
+            title="Foreign-key cycle could not be broken automatically"
+            body="satus detects cycles in your FK graph at planning time and breaks them automatically by deferring a nullable column and back-patching in pass 2 (see the cyclic FKs post). This error fires when every column on the cycle is NOT NULL with no DEFAULT, so there's nowhere to put a placeholder. Mark one side nullable, add a DEFAULT, or declare the constraint DEFERRABLE."
           />
           <Issue
             code="E_DB_NOT_EMPTY"

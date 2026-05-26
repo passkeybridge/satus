@@ -178,17 +178,20 @@ function TermsPage() {
       >
         <Prose>
           <p>
-            Licenses are sold as annual subscriptions through Stripe. Prices are listed at{" "}
+            Licenses are sold as monthly or annual subscriptions through Stripe. Prices are listed
+            at{" "}
             <a href="/pricing" className="underline decoration-[var(--signal)] underline-offset-4">
               satus.sh/pricing
             </a>{" "}
-            and are charged in U.S. dollars. Subscriptions renew automatically on the anniversary of
-            purchase unless cancelled at least 24 hours in advance.
+            and are charged in U.S. dollars. Subscriptions renew automatically at the end of each
+            billing period unless cancelled at least 24 hours in advance.
           </p>
           <p>
             <strong>Refunds.</strong> We offer a full refund within 14 days of initial purchase, no
-            questions asked. After 14 days, renewals are non-refundable except where required by
-            consumer-protection law. To request a refund, email{" "}
+            questions asked. After 14 days the current billing period is non-refundable, except
+            where required by applicable consumer-protection law; you may cancel future renewals at
+            any time and continue using the CLI until the period ends. To request a refund or
+            cancel a renewal, email{" "}
             <a
               href="mailto:support@satus.sh"
               className="underline decoration-[var(--signal)] underline-offset-4"
@@ -298,10 +301,16 @@ function TermsPage() {
       >
         <Prose>
           <p>
-            You may terminate your license at any time by cancelling your subscription in the Stripe
-            customer portal or by emailing support. PasskeyBridge may terminate or suspend your
-            license immediately for material breach of these terms, fraudulent payment, or use that
-            poses a security risk to other users.
+            You may terminate your license at any time by emailing{" "}
+            <a
+              href="mailto:support@satus.sh"
+              className="underline decoration-[var(--signal)] underline-offset-4"
+            >
+              support@satus.sh
+            </a>{" "}
+            with your order ID. (A self-service Stripe customer portal is on the roadmap.)
+            PasskeyBridge may terminate or suspend your license immediately for material breach of
+            these terms, fraudulent payment, or use that poses a security risk to other users.
           </p>
           <p>
             On termination, your license key stops verifying and the CLI will refuse to run.
