@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { PaymentTestModeBanner } from "@/components/site/PaymentTestModeBanner";
 
 /* ------------------------------------------------------------------ *
  * Boundary components.
@@ -185,6 +186,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Renders nothing in production (live token); a hairline test-mode
+       *  strip in preview. Mounted globally so checkout, success, and
+       *  cancel routes all carry the same disclosure. */}
+      <PaymentTestModeBanner />
       <Outlet />
     </QueryClientProvider>
   );
