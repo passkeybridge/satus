@@ -13,8 +13,7 @@ import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 
 const SITE_URL = "https://satus.sh";
-const SECURITY_MD_URL =
-  "https://github.com/passkeybridge/satus/blob/main/SECURITY.md";
+const SECURITY_CONTACT = "mailto:support@satus.sh?subject=Security%20report";
 
 const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "report", n: "01", label: "Report a vulnerability" },
