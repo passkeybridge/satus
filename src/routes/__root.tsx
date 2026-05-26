@@ -142,7 +142,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "A CLI that reads your Postgres schema and produces realistic, relationally-coherent seed data in seconds. Postgres only. CLI only.",
+          "CLI that reads your Postgres schema and writes realistic, FK-safe seed data in seconds. Postgres only. CLI only.",
       },
       { name: "author", content: "satus.sh" },
       { name: "theme-color", content: "#fafaf7" },
@@ -152,11 +152,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@satusdev" },
       { property: "og:title", content: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
       { name: "twitter:title", content: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
-      { name: "description", content: "Generate realistic seed data for any Postgres schema. satus reads your foreign keys, resolves dependencies, and produces inserts that load on the first try." },
-      { property: "og:description", content: "Generate realistic seed data for any Postgres schema. satus reads your foreign keys, resolves dependencies, and produces inserts that load on the first try." },
-      { name: "twitter:description", content: "Generate realistic seed data for any Postgres schema. satus reads your foreign keys, resolves dependencies, and produces inserts that load on the first try." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4c3546f1-cd19-4ab0-95ee-60b2c5a9e883" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4c3546f1-cd19-4ab0-95ee-60b2c5a9e883" },
+      { property: "og:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
+      { name: "twitter:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
+      { property: "og:image", content: "https://satus.sh/og-image.png" },
+      { name: "twitter:image", content: "https://satus.sh/og-image.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
