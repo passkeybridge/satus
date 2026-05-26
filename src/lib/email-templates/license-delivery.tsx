@@ -101,7 +101,7 @@ const LicenseDeliveryEmail = ({
           Install the binary, then export the key as an environment variable:
         </Text>
         <Section style={codeBlock}>
-          <Text style={codeLine}>brew install satus.sh/tap/satus</Text>
+          <Text style={codeLine}>npm i -g satus-cli</Text>
           <Text style={codeLine}>export SATUS_LICENSE_KEY={'"'}{licenseKey}{'"'}</Text>
           <Text style={codeLine}>satus init</Text>
         </Section>
