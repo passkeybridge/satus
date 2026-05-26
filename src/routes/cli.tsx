@@ -234,6 +234,7 @@ function CliPage() {
             ["--dry", "false", "Print SQL to stdout. Do not execute."],
             ["--force", "false", "Bypass the 10,000-row safety guard."],
             ["--batch-size <n>", "50", "Rows per LLM call. Lower if you hit provider rate limits."],
+            ["--max-cost <usd>", "1.00", "Refuse to proceed if the planned token cost exceeds this ceiling. Pass --yes to skip the confirmation prompt."],
             ["--seed <n>", "random", "Deterministic seed for reproducible runs."],
           ]}
         />
