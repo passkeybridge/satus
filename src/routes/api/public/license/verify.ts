@@ -106,7 +106,17 @@ export const Route = createFileRoute('/api/public/license/verify')({
           ? new Date(data.current_period_end).getTime()
           : null
 
+        // Expiration is checked first so the CLI can distinguish "your
+        // subscription period ended, renew it" (expired) from "your
+        // subscription is broken on the Stripe side, fix billing"
+        // (inactive). A canceled-but-still-in-period license is treated
+        // as valid (grace window) and falls through to the success path.
+        if (periodEnd !== null && periodEnd <= now) {
+          return json(200, { valid: false, reason: 'expired' })
+        }
+
         // Active / trialing / past_due (grace) all pass if within period.
+        // Canceled also passes while still inside the paid period.
         const goodStatus = ['active', 'trialing', 'past_due'].includes(
           data.status,
         )
@@ -115,9 +125,6 @@ export const Route = createFileRoute('/api/public/license/verify')({
 
         if (!(goodStatus || canceledButInPeriod)) {
           return json(200, { valid: false, reason: 'inactive' })
-        }
-        if (periodEnd !== null && periodEnd <= now) {
-          return json(200, { valid: false, reason: 'expired' })
         }
 
         return json(200, {
