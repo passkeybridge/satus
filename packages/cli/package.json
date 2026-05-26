@@ -1,0 +1,67 @@
+{
+  "name": "satus",
+  "version": "0.0.1",
+  "description": "Generate realistic seed data for Postgres. Respects foreign keys, constraints, and your schema.",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "PasskeyBridge LLC <support@satus.sh>",
+  "homepage": "https://satus.sh",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passkeybridge/satus-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/passkeybridge/satus-cli/issues",
+    "email": "support@satus.sh"
+  },
+  "bin": {
+    "satus": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "pg": "^8.13.1",
+    "zod": "^3.23.8",
+    "picocolors": "^1.1.1",
+    "openai": "^4.73.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "eslint": "^9.16.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0"
+  },
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "seed",
+    "seed-data",
+    "fixtures",
+    "database",
+    "cli",
+    "developer-tools"
+  ],
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
