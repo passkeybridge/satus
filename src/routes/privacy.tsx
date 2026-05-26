@@ -327,24 +327,15 @@ function PrivacyPage() {
           <p>
             All traffic to satus.sh and to <code>/api/public/license/verify</code> is served over
             TLS. License records are stored in an encrypted Postgres database; payment data is held
-            by Stripe (PCI-DSS Level 1). For details on coordinated vulnerability disclosure, see
-            our{" "}
+            by Stripe (PCI-DSS Level 1). For coordinated vulnerability disclosure, scope, and the
+            embargo timeline, see our{" "}
             <a
-              href="https://github.com/passkeybridge/satus/blob/main/SECURITY.md"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/security"
               className="underline decoration-[var(--signal)] underline-offset-4"
             >
-              SECURITY.md
-            </a>{" "}
-            (private repo; mirrored on request to{" "}
-            <a
-              href="mailto:support@satus.sh"
-              className="underline decoration-[var(--signal)] underline-offset-4"
-            >
-              support@satus.sh
+              security policy
             </a>
-            ).
+            .
           </p>
         </Prose>
       </Section>

@@ -274,6 +274,7 @@ export function Footer() {
           title="contact"
           links={[
             ["support@satus.sh", "mailto:support@satus.sh"],
+            ["security", "/security"],
             ["terms", "/terms"],
             ["privacy", "/privacy"],
           ]}
