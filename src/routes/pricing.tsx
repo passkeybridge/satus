@@ -46,9 +46,9 @@ const TIERS = [
     id: "team",
     name: "Team",
     price: "$49",
-    cadence: "per seat · monthly",
-    cta: "buy seats",
-    href: "/checkout?price=satus_team_seat_monthly",
+    cadence: "per seat · monthly (waitlist)",
+    cta: "join the waitlist",
+    href: "#waitlist",
     primary: false,
     secondary: null,
   },
@@ -86,7 +86,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "What's the refund policy?",
-    a: "Cancel any time from the dashboard; we refund the unused portion of the current period, no email required. Annual plans are pro-rated to the day.",
+    a: "Full refund within 14 days of initial purchase, no questions asked. Email support@satus.sh with your order ID. After 14 days the current period is non-refundable, but you can cancel future renewals any time and keep using the CLI until the period ends.",
   },
   {
     q: "Does it work offline?",
