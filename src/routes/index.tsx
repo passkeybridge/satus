@@ -66,7 +66,7 @@ export const Route = createFileRoute("/")({
           "@type": "SoftwareApplication",
           name: "satus",
           applicationCategory: "DeveloperApplication",
-          operatingSystem: "macOS, Linux, Windows",
+          operatingSystem: "macOS, Linux",
           description:
             "CLI that generates relationally-coherent seed data for Postgres databases.",
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -231,7 +231,7 @@ const STEPS = [
   { n: "02", t: "plan",       d: "Build a dependency DAG from your foreign keys and topologically sort the insert order. Parents before children, always." },
   { n: "03", t: "generate",   d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling, never free-text." },
   { n: "04", t: "validate",   d: "A zod schema generated from the table catches type, length, enum, unique, and invariant violations before they ever reach the database." },
-  { n: "05", t: "insert",     d: "Wrap each table in a transaction. COPY FROM STDIN for large tables, parameterized inserts otherwise. One auto-repair retry, then fail loudly." },
+  { n: "05", t: "insert",     d: "Wrap the entire run in a single Postgres transaction. Parameterized inserts in topological order. Any failure rolls back the whole run; your database is never left half-seeded." },
 ];
 
 function How() {

@@ -212,14 +212,12 @@ function RecipesPage() {
       </Section>
 
       <p className="mt-12 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-        Have a recipe you want documented? Open an issue on{" "}
+        Have a recipe you want documented? Email{" "}
         <a
-          href="https://github.com/passkeybridge/satus/issues"
-          target="_blank"
-          rel="noopener"
+          href="mailto:support@satus.sh?subject=Recipe%20request"
           className="underline decoration-[var(--signal)] underline-offset-4"
         >
-          GitHub
+          support@satus.sh
         </a>
         . We add the most-requested integrations first.
       </p>

@@ -7,7 +7,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { GITHUB_URL, PageShell } from "@/components/site/chrome";
+import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
 import { WaitlistForm } from "@/components/site/WaitlistForm";
 
@@ -27,8 +27,8 @@ const TIERS = [
     name: "Free",
     price: "$0",
     cadence: "open source · MIT",
-    cta: "view on github",
-    href: GITHUB_URL,
+    cta: "install from npm",
+    href: "/quickstart",
     primary: false,
     secondary: null as null | { label: string; href: string },
   },
@@ -78,7 +78,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which LLM providers are supported?",
-    a: "OpenAI, Anthropic, and Google Gemini at launch. The CLI uses structured outputs (tool calling) so any provider that supports a JSON schema response can be added — open an issue if your stack needs one.",
+    a: "OpenAI is the only supported provider at launch. Anthropic and Google Gemini land in 0.2. The CLI uses structured outputs (tool calling), so any provider that supports a JSON-schema response can be added — open an issue if your stack needs one.",
   },
   {
     q: "Is there a free trial on Pro?",

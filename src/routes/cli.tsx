@@ -135,7 +135,7 @@ function CliPage() {
           <EnvVar
             name="OPENAI_API_KEY"
             req="required"
-            body="Bring-your-own key. satus never proxies LLM calls — the request goes directly from your machine to your provider. Anthropic and Gemini support land in 0.2 (ANTHROPIC_API_KEY, GOOGLE_API_KEY)."
+            body="Bring-your-own key. satus never proxies LLM calls — the request goes directly from your machine to your provider. OpenAI is the only supported provider at launch; Anthropic and Gemini land in 0.2 (ANTHROPIC_API_KEY, GOOGLE_API_KEY)."
           />
         </ul>
       </Section>
@@ -234,6 +234,7 @@ function CliPage() {
             ["--dry", "false", "Print SQL to stdout. Do not execute."],
             ["--force", "false", "Bypass the 10,000-row safety guard."],
             ["--batch-size <n>", "50", "Rows per LLM call. Lower if you hit provider rate limits."],
+            ["--max-cost <usd>", "1.00", "Refuse to proceed if the planned token cost exceeds this ceiling. Pass --yes to skip the confirmation prompt."],
             ["--seed <n>", "random", "Deterministic seed for reproducible runs."],
           ]}
         />
