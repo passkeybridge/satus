@@ -147,6 +147,18 @@ export function registerGenerate(program: Command): void {
           return
         }
 
+        const runId = newRunId()
+        const startedAt = Date.now()
+        const env = (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live'
+        const baseTelemetry = {
+          license_key: license?.key,
+          profile,
+          model,
+          target_schema: schemaName,
+          environment: env,
+        }
+        await reportRun(runId, { ...baseTelemetry, status: 'running' })
+
         await client.query('begin')
         try {
           if (opts.truncate) {
@@ -166,8 +178,25 @@ export function registerGenerate(program: Command): void {
           const total = Object.values(report.inserted).reduce((a, b) => a + b, 0)
           console.log(pc.green(`\n✓ inserted ${total} rows across ${Object.keys(report.inserted).length} tables`))
           console.log(pc.dim(`  spent: $${report.spentUsd.toFixed(4)}`))
+          await reportRun(runId, {
+            ...baseTelemetry,
+            status: 'success',
+            tables: Object.entries(report.inserted).map(([name, rows_generated]) => ({
+              name,
+              rows_generated,
+            })),
+            total_rows: total,
+            total_cost_usd: Number(report.spentUsd.toFixed(6)),
+            duration_ms: Date.now() - startedAt,
+          })
         } catch (err) {
           await client.query('rollback').catch(() => {})
+          await reportRun(runId, {
+            ...baseTelemetry,
+            status: 'failed',
+            error_message: (err as Error).message?.slice(0, 1900),
+            duration_ms: Date.now() - startedAt,
+          })
           throw err
         }
       } finally {
