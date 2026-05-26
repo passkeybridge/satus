@@ -30,7 +30,7 @@ const ORIGIN = 'https://satus.sh'
 const TEST_KEY = 'satus_test_e2e0e2e0e2e0e2e0e2e0e2e0e2e0e2e0'
 const ALERT_TO = 'support@satus.sh'
 const ALERT_FROM = 'satus.sh alerts <alerts@mail.satus.sh>'
-const QUEUE_MAX_AGE_SECONDS = 5 * 60
+
 
 type CheckResult = {
   name: string
