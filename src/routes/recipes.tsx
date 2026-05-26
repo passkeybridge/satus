@@ -128,7 +128,7 @@ function RecipesPage() {
           <Shell>{`      - uses: actions/checkout@v4`}</Shell>
           <Shell>{`      - uses: actions/setup-node@v4`}</Shell>
           <Shell>{`        with: { node-version: 20 }`}</Shell>
-          <Shell>{`      - run: npm i -g satus`}</Shell>
+          <Shell>{`      - run: npm i -g satus-cli`}</Shell>
           <Shell>{`      - run: satus plan --profile saas-subscriptions --json`}</Shell>
           <Shell>{`        if: github.event_name == 'pull_request'`}</Shell>
           <Shell>{`      - run: satus generate --profile saas-subscriptions`}</Shell>
