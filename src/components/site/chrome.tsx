@@ -254,6 +254,7 @@ export function Footer() {
           links={[
             ["overview", "/"],
             ["profiles", "/profiles"],
+            ["compare", "/compare"],
             ["pricing", "/pricing"],
           ]}
         />
@@ -264,7 +265,6 @@ export function Footer() {
             ["quickstart", "/quickstart"],
             ["cli reference", "/cli"],
             ["recipes", "/recipes"],
-            ["compare", "/compare"],
             ["blog", "/blog"],
             ["rss", "/blog/rss.xml"],
             ["github", GITHUB_URL],
