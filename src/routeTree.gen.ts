@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
@@ -50,6 +52,11 @@ const TermsRoute = TermsRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecipesRoute = RecipesRouteImport.update({
@@ -188,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
   '/recipes': typeof RecipesRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -217,6 +225,7 @@ export interface FileRoutesByTo {
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
   '/recipes': typeof RecipesRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
   '/recipes': typeof RecipesRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/profiles'
     | '/quickstart'
     | '/recipes'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/unsubscribe'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/profiles'
     | '/quickstart'
     | '/recipes'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/unsubscribe'
@@ -336,6 +348,7 @@ export interface FileRouteTypes {
     | '/profiles'
     | '/quickstart'
     | '/recipes'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/unsubscribe'
@@ -366,6 +379,7 @@ export interface RootRouteChildren {
   ProfilesRoute: typeof ProfilesRoute
   QuickstartRoute: typeof QuickstartRoute
   RecipesRoute: typeof RecipesRoute
+  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -404,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recipes': {
@@ -602,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfilesRoute: ProfilesRoute,
   QuickstartRoute: QuickstartRoute,
   RecipesRoute: RecipesRoute,
+  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
