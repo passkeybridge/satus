@@ -10,14 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicWaitlistRouteImport } from './routes/api/public/waitlist'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -30,6 +34,11 @@ import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
   path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuickstartRoute = QuickstartRouteImport.update({
@@ -57,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -71,6 +85,16 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   id: '/cancel',
   path: '/cancel',
   getParentRoute: () => CheckoutRoute,
+} as any)
+const BlogRssDotxmlRoute = BlogRssDotxmlRouteImport.update({
+  id: '/blog/rss.xml',
+  path: '/blog/rss.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
@@ -123,10 +147,14 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/blog/': typeof BlogIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
@@ -142,10 +170,14 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/blog': typeof BlogIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
@@ -162,10 +194,14 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/profiles': typeof ProfilesRoute
   '/quickstart': typeof QuickstartRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/blog/': typeof BlogIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
@@ -183,10 +219,14 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/profiles'
     | '/quickstart'
+    | '/sitemap.xml'
     | '/unsubscribe'
+    | '/blog/$slug'
+    | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/blog/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/hooks/e2e-health'
@@ -202,10 +242,14 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/profiles'
     | '/quickstart'
+    | '/sitemap.xml'
     | '/unsubscribe'
+    | '/blog/$slug'
+    | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/blog'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/hooks/e2e-health'
@@ -221,10 +265,14 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/profiles'
     | '/quickstart'
+    | '/sitemap.xml'
     | '/unsubscribe'
+    | '/blog/$slug'
+    | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/blog/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/hooks/e2e-health'
@@ -241,8 +289,12 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ProfilesRoute: typeof ProfilesRoute
   QuickstartRoute: typeof QuickstartRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogRssDotxmlRoute: typeof BlogRssDotxmlRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
@@ -260,6 +312,13 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/quickstart': {
@@ -297,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -317,6 +383,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout/cancel'
       preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof CheckoutRoute
+    }
+    '/blog/rss.xml': {
+      id: '/blog/rss.xml'
+      path: '/blog/rss.xml'
+      fullPath: '/blog/rss.xml'
+      preLoaderRoute: typeof BlogRssDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
@@ -397,8 +477,12 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ProfilesRoute: ProfilesRoute,
   QuickstartRoute: QuickstartRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  BlogSlugRoute: BlogSlugRoute,
+  BlogRssDotxmlRoute: BlogRssDotxmlRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  BlogIndexRoute: BlogIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,

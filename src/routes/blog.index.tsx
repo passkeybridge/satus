@@ -10,7 +10,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/chrome";
 import { Section, type SectionMeta } from "@/components/site/primitives";
-import { getAllPosts } from "@/lib/blog";
+import { getAllPosts, type Post } from "@/lib/blog";
 
 const SITE_URL = "https://satus.sh";
 const PATH = "/blog";
@@ -72,7 +72,7 @@ function BlogIndexPage() {
           </p>
         ) : (
           <ol className="divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
-            {posts.map((p) => (
+            {posts.map((p: Post) => (
               <li key={p.slug}>
                 <Link
                   to="/blog/$slug"
@@ -94,7 +94,7 @@ function BlogIndexPage() {
                     </p>
                     {p.tags.length > 0 && (
                       <ul className="mt-2 flex flex-wrap gap-x-3 font-mono text-[11px] text-[var(--mute)]">
-                        {p.tags.map((t) => (
+                        {p.tags.map((t: string) => (
                           <li key={t}>·{t}</li>
                         ))}
                       </ul>

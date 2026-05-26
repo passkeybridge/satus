@@ -138,7 +138,7 @@ function BlogPostPage() {
             {post.tags.length > 0 && (
               <>
                 {" · "}
-                {post.tags.map((t, i) => (
+                {post.tags.map((t: string, i: number) => (
                   <span key={t}>
                     {i > 0 && " "}·{t}
                   </span>
