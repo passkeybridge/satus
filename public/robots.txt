@@ -1,7 +1,9 @@
 User-agent: *
 Allow: /
+# Internal surfaces: never link, never crawl. All require signed or
+# authenticated requests and respond 401/404 to anonymous traffic; this
+# directive simply keeps them out of search-engine indexes.
 Disallow: /api/
-Disallow: /lovable/
 Disallow: /email/
 Disallow: /checkout/success
 Disallow: /unsubscribe
