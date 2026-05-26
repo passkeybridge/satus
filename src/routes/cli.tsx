@@ -135,7 +135,7 @@ function CliPage() {
           <EnvVar
             name="OPENAI_API_KEY"
             req="required"
-            body="Bring-your-own key. satus never proxies LLM calls — the request goes directly from your machine to your provider. OpenAI is the only supported provider at launch; Anthropic and Gemini land in 0.2 (ANTHROPIC_API_KEY, GOOGLE_API_KEY)."
+            body="Bring-your-own key. satus never proxies LLM calls; the request goes directly from your machine to your provider. OpenAI is the only supported provider at launch. Anthropic and Gemini land in 0.2 (ANTHROPIC_API_KEY, GOOGLE_API_KEY)."
           />
         </ul>
       </Section>
