@@ -20,6 +20,7 @@ const TIER_LABELS: Record<string, { name: string; price: string }> = {
   satus_pro_monthly: { name: "satus.sh — Pro", price: "$19 / month" },
   satus_pro_yearly: { name: "satus.sh — Pro (annual)", price: "$190 / year" },
   satus_team_seat_monthly: { name: "satus.sh — Team", price: "$49 / seat / month" },
+  satus_live_smoke_test: { name: "satus.sh — Live Smoke Test", price: "$0.50 one-time" },
 };
 
 export const Route = createFileRoute("/checkout")({
