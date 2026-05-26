@@ -27,6 +27,12 @@ const json = (status: number, body: unknown) =>
   })
 
 // 60 verify calls / 10 min / IP-hash. CLI caches; legit users shouldn't hit it.
+// TODO(rate-limit): This in-memory Map only counts within a single Worker isolate.
+// Cloudflare spawns many isolates, so bursty traffic from one IP can bypass the
+// limit. Replace with the Cloudflare `RateLimit` binding (or a Durable Object /
+// KV counter) when the Lovable Worker template exposes one. Abuse risk is low
+// at launch because the CLI caches verify results for ~24h, but this MUST be
+// hardened before we promote the endpoint or remove client-side caching.
 const RATE_WINDOW_MS = 10 * 60 * 1000
 const RATE_LIMIT = 60
 const hits = new Map<string, number[]>()
