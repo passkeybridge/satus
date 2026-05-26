@@ -73,14 +73,12 @@ export function TopBar() {
           <span className="hidden font-mono text-[11px] text-[var(--mute)] sm:inline">
             v0.1.0-alpha
           </span>
-          <a
-            href={GITHUB_URL}
-            rel="noopener noreferrer"
-            target="_blank"
+          <Link
+            to="/quickstart"
             className="font-mono text-[12px] text-[var(--ink)] transition-opacity hover:opacity-70"
           >
-            github ↗
-          </a>
+            install →
+          </Link>
         </div>
       </div>
 
