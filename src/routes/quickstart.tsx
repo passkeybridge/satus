@@ -105,7 +105,7 @@ function QuickstartPage() {
         </Prose>
         <Terminal>
           <Cmt>{`# install globally`}</Cmt>
-          <Shell>{`npm i -g satus`}</Shell>
+          <Shell>{`npm i -g satus-cli`}</Shell>
           <Blank />
           <Cmt>{`# verify`}</Cmt>
           <Shell>{`satus --version`}</Shell>
