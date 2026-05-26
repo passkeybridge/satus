@@ -71,14 +71,12 @@ function CheckoutPage() {
             >
               view pricing
             </Link>
-            <a
-              href={GITHUB_URL}
-              rel="noopener noreferrer"
-              target="_blank"
+            <Link
+              to="/quickstart"
               className="inline-flex h-10 items-center whitespace-nowrap border border-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
             >
-              github ↗
-            </a>
+              quickstart
+            </Link>
           </div>
         </div>
       </main>
