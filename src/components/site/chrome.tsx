@@ -25,7 +25,7 @@ export const SITE_NAV = [
   { to: "/", label: "~/overview" },
   { to: "/profiles", label: "~/profiles" },
   { to: "/pricing", label: "~/pricing" },
-  { to: "/quickstart", label: "~/quickstart" },
+  { to: "/docs", label: "~/docs" },
   { to: "/blog", label: "~/blog" },
 ] as const;
 
@@ -260,7 +260,9 @@ export function Footer() {
         <FooterCol
           title="resources"
           links={[
+            ["docs", "/docs"],
             ["quickstart", "/quickstart"],
+            ["cli reference", "/cli"],
             ["blog", "/blog"],
             ["rss", "/blog/rss.xml"],
             ["github", GITHUB_URL],
