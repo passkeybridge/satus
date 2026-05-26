@@ -58,7 +58,14 @@ const modules = import.meta.glob("/src/content/blog/*.md", {
 
 function parsePost(rawPath: string, raw: string): Post {
   const parsed = matter(raw);
-  const result = FrontmatterSchema.safeParse(parsed.data);
+  /* gray-matter parses YAML 1.1, which auto-coerces unquoted ISO dates into
+   * JS Date objects. Normalize back to a YYYY-MM-DD string before validation
+   * so authors don't have to remember to quote the date. */
+  const data: Record<string, unknown> = { ...parsed.data };
+  if (data.date instanceof Date) {
+    data.date = data.date.toISOString().slice(0, 10);
+  }
+  const result = FrontmatterSchema.safeParse(data);
   if (!result.success) {
     throw new Error(
       `[blog] invalid frontmatter in ${rawPath}: ${result.error.issues
