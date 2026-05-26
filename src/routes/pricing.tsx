@@ -256,9 +256,10 @@ function PricingPage() {
       >
         <Prose>
           <p>
-            Pro is live for early access; Team opens when ten organizations have
-            asked for it. Drop your email, pick the tier, and that&rsquo;s the
-            entire ceremony. One email when your tier ships; nothing else.
+            Pro is live, billable on the card above. Team opens when ten
+            organizations have asked for it. Drop your email, pick the tier,
+            and that&rsquo;s the entire ceremony. One email when your tier
+            ships; nothing else.
           </p>
         </Prose>
         <WaitlistForm />
