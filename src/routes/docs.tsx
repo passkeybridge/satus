@@ -198,14 +198,12 @@ function DocsPage() {
           <p>
             Reporting a vulnerability? See our{" "}
             <a
-              href="https://github.com/passkeybridge/satus/blob/main/SECURITY.md"
-              target="_blank"
-              rel="noopener"
+              href="/security"
               className="underline decoration-[var(--signal)] underline-offset-4"
             >
               security policy
             </a>{" "}
-            for the embargo timeline.
+            for scope, the embargo timeline, and safe harbor.
           </p>
         </Prose>
       </Section>
