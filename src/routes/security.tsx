@@ -89,17 +89,17 @@ function SecurityPage() {
         <p className="mt-6 max-w-[62ch] text-[15.5px] leading-[1.7] text-[var(--ink)]/85">
           satus takes the security of the CLI, the marketing site, and the
           license-verification API seriously. This page is the canonical
-          coordinated-disclosure contract; the in-repo{" "}
+          coordinated-disclosure contract; an RFC 9116-style{" "}
+          <code>SECURITY.md</code> mirrors it inside the (currently private)
+          source repository for tooling that expects a repo-root file. To
+          report a vulnerability, email{" "}
           <a
-            href={SECURITY_MD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={SECURITY_CONTACT}
             className="underline decoration-[var(--signal)] underline-offset-4"
           >
-            SECURITY.md
-          </a>{" "}
-          mirrors it for tooling that expects an RFC 9116-style file in the
-          repository root.
+            support@satus.sh
+          </a>
+          .
         </p>
       </header>
 
