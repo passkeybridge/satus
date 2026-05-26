@@ -145,12 +145,15 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
     return
   }
 
-  await enqueueLicenseEmail({
+  await enqueueTransactionalEmail({
+    templateName: 'license-delivery',
     recipientEmail: email,
-    licenseKey,
-    plan,
-    currentPeriodEnd: periodEnd,
-    subscriptionId,
+    idempotencyKey: `license-${subscriptionId}`,
+    templateData: {
+      licenseKey,
+      planLabel: planLabel(plan),
+      renewsOn: isoDateOnly(periodEnd),
+    },
   })
 }
 
@@ -161,6 +164,19 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
     (item as any)?.current_period_end ??
     subscription.current_period_end ??
     null
+  const cancelAtPeriodEnd = subscription.cancel_at_period_end ?? false
+
+  // Snapshot the existing row so we can detect the cancel_at_period_end
+  // transition (false -> true) and send the cancellation email exactly
+  // once. Stripe fires subscription.updated for many reasons (renewal,
+  // plan change, payment method update) — without this guard we'd email
+  // on every one.
+  const { data: existing } = await supabaseAdmin
+    .from('licenses')
+    .select('email, cancel_at_period_end')
+    .eq('stripe_subscription_id', subscription.id)
+    .eq('environment', env)
+    .maybeSingle()
 
   await supabaseAdmin
     .from('licenses')
@@ -170,13 +186,37 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
       current_period_end: periodEnd
         ? new Date(periodEnd * 1000).toISOString()
         : null,
-      cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+      cancel_at_period_end: cancelAtPeriodEnd,
     })
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
+
+  if (
+    existing?.email &&
+    cancelAtPeriodEnd &&
+    !existing.cancel_at_period_end
+  ) {
+    await enqueueTransactionalEmail({
+      templateName: 'subscription-canceled',
+      recipientEmail: existing.email as string,
+      idempotencyKey: `cancel-${subscription.id}`,
+      templateData: {
+        planLabel: planLabel(plan),
+        accessEndsOn: isoDateOnly(periodEnd),
+      },
+    })
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
+  // Read email + plan BEFORE we mutate the row so we can notify the customer.
+  const { data: existing } = await supabaseAdmin
+    .from('licenses')
+    .select('email, plan')
+    .eq('stripe_subscription_id', subscription.id)
+    .eq('environment', env)
+    .maybeSingle()
+
   await supabaseAdmin
     .from('licenses')
     .update({
@@ -185,6 +225,17 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     })
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
+
+  if (existing?.email) {
+    await enqueueTransactionalEmail({
+      templateName: 'subscription-expired',
+      recipientEmail: existing.email as string,
+      idempotencyKey: `expired-${subscription.id}`,
+      templateData: {
+        planLabel: planLabel(existing.plan as string | null),
+      },
+    })
+  }
 }
 
 export const Route = createFileRoute('/api/public/payments/webhook')({
