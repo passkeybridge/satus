@@ -322,8 +322,10 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
       POST: async ({ request }) => {
         const rawEnv = new URL(request.url).searchParams.get('env')
         if (rawEnv !== 'sandbox' && rawEnv !== 'live') {
+          // 400 (not 200) so a misconfigured Stripe webhook URL surfaces
+          // in Stripe's delivery dashboard instead of being silently ACK'd.
           console.error('[payments-webhook] invalid env query', rawEnv)
-          return Response.json({ received: true, ignored: 'invalid env' })
+          return new Response('Missing or invalid env query parameter', { status: 400 })
         }
         const env: StripeEnv = rawEnv
 
