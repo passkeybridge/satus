@@ -1,7 +1,7 @@
 /**
  * Docs hub route ("/docs").
  *
- * Lightweight index page that orients new users — explains what the docs
+ * Lightweight index page that orients new users—explains what the docs
  * surface looks like, then links out to the existing destination pages
  * (quickstart, CLI reference, profiles, blog) instead of duplicating their
  * content. Keeps a single source of truth per topic.
@@ -25,13 +25,13 @@ export const Route = createFileRoute("/docs")({
   component: DocsPage,
   head: () => ({
     meta: [
-      { title: "Docs — satus" },
+      { title: "Docs—satus" },
       {
         name: "description",
         content:
           "Documentation hub for satus: quickstart, CLI reference, profile catalogue, and conceptual guides for the seeding CLI that respects every foreign key.",
       },
-      { property: "og:title", content: "Docs — satus" },
+      { property: "og:title", content: "Docs—satus" },
       {
         property: "og:description",
         content:
@@ -84,8 +84,8 @@ function DocsPage() {
           <p>
             satus is a CLI. It introspects your Postgres schema, reasons about
             foreign keys, and writes seed data that respects every relationship.
-            If you've never run it, walk through these two pages — about ten
-            minutes end-to-end — before anything else.
+            If you've never run it, walk through these two pages—about ten
+            minutes end-to-end—before anything else.
           </p>
         </Prose>
 
@@ -100,7 +100,7 @@ function DocsPage() {
             to="/profiles"
             kicker="catalogue"
             title="Profiles"
-            body="The three bundled domains — medical booking, e-commerce, SaaS subscriptions — with their invariants and sample output."
+            body="The three bundled domains—medical booking, e-commerce, SaaS subscriptions—with their invariants and sample output."
           />
         </CardGrid>
       </Section>
@@ -114,7 +114,7 @@ function DocsPage() {
         <Prose>
           <p>
             One page per surface. The reference is exhaustive and stable across
-            the 0.1.x line — bookmark it.
+            the 0.1.x line—bookmark it.
           </p>
         </Prose>
 
@@ -154,7 +154,7 @@ function DocsPage() {
       >
         <Prose>
           <p>
-            Long-form posts that explain the design decisions — the FK-cycle
+            Long-form posts that explain the design decisions—the FK-cycle
             planner, the safety guard, the one-transaction guarantee. Read these
             when you want to understand the <em>why</em>, not just the{" "}
             <em>how</em>.
@@ -172,7 +172,7 @@ function DocsPage() {
             to="/blog"
             kicker="archive"
             title="All posts"
-            body="The full engineering blog — release notes, postmortems, deep dives into Postgres internals and LLM-driven data generation."
+            body="The full engineering blog—release notes, postmortems, deep dives into Postgres internals and LLM-driven data generation."
           />
         </CardGrid>
       </Section>
@@ -186,7 +186,7 @@ function DocsPage() {
         <Prose>
           <p>
             File bugs and feature requests against the public repo. For private
-            questions — invoices, procurement, security — write to{" "}
+            questions—invoices, procurement, security—write to{" "}
             <a
               href="mailto:support@satus.sh"
               className="underline decoration-[var(--signal)] underline-offset-4"

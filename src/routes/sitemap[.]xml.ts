@@ -1,5 +1,5 @@
 /**
- * /sitemap.xml — dynamic sitemap.
+ * /sitemap.xml—dynamic sitemap.
  *
  * Replaces the legacy static `public/sitemap.xml` (which couldn't reflect
  * blog posts). Every public route is enumerated explicitly; blog posts are

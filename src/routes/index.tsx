@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
   head: () => ({
     meta: [
-      { title: "satus — relationally-coherent seed data for Postgres" },
+      { title: "satus—relationally-coherent seed data for Postgres" },
       {
         name: "description",
         content:

@@ -1,5 +1,5 @@
 /**
- * /security — coordinated-disclosure policy and security posture.
+ * /security—coordinated-disclosure policy and security posture.
  *
  * Public-facing companion to the in-repo SECURITY.md. Anyone landing here
  * from a vulnerability submission, a procurement questionnaire, or a quick
@@ -28,13 +28,13 @@ export const Route = createFileRoute("/security")({
   component: SecurityPage,
   head: () => ({
     meta: [
-      { title: "Security — satus" },
+      { title: "Security—satus" },
       {
         name: "description",
         content:
           "Coordinated vulnerability disclosure policy for satus.sh and the satus CLI: how to report, response timeline, scope, and safe harbor.",
       },
-      { property: "og:title", content: "Security — satus" },
+      { property: "og:title", content: "Security—satus" },
       {
         property: "og:description",
         content:
@@ -187,7 +187,7 @@ function SecurityPage() {
           </p>
           <ul className="ml-5 list-disc space-y-1">
             <li>
-              The satus CLI — the <code>satus</code> binary distributed on npm
+              The satus CLI—the <code>satus</code> binary distributed on npm
               and Homebrew.
             </li>
             <li>

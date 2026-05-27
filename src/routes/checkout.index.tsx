@@ -1,5 +1,5 @@
 /**
- * /checkout — Embedded Stripe checkout, opened from the pricing table.
+ * /checkout—Embedded Stripe checkout, opened from the pricing table.
  *
  * Reads `?price=<lookup_key>&qty=<n>` from the URL. The server function
  * whitelist is the source of truth on which prices are valid; this route
@@ -15,12 +15,12 @@ import { StripeEmbeddedCheckout } from "@/components/site/StripeEmbeddedCheckout
 const SITE_URL = "https://satus.sh";
 
 // Display catalog mirrors the server whitelist. Kept here purely for the
-// page header — the server is what actually authorises a price.
+// page header—the server is what actually authorizes a price.
 const TIER_LABELS: Record<string, { name: string; price: string }> = {
-  satus_pro_monthly: { name: "satus.sh — Pro", price: "$19 / month" },
-  satus_pro_yearly: { name: "satus.sh — Pro (annual)", price: "$190 / year" },
-  satus_team_seat_monthly: { name: "satus.sh — Team", price: "$49 / seat / month" },
-  satus_live_smoke_test: { name: "satus.sh — Live Smoke Test", price: "$0.50 one-time" },
+  satus_pro_monthly: { name: "satus.sh—Pro", price: "$19 / month" },
+  satus_pro_yearly: { name: "satus.sh—Pro (annual)", price: "$190 / year" },
+  satus_team_seat_monthly: { name: "satus.sh—Team", price: "$49 / seat / month" },
+  satus_live_smoke_test: { name: "satus.sh—Live Smoke Test", price: "$0.50 one-time" },
 };
 
 export const Route = createFileRoute("/checkout/")({
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/checkout/")({
   component: CheckoutPage,
   head: () => ({
     meta: [
-      { title: "Checkout — satus.sh" },
+      { title: "Checkout—satus.sh" },
       { name: "description", content: "Complete your satus.sh purchase." },
       // Checkout is a transactional surface, not an SEO target.
       { name: "robots", content: "noindex,nofollow" },
@@ -44,7 +44,7 @@ function CheckoutPage() {
   const { price, qty } = Route.useSearch();
   const tier = price ? TIER_LABELS[price] : undefined;
 
-  // No price, or a price not in our display catalog — render a graceful
+  // No price, or a price not in our display catalog—render a graceful
   // bounce-back rather than mount an empty checkout form. The server
   // whitelist would reject it anyway; this saves a round trip.
   if (!price || !tier) {

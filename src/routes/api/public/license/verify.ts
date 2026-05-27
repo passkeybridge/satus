@@ -1,5 +1,5 @@
 /**
- * License verification endpoint — called by the satus CLI on each run
+ * License verification endpoint—called by the satus CLI on each run
  * (cached locally for ~24h). Public, rate-limited per IP-hash.
  *
  * POST { key: string } → { valid: bool, plan?, expires_at?, reason? }

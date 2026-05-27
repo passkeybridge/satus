@@ -1,5 +1,5 @@
 /**
- * WaitlistForm — institutional intake control for the Pricing page.
+ * WaitlistForm—institutional intake control for the Pricing page.
  *
  * No modal, no toast library, no animation: a plain form rendered inline,
  * with hairline borders and monospace labels that match the rest of the

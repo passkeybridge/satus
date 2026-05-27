@@ -3,7 +3,7 @@
  *
  * Every server-side Stripe call MUST go through `createStripeClient(env)`.
  * The `STRIPE_SANDBOX_API_KEY` / `STRIPE_LIVE_API_KEY` env vars are NOT real
- * Stripe secret keys — they are connector-gateway identifiers. The custom
+ * Stripe secret keys—they are connector-gateway identifiers. The custom
  * `httpClient` below rewrites `https://api.stripe.com` to the Lovable
  * connector gateway, which attaches the real Stripe secret server-side.
  *

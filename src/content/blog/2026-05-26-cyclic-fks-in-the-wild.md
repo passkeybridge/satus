@@ -20,7 +20,7 @@ Cycles in a foreign-key graph are almost never an accident. The three patterns w
 2. **Audit tables that point at the actor.** `audit_log.user_id → users.id`, and a `users.last_audit_id → audit_log.id` denormalized cache. Read-heavy workloads love this; seeders hate it.
 3. **Self-referential trees with a "root" sentinel.** `categories.parent_id → categories.id` plus `categories.root_id → categories.id`. Technically a cycle of length one on each row, which most off-the-shelf tools handle wrong.
 
-The Postgres catalog will happily let you create all three. `pg_constraint` records the foreign keys ([pg_catalog.pg_constraint](https://www.postgresql.org/docs/current/catalog-pg-constraint.html)) and never warns about cyclical reachability — that's an application-level concern.
+The Postgres catalog will happily let you create all three. `pg_constraint` records the foreign keys ([pg_catalog.pg_constraint](https://www.postgresql.org/docs/current/catalog-pg-constraint.html)) and never warns about cyclical reachability—that's an application-level concern.
 
 ## What "the right answer" is not
 
@@ -88,7 +88,7 @@ A condensed view of a real run against an anonymized three-cycle schema, with ro
 table                pass1 (insert)              pass2 (update)
 users          ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇   18.4s     ▇▇▇   2.1s
 organizations  ▇▇▇▇▇▇▇▇            8.0s        ▇▇    1.4s
-audit_log      ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 19.7s     —     n/a
+audit_log      ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 19.7s    —    n/a
 categories     ▇                    0.6s        ▇     0.4s
                                     ─────                ────
                                     46.7s                 3.9s
@@ -128,4 +128,4 @@ The [quickstart](/quickstart) shows the full setup. The [saas-subscriptions prof
 - Kahn, A. B. (1962). [Topological sorting of large networks](https://dl.acm.org/doi/10.1145/368996.369025). *Communications of the ACM*, 5(11), 558–562.
 - Earlier in this log: [Introducing the satus log](/blog/introducing-the-log).
 
-— the satus.sh team
+—the satus.sh team

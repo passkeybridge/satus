@@ -3,7 +3,7 @@
  *
  * Pass B expansion: tier matrix (#tiers) + frequently asked questions (#faq).
  * The FAQ section also emits FAQPage JSON-LD so generative search engines can
- * quote answers directly — same source of truth, no duplication risk.
+ * quote answers directly—same source of truth, no duplication risk.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -70,7 +70,7 @@ const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
 ];
 
 /* FAQ entries kept as data so the rendered <dl> and the JSON-LD payload
- * stay in lockstep — no risk of the schema drifting from the page. */
+ * stay in lockstep—no risk of the schema drifting from the page. */
 const FAQ: { q: string; a: string }[] = [
   {
     q: "Why bring-your-own LLM key?",
@@ -82,7 +82,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is there a free trial on Pro?",
-    a: "No. The Free tier is the trial — it's the full CLI under MIT, with community profiles and no time limit. Pro adds the three official profiles, hosted profile updates, and priority triage. If those don't earn $19 a month, you should stay on Free.",
+    a: "No. The Free tier is the trial—it's the full CLI under MIT, with community profiles and no time limit. Pro adds the three official profiles, hosted profile updates, and priority triage. If those don't earn $19 a month, you should stay on Free.",
   },
   {
     q: "What's the refund policy?",
@@ -90,7 +90,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Does it work offline?",
-    a: "Pro and Team licenses include a 14-day offline grace period — the CLI keeps generating against your local LLM provider even if it can't reach our license server. Free is fully offline forever.",
+    a: "Pro and Team licenses include a 14-day offline grace period—the CLI keeps generating against your local LLM provider even if it can't reach our license server. Free is fully offline forever.",
   },
   {
     q: "When does the Team tier launch?",
@@ -102,13 +102,13 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
   head: () => ({
     meta: [
-      { title: "Pricing — satus" },
+      { title: "Pricing—satus" },
       {
         name: "description",
         content:
           "satus pricing: Free (MIT open source), Pro at $19/mo, Team at $49/seat. Bring-your-own LLM key on every tier. We don't resell tokens.",
       },
-      { property: "og:title", content: "Pricing — satus" },
+      { property: "og:title", content: "Pricing—satus" },
       {
         property: "og:description",
         content:
@@ -155,7 +155,7 @@ function PricingPage() {
           <p>Bring-your-own LLM key on every tier. We don&rsquo;t resell tokens.</p>
         </Prose>
 
-        {/* Horizontal scroll on mobile is intentional — the table is denser
+        {/* Horizontal scroll on mobile is intentional—the table is denser
          *  than any 4-column layout we could honestly stack. */}
         <p className="mt-6 font-mono text-[11px] text-[var(--mute)] md:hidden">
           scroll table →

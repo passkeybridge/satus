@@ -1,9 +1,9 @@
 /**
- * /blog — post index.
+ * /blog—post index.
  *
  * Renders the published posts as a monospace specification table inside the
  * standard two-column PageShell. No card grid, no cover images, no excerpt
- * truncation tricks — date, title, dek, read time, in one disciplined row
+ * truncation tricks—date, title, dek, read time, in one disciplined row
  * per post. Mirrors the §-numbered Section pattern from /profiles.
  */
 
@@ -26,13 +26,13 @@ export const Route = createFileRoute("/blog/")({
   loader: () => ({ posts: getAllPosts() }),
   head: () => ({
     meta: [
-      { title: "Blog — satus.sh" },
+      { title: "Blog—satus.sh" },
       {
         name: "description",
         content:
           "Field notes on Postgres schemas, satus CLI changelogs, and post-mortems on seed-data edge cases. Written for engineers who ship.",
       },
-      { property: "og:title", content: "Blog — satus.sh" },
+      { property: "og:title", content: "Blog—satus.sh" },
       {
         property: "og:description",
         content:
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/blog/")({
       },
       { property: "og:url", content: SITE_URL + PATH },
       { property: "og:image", content: SITE_URL + "/og-image.png" },
-      { name: "twitter:title", content: "Blog — satus.sh" },
+      { name: "twitter:title", content: "Blog—satus.sh" },
       {
         name: "twitter:description",
         content:

@@ -1,15 +1,15 @@
 /**
  * Site chrome: TopBar, LeftRail, Footer, PageShell.
  *
- * TopBar    — Sticky header with wordmark + route-level nav + build tag.
+ * TopBar   —Sticky header with wordmark + route-level nav + build tag.
  *             Nav uses TanStack <Link> for type-safe routing and active state.
- * LeftRail  — Per-page sticky 240px column. Shows the page's own TOC with
+ * LeftRail —Per-page sticky 240px column. Shows the page's own TOC with
  *             scroll-spy via IntersectionObserver, plus a "Document" metadata
  *             block and links to the other site routes.
- * Footer    — Hairline-bordered three-column footer + copyright strip.
- * PageShell — Two-column layout wrapper used by every route.
+ * Footer   —Hairline-bordered three-column footer + copyright strip.
+ * PageShell—Two-column layout wrapper used by every route.
  *
- * The chrome is intentionally identical across routes — each route only
+ * The chrome is intentionally identical across routes—each route only
  * supplies its own sections array and content.
  */
 
@@ -85,7 +85,7 @@ export function TopBar() {
       {/* Mobile-only secondary nav row. The primary <nav> above is md:flex
        *  (hidden < 768px) because four monospace nav items don't fit alongside
        *  the wordmark and the github link on phones. This strip keeps the
-       *  routes one tap away without a hamburger menu — on-brand for a
+       *  routes one tap away without a hamburger menu—on-brand for a
        *  documentation-style site. */}
       <nav
         aria-label="Primary mobile"
@@ -243,7 +243,7 @@ export function Footer() {
             <span className="text-[var(--signal)]">.</span>
           </div>
           <p className="mt-3 max-w-[34ch] font-sans text-[13px] leading-[1.6] text-[var(--mute)]">
-            <em className="not-italic text-[var(--ink)]">Satus</em> — Latin: a beginning, a planting,
+            <em className="not-italic text-[var(--ink)]">Satus</em>—Latin: a beginning, a planting,
             a sown thing.
           </p>
         </div>

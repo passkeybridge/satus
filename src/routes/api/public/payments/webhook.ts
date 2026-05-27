@@ -1,5 +1,5 @@
 /**
- * Stripe webhook handler — license fulfillment.
+ * Stripe webhook handler—license fulfillment.
  *
  * Lives under /api/public/* so Lovable's published-site auth wrapper lets
  * Stripe POST in. Security is enforced in-handler via HMAC verification of
@@ -175,7 +175,7 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
   // Snapshot the existing row so we can detect the cancel_at_period_end
   // transition (false -> true) and send the cancellation email exactly
   // once. Stripe fires subscription.updated for many reasons (renewal,
-  // plan change, payment method update) — without this guard we'd email
+  // plan change, payment method update)—without this guard we'd email
   // on every one.
   const { data: existing } = await supabaseAdmin
     .from('licenses')
@@ -246,7 +246,7 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
 
 /**
  * Resolve the subscription id behind a refunded charge. Stripe puts it on
- * the invoice, not the charge — so we follow charge → invoice → subscription.
+ * the invoice, not the charge—so we follow charge → invoice → subscription.
  * Returns null for one-time charges or any shape we can't trace back.
  */
 async function subscriptionIdFromCharge(
