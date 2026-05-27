@@ -21,7 +21,7 @@ const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "support", n: "04", label: "Support" },
 ];
 
-export const Route = createFileRoute("/docs")({
+export const Route = createFileRoute("/docs/")({
   component: DocsPage,
   head: () => ({
     meta: [
