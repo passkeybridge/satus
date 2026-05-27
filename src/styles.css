@@ -287,7 +287,12 @@
   margin: 2em 0;
 }
 .prose-satus table {
+  /* display:block lets overflow-x:auto engage on narrow viewports;
+   * the visual difference vs display:table is negligible at our widths. */
+  display: block;
   width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   font-family: var(--font-mono);
   font-size: 13.5px;
