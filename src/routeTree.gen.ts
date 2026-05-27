@@ -18,10 +18,10 @@ import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CliRouteImport } from './routes/cli'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -84,11 +84,6 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
@@ -102,6 +97,11 @@ const CliRoute = CliRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
@@ -193,7 +193,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
-  '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -210,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -224,7 +224,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
-  '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -241,6 +240,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog': typeof BlogIndexRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/docs': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -256,7 +256,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
-  '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -273,6 +272,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -289,7 +289,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
-    | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -306,6 +305,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/blog/'
     | '/checkout/'
+    | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -320,7 +320,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
-    | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -337,6 +336,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/blog'
     | '/checkout'
+    | '/docs'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -351,7 +351,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
-    | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -368,6 +367,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/blog/'
     | '/checkout/'
+    | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -383,7 +383,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CliRoute: typeof CliRoute
   CompareRoute: typeof CompareRoute
-  DocsRoute: typeof DocsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -400,6 +399,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   BlogIndexRoute: typeof BlogIndexRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  DocsIndexRoute: typeof DocsIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
@@ -476,13 +476,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/compare': {
       id: '/compare'
       path: '/compare'
@@ -502,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/': {
@@ -623,7 +623,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CliRoute: CliRoute,
   CompareRoute: CompareRoute,
-  DocsRoute: DocsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfilesRoute: ProfilesRoute,
@@ -640,6 +639,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   BlogIndexRoute: BlogIndexRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  DocsIndexRoute: DocsIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,
@@ -653,3 +653,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

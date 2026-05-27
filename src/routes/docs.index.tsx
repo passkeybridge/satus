@@ -163,16 +163,16 @@ function DocsPage() {
 
         <CardGrid>
           <Card
+            to="/docs/how-it-works"
+            kicker="concept"
+            title="How it works"
+            body="The three guarantees satus makes—FK-cycle planning, the 10,000-row safety guard, and the single-transaction write—explained end to end."
+          />
+          <Card
             to="/blog/cyclic-fks-in-the-wild"
             kicker="essay"
             title="Cyclic FKs in the wild"
             body="Why a third of production Postgres schemas have foreign-key cycles, and how satus breaks them without giving up referential integrity."
-          />
-          <Card
-            to="/blog"
-            kicker="archive"
-            title="All posts"
-            body="The full engineering blog—release notes, postmortems, deep dives into Postgres internals and LLM-driven data generation."
           />
         </CardGrid>
       </Section>
