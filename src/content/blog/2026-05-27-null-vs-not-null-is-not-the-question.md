@@ -12,7 +12,7 @@ A user filed a bug last week. Paraphrased: *"satus filled a nullable column with
 
 The reporter was right that we shipped the wrong default. They were also accidentally illustrating a deeper point: `NULL` versus `NOT NULL` is the wrong axis. The real axis is **what the column's NULL state means to the application that reads it**, and Postgres exposes three encodings for that, not two.
 
-## §1 — The three encodings
+## The three encodings
 
 Most schema reviews assume two states for any column: it has a value, or it is `NULL`. The Postgres catalog disagrees. A column can be:
 
@@ -26,7 +26,7 @@ Generated columns ([PostgreSQL docs: Generated Columns](https://www.postgresql.o
 
 The bug from the opening was a category error between the first two rows of that table. `deleted_at` is nullable in the catalog, but in the application's mental model it is a **defaulted column whose default is NULL**. Those are not the same column.
 
-## §2 — Why "nullable" is not a signal
+## Why "nullable" is not a signal
 
 The mistake satus made was treating "is the column nullable?" as the entire question. In hindsight the heuristic was naive: if `attnotnull = false` and there is no `DEFAULT`, generate a value with the column's distribution `frac_null` of the time, where `frac_null` was a profile-wide constant.
 
@@ -56,15 +56,15 @@ column appears in a CHECK that      pg_constraint.conbin references it
   treats NULL as a state              AND consrc contains 'IS NULL'
 ```
 
-When any of these three fires, satus treats the column as a **defaulted-to-NULL state flag** and overrides `frac_null` to a profile-controlled value that is much closer to 1.0 — typically 0.95 to 0.99 for soft-delete flags, because in the long run most rows in a healthy table are not deleted.
+When any of these three fires, satus treats the column as a **defaulted-to-NULL state flag** and overrides `frac_null` to a profile-controlled value that is much closer to 1.0—typically 0.95 to 0.99 for soft-delete flags, because in the long run most rows in a healthy table are not deleted.
 
-## §3 — A heuristic, not a guarantee
+## A heuristic, not a guarantee
 
 We were initially tempted to make the rule a guarantee: *if the column smells like a state flag, always seed it 100% NULL*. We backed off for two reasons.
 
 First, fixtures that test the deleted state are exactly the fixtures that should contain deleted rows. The 47 broken tests in the opening ticket were the *interesting* tests; the rest of the suite was happy. A flat 100% NULL would have moved the failure from "too many soft-deletes" to "no soft-deletes in the deleted-user E2E test", and someone would have filed the inverse ticket the next day.
 
-Second, "smells like" is a heuristic. The reverse case — a column called `closed_at` that is actually a real timestamp with no special semantics — exists. We have seen it in trading systems where every order has a close time and `NULL` truly means "still open" in the Postgres sense, *and* the application reads it that way without surprise. In that schema the original 30%-non-null default was correct.
+Second, "smells like" is a heuristic. The reverse case, a column called `closed_at` that is actually a real timestamp with no special semantics, exists. We have seen it in trading systems where every order has a close time and `NULL` truly means "still open" in the Postgres sense, *and* the application reads it that way without surprise. In that schema the original 30%-non-null default was correct.
 
 The resolution is a profile-tunable knob with a name that admits it is a heuristic. From the `saas-subscriptions` profile:
 
@@ -82,7 +82,7 @@ state_flag_columns:
 
 Two-line YAML, one bug class avoided.
 
-## §4 — The third option: generated columns
+## The third option: generated columns
 
 If you control the schema, generated columns ([PostgreSQL docs](https://www.postgresql.org/docs/current/ddl-generated-columns.html)) eliminate the entire question for derived state. A stored generated column is *uninsertable*. satus refuses to write to it, the application cannot write to it, and the value is always consistent with its inputs. The catalog signals this with `attgenerated = 's'`, which is unambiguous in a way that "nullable with no default" is not.
 
@@ -103,7 +103,7 @@ Now there is exactly one place that records the soft-delete event (`deleted_at`)
 
 The Postgres wiki has a related cautionary list ([Don't Do This](https://wiki.postgresql.org/wiki/Don%27t_Do_This)) that touches on a few NULL anti-patterns. The deeper rabbit hole is C. J. Date's well-known critique that SQL has, depending on how you count, three- or four-valued logic ([Null (SQL) on Wikipedia](https://en.wikipedia.org/wiki/Null_(SQL))). Real applications do not run on three-valued logic; they run on whatever the application code reduces NULL to. Generated columns let you write that reduction down once.
 
-## §5 — What changed in satus
+## What changed in satus
 
 Concretely, since v0.1.1:
 
@@ -123,7 +123,7 @@ ecommerce            9               0.96                0.88 – 0.99
 
 `medical-booking` skews lower because more of its "state" columns are genuinely populated (appointments get `checked_in_at`, `seen_at`, `discharged_at` in sequence and the long tail of completed visits dominates).
 
-## §6 — The shorter version
+## The shorter version
 
 NULL is not a value, and "nullable" is not a property of an application, only of a column. Before you ask whether satus should fill a column, ask what the application code does when it reads NULL there. If it reads NULL as "absent information", a sparse distribution is correct. If it reads NULL as "this row is in state X", you want the state, not the absence, and the catalog cannot tell you which it is. Tell the seeder explicitly. Or, better, tell Postgres explicitly and use a generated column so the question stops being askable.
 
@@ -137,4 +137,4 @@ NULL is not a value, and "nullable" is not a property of an application, only of
 - Wikipedia, [Null (SQL)](https://en.wikipedia.org/wiki/Null_(SQL)).
 - Earlier in this log: [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild), [Introducing the satus log](/blog/introducing-the-log).
 
-— the satus.sh team
+—the satus.sh team
