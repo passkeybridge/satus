@@ -185,6 +185,16 @@ function DocsPage() {
       >
         <Prose>
           <p>
+            Hit an error code? Start with{" "}
+            <a
+              href="/docs/troubleshooting"
+              className="underline decoration-[var(--signal)] underline-offset-4"
+            >
+              troubleshooting
+            </a>
+            —every exit code, every common failure mode, with the fix.
+          </p>
+          <p>
             File bugs and feature requests against the public repo. For private
             questions—invoices, procurement, security—write to{" "}
             <a
