@@ -210,11 +210,11 @@ export function LeftRail({
             k="status"
             v={
               <span>
-                <span className="text-[var(--signal)]">●</span> draft
+                <span className="text-[var(--signal)]">●</span> v0.1.1
               </span>
             }
           />
-          <Meta k="updated" v="2026-05-25" />
+          <Meta k="updated" v="2026-05-27" />
           <Meta k="author" v="satus.sh" />
         </dl>
       </div>
