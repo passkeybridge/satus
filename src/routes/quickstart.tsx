@@ -2,7 +2,7 @@
  * Quickstart route ("/quickstart").
  *
  * Pass B expansion: split the README into anchorable sections that map 1:1 to
- * the HowTo JSON-LD steps — #install, #configure, #preview, #ship — plus a
+ * the HowTo JSON-LD steps—#install, #configure, #preview, #ship—plus a
  * #troubleshooting section for the failure modes users will hit on day one.
  */
 
@@ -25,13 +25,13 @@ export const Route = createFileRoute("/quickstart")({
   component: QuickstartPage,
   head: () => ({
     meta: [
-      { title: "Quickstart — satus" },
+      { title: "Quickstart—satus" },
       {
         name: "description",
         content:
           "From zero to a seeded Postgres database in under a minute. Install satus, point it at Supabase / Neon / Railway / RDS / local, pick a profile, preview, and ship.",
       },
-      { property: "og:title", content: "Quickstart — satus" },
+      { property: "og:title", content: "Quickstart—satus" },
       {
         property: "og:description",
         content:
@@ -121,7 +121,7 @@ function QuickstartPage() {
       >
         <Prose>
           <p>
-            Supabase, Neon, Railway, RDS, or a local instance — satus reads <code>DATABASE_URL</code>{" "}
+            Supabase, Neon, Railway, RDS, or a local instance—satus reads <code>DATABASE_URL</code>{" "}
             and your LLM key from the environment. It will refuse to run against a database with
             more than 10,000 user rows unless you pass <code>--force</code>.
           </p>
@@ -146,7 +146,7 @@ function QuickstartPage() {
       >
         <Prose>
           <p>
-            <code>--dry</code> runs the full pipeline — introspect, plan, generate — but writes the
+            <code>--dry</code> runs the full pipeline—introspect, plan, generate—but writes the
             output to stdout as a single SQL transcript instead of executing it. Diff it, review it,
             commit it as a fixture.
           </p>
@@ -168,7 +168,7 @@ function QuickstartPage() {
         <Prose>
           <p>
             <code>satus generate</code> runs inside a single Postgres transaction. If any insert
-            fails, the entire run rolls back — your database is never left in a half-seeded state.
+            fails, the entire run rolls back—your database is never left in a half-seeded state.
           </p>
         </Prose>
         <Terminal>
@@ -187,7 +187,7 @@ function QuickstartPage() {
           <p>
             Most issues fall into three buckets. If you hit something we haven&rsquo;t listed,
             open an issue with the stack trace and the offending <code>CREATE TABLE</code>{" "}
-            statement — schema reproduction is the #1 thing we triage.
+            statement—schema reproduction is the #1 thing we triage.
           </p>
         </Prose>
 
@@ -205,12 +205,12 @@ function QuickstartPage() {
           <Issue
             code="E_LLM_RATE_LIMIT"
             title="LLM provider rate-limited the run"
-            body="satus retries with exponential backoff up to 5 attempts. If you hit a hard tier ceiling, lower --batch-size (default 50) or upgrade your provider tier. We never resell tokens — the bill is on your provider's dashboard."
+            body="satus retries with exponential backoff up to 5 attempts. If you hit a hard tier ceiling, lower --batch-size (default 50) or upgrade your provider tier. We never resell tokens—the bill is on your provider's dashboard."
           />
         </ul>
 
         <p className="mt-10 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-          satus.sh — built for engineers who hate seeing John Doe in their demo data.
+          satus.sh—built for engineers who hate seeing John Doe in their demo data.
         </p>
       </Section>
     </PageShell>
@@ -218,8 +218,8 @@ function QuickstartPage() {
 }
 
 /* -------------------- Terminal & line primitives --------------------
- * Local to this route. Three line "kinds" — comment, shell input,
- * success output — share padding and the surrounding hairline frame. */
+ * Local to this route. Three line "kinds"—comment, shell input,
+ * success output—share padding and the surrounding hairline frame. */
 
 function Terminal({ children }: { children: ReactNode }) {
   return (

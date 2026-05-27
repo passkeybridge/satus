@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
- * satus.sh — RFC / specification aesthetic
+ * satus.sh—RFC / specification aesthetic
  * Swiss Red on paper. Mono headlines, Work Sans body.
  * Flat. Hairlines. No shadows. No gradients. No radius.
  * ============================================================ */
@@ -55,7 +55,7 @@
 
   --font-sans: "Work Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-serif: "Work Sans", system-ui, sans-serif; /* serif aliased to sans — no serif in this system */
+  --font-serif: "Work Sans", system-ui, sans-serif; /* serif aliased to sans—no serif in this system */
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -200,7 +200,7 @@
 }
 
 /* ============================================================
- * Blog prose — styles for HTML rendered from markdown in
+ * Blog prose—styles for HTML rendered from markdown in
  * /blog/$slug. Scoped to .prose-satus so it cannot leak into
  * Section/Prose primitives elsewhere on the site. Kept in
  * Swiss-Red discipline: hairlines, no radii, no shadows.

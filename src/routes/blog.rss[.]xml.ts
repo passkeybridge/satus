@@ -1,5 +1,5 @@
 /**
- * /blog/rss.xml — RSS 2.0 feed for the blog.
+ * /blog/rss.xml—RSS 2.0 feed for the blog.
  *
  * RSS still beats email newsletters for the developer audience we target.
  * Cached one hour at the edge; posts are built into the Worker, so the feed
@@ -12,7 +12,7 @@ import { getAllPosts } from "@/lib/blog";
 const SITE_URL = "https://satus.sh";
 const FEED_URL = SITE_URL + "/blog/rss.xml";
 
-/* RSS requires escaped XML entities. Keep this local — the wider site never
+/* RSS requires escaped XML entities. Keep this local—the wider site never
  * embeds raw user input, so a one-call helper is enough. */
 function xmlEscape(s: string): string {
   return s

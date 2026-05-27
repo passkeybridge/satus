@@ -10,15 +10,15 @@
  * accepts GET for manual smoke-testing from a browser.
  *
  * Checks:
- *   1. license_verify          — POST satus.sh/api/public/license/verify with
+ *   1. license_verify         —POST satus.sh/api/public/license/verify with
  *                                seeded test key, expect { valid: true }.
- *   2. webhook_signature       — POST satus.sh/api/public/payments/webhook
+ *   2. webhook_signature      —POST satus.sh/api/public/payments/webhook
  *                                with no signature, expect 400.
- *   3. auth_magiclink          — supabaseAdmin.auth.admin.generateLink for a
+ *   3. auth_magiclink         —supabaseAdmin.auth.admin.generateLink for a
  *                                throwaway address, expect a link back. No
  *                                email is actually sent (generateLink, not
  *                                signInWithOtp).
- *   4. email_queue             — read email_send_state and pg_cron jobs;
+ *   4. email_queue            —read email_send_state and pg_cron jobs;
  *                                queue is healthy if not rate-limit-paused
  *                                and process-email-queue ran in last 5 min.
  */
@@ -89,7 +89,7 @@ async function checkWebhookSignature(): Promise<CheckResult> {
 
 async function checkAuthMagicLink(): Promise<CheckResult> {
   return timed('auth_magiclink', async () => {
-    // generateLink does NOT send an email — it returns the action link
+    // generateLink does NOT send an email—it returns the action link
     // synchronously. This confirms the auth API is reachable + signing
     // tokens correctly without polluting any inbox.
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
@@ -117,7 +117,7 @@ async function checkEmailQueue(): Promise<CheckResult> {
     }
 
     // 2. Confirm the suppression table is reachable (RLS + service-role path
-    //    are intact). We don't assert a count — empty is fine on a quiet day.
+    //    are intact). We don't assert a count—empty is fine on a quiet day.
     const { error: supErr } = await supabaseAdmin
       .from('suppressed_emails')
       .select('email', { count: 'exact', head: true })
@@ -145,7 +145,7 @@ async function sendFailureAlert(checks: CheckResult[]): Promise<void> {
       (c.error ? `  ${c.error}` : ''),
   )
 
-  const subject = `[satus.sh] E2E FAIL — ${failed.map((c) => c.name).join(', ')}`
+  const subject = `[satus.sh] E2E FAIL—${failed.map((c) => c.name).join(', ')}`
   const text = [
     `Daily E2E health check failed at ${new Date().toISOString()}.`,
     '',

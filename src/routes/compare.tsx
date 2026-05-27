@@ -3,7 +3,7 @@
  *
  * Honest, apples-to-apples positioning against the three tools developers
  * most often weigh against satus: Snaplet, Tonic.ai, and faker.js. We
- * deliberately avoid feature-by-feature checkmark grids — those age badly
+ * deliberately avoid feature-by-feature checkmark grids—those age badly
  * and invariably misrepresent the other tool. Instead, each comparison
  * states what category the alternative occupies, where it excels, and where
  * satus is a better fit.
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/compare")({
   component: ComparePage,
   head: () => ({
     meta: [
-      { title: "satus vs Snaplet, Tonic, faker — comparison" },
+      { title: "satus vs Snaplet, Tonic, faker—comparison" },
       {
         name: "description",
         content:
@@ -91,13 +91,13 @@ function ComparePage() {
             satus is a seeding CLI: point it at a Postgres schema, get
             relationally coherent rows. That's a narrow job. The three tools on
             this page show up in the same Google searches but solve adjacent
-            problems — production-data anonymization, generic value generation,
+            problems—production-data anonymization, generic value generation,
             full data platforms. The right pick depends on what you actually
             need, not on which has the longer feature list.
           </p>
           <p>
             We link to each vendor's own documentation as the source of truth.
-            If you spot a stale or incorrect characterisation, email{" "}
+            If you spot a stale or incorrect characterization, email{" "}
             <a
               href="mailto:support@satus.sh?subject=Compare%20page%20correction"
               className="underline decoration-[var(--signal)] underline-offset-4"
@@ -180,8 +180,8 @@ function ComparePage() {
                 Tonic.ai
               </a>
             </strong>{" "}
-            is a data-platform company. Their core product anonymises and
-            subsets production data for use in lower environments — a different
+            is a data-platform company. Their core product anonymizes and
+            subsets production data for use in lower environments—a different
             job from generating data from scratch. If you have production data
             you need to share with QA without leaking PII, Tonic is built for
             that.
@@ -259,7 +259,7 @@ function ComparePage() {
 
         <ul className="mt-8 max-w-[760px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
           <NoFit
-            title="You need anonymised production data, not synthetic data."
+            title="You need anonymized production data, not synthetic data."
             body="A real customer's order history with the names changed is not the same artefact as a freshly generated one. If your QA workflows depend on the statistical shape of real traffic, you want a subsetting tool, not a generator."
           />
           <NoFit

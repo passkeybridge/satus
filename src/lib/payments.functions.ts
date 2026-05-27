@@ -5,7 +5,7 @@
  * themselves with the email they enter in Stripe's hosted checkout form;
  * Stripe creates the Customer implicitly and we receive the email on the
  * resulting Session. License delivery via Resend will be wired in a later
- * pass — that's an honest sequence, not a placeholder.
+ * pass—that's an honest sequence, not a placeholder.
  *
  * Tax handling: full compliance handling enabled (`managed_payments`).
  * PasskeyBridge LLC is US-based, and Pro/Team are pure SaaS, both eligible.

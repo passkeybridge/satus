@@ -1,5 +1,5 @@
 /**
- * /privacy — Privacy Policy for satus.sh.
+ * /privacy—Privacy Policy for satus.sh.
  *
  * Scope is narrow on purpose: satus is a CLI that runs on the user's machine,
  * so the only personal data we ever see is what passes through the marketing
@@ -40,13 +40,13 @@ export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
   head: () => ({
     meta: [
-      { title: "Privacy Policy — satus" },
+      { title: "Privacy Policy—satus" },
       {
         name: "description",
         content:
           "Privacy policy for satus.sh. The CLI runs on your machine; we never see your schemas, your data, or your LLM prompts. Effective May 26, 2026.",
       },
-      { property: "og:title", content: "Privacy Policy — satus" },
+      { property: "og:title", content: "Privacy Policy—satus" },
       {
         property: "og:description",
         content:
@@ -85,7 +85,7 @@ function PrivacyPage() {
         <Prose>
           <p>
             satus is a command-line tool. It reads your Postgres schema, talks to the LLM provider
-            whose API key <em>you</em> supply, and writes rows back to your database — all on your
+            whose API key <em>you</em> supply, and writes rows back to your database—all on your
             machine. PasskeyBridge LLC, the operator of satus.sh, never sees your schemas, the rows
             generated, the prompts sent to your LLM, or the contents of your database.
           </p>
@@ -176,7 +176,7 @@ function PrivacyPage() {
           <p>We use the following sub-processors to operate the Service:</p>
           <ul className="ml-5 list-disc space-y-1">
             <li>
-              <strong>Stripe, Inc.</strong> — payment processing.{" "}
+              <strong>Stripe, Inc.</strong>—payment processing.{" "}
               <a
                 href="https://stripe.com/privacy"
                 target="_blank"
@@ -188,15 +188,15 @@ function PrivacyPage() {
               .
             </li>
             <li>
-              <strong>Cloudflare, Inc.</strong> — hosting, edge runtime, and DDoS protection for
+              <strong>Cloudflare, Inc.</strong>—hosting, edge runtime, and DDoS protection for
               satus.sh.
             </li>
             <li>
-              <strong>Supabase, Inc.</strong> — database hosting for license records and
+              <strong>Supabase, Inc.</strong>—database hosting for license records and
               transactional email infrastructure.
             </li>
             <li>
-              <strong>Ahrefs Pte. Ltd.</strong> — cookieless web analytics.
+              <strong>Ahrefs Pte. Ltd.</strong>—cookieless web analytics.
             </li>
           </ul>
           <p>

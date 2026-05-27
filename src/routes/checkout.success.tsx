@@ -1,5 +1,5 @@
 /**
- * /checkout/success — return URL after a completed Embedded Checkout.
+ * /checkout/success—return URL after a completed Embedded Checkout.
  *
  * Stripe substitutes `{CHECKOUT_SESSION_ID}` server-side, so this page
  * only needs to validate the search params and confirm success in copy.
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/checkout/success")({
   component: CheckoutSuccessPage,
   head: () => ({
     meta: [
-      { title: "Payment received — satus.sh" },
+      { title: "Payment received—satus.sh" },
       { name: "description", content: "Your satus.sh subscription is active." },
       { name: "robots", content: "noindex,nofollow" },
     ],

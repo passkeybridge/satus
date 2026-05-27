@@ -37,4 +37,4 @@ The full feed is at [/blog/rss.xml](/blog/rss.xml). Add it to whichever
 reader you already use. There is no email newsletter and there are no
 tracking pixels.
 
-— the satus.sh team
+—the satus.sh team

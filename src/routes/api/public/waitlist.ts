@@ -11,7 +11,7 @@
  *   - SHA-256 of the caller IP is stored for abuse triage, never the raw IP
  *   - dedup on (email, tier) via the table's UNIQUE constraint
  *
- * Writes go through `supabaseAdmin` (service role) — RLS still allows anon
+ * Writes go through `supabaseAdmin` (service role)—RLS still allows anon
  * insert, but using admin avoids depending on a forwarded auth header.
  */
 
@@ -120,7 +120,7 @@ export const Route = createFileRoute("/api/public/waitlist")({
             ip_hash: ipHash,
           });
 
-        // Treat duplicate (email, tier) as success — same intent, idempotent.
+        // Treat duplicate (email, tier) as success—same intent, idempotent.
         if (error && error.code !== "23505") {
           console.error("[waitlist] insert failed", error);
           return json(500, { error: "server_error" });

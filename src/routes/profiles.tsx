@@ -65,7 +65,7 @@ const PROFILES: Profile[] = [
       { col: "products.title", value: "Cedar Plank Cutting Board, 18\"" },
       { col: "variants.sku", value: "KIT-CB-CDR-18" },
       { col: "orders.subtotal", value: "$84.50" },
-      { col: "reviews.body", value: "Heavier than I expected — in a good way..." },
+      { col: "reviews.body", value: "Heavier than I expected—in a good way..." },
     ],
   },
   {
@@ -101,13 +101,13 @@ export const Route = createFileRoute("/profiles")({
   component: ProfilesPage,
   head: () => ({
     meta: [
-      { title: "Reference profiles — satus" },
+      { title: "Reference profiles—satus" },
       {
         name: "description",
         content:
-          "satus ships three hand-tuned reference profiles — medical booking, e-commerce, SaaS subscriptions — with documented constraints and sample output. Fork the closest one locally.",
+          "satus ships three hand-tuned reference profiles—medical booking, e-commerce, SaaS subscriptions—with documented constraints and sample output. Fork the closest one locally.",
       },
-      { property: "og:title", content: "Reference profiles — satus" },
+      { property: "og:title", content: "Reference profiles—satus" },
       {
         property: "og:description",
         content:
@@ -208,7 +208,7 @@ function ProfilesPage() {
             add or remove tables, and commit it like any other file.
           </p>
           <p>
-            Community profiles for legal, real estate, and logistics are on the roadmap — pinned by
+            Community profiles for legal, real estate, and logistics are on the roadmap—pinned by
             user demand, not by us guessing. Open an issue with your <code>CREATE TABLE</code>{" "}
             statements and we&rsquo;ll triage.
           </p>

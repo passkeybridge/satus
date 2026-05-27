@@ -1,5 +1,5 @@
 /**
- * /unsubscribe — confirmation page for one-click unsubscribe links in
+ * /unsubscribe—confirmation page for one-click unsubscribe links in
  * transactional emails. Validates the token on mount, then asks for an
  * explicit click before suppressing the address (RFC 8058 mail-client
  * one-clicks hit the JSON API directly and bypass this page).
@@ -18,7 +18,7 @@ export const Route = createFileRoute('/unsubscribe')({
   component: UnsubscribePage,
   head: () => ({
     meta: [
-      { title: 'Unsubscribe — satus.sh' },
+      { title: 'Unsubscribe—satus.sh' },
       { name: 'robots', content: 'noindex,nofollow' },
     ],
     links: [{ rel: 'canonical', href: SITE_URL + '/unsubscribe' }],

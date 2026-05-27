@@ -1,5 +1,5 @@
 /**
- * /terms — Terms of Service for satus.sh.
+ * /terms—Terms of Service for satus.sh.
  *
  * Adapted from the PasskeyBridge LLC master terms to the narrower satus.sh
  * surface: a CLI that generates Postgres seed data, a marketing site, a
@@ -9,7 +9,7 @@
  * channel.
  *
  * Kept as plain prose with §-numbered sections to match the rest of the
- * site's technical-spec aesthetic. No JSON-LD — Google does not index legal
+ * site's technical-spec aesthetic. No JSON-LD—Google does not index legal
  * pages as rich results and the markup overhead is wasted.
  */
 
@@ -41,13 +41,13 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
   head: () => ({
     meta: [
-      { title: "Terms of Service — satus" },
+      { title: "Terms of Service—satus" },
       {
         name: "description",
         content:
           "Terms of Service for the satus.sh CLI and marketing site, operated by PasskeyBridge LLC. Effective May 26, 2026.",
       },
-      { property: "og:title", content: "Terms of Service — satus" },
+      { property: "og:title", content: "Terms of Service—satus" },
       {
         property: "og:description",
         content:

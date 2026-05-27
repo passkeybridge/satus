@@ -6,7 +6,7 @@
  * Prose:   body-copy container with ~62ch max measure and tuned inline-element styling.
  * Mono:    inline JetBrains Mono span used inside Prose for code-style terms.
  *
- * Kept presentational only — no routing, no state. Each route composes these.
+ * Kept presentational only—no routing, no state. Each route composes these.
  */
 
 import type { ReactNode } from "react";

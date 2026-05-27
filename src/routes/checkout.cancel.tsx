@@ -1,5 +1,5 @@
 /**
- * /checkout/cancel — neutral exit when a buyer abandons the form.
+ * /checkout/cancel—neutral exit when a buyer abandons the form.
  *
  * Embedded Checkout doesn't redirect on cancel the way the redirect-based
  * flow does (the buyer just stays on the page and closes it). This route
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/checkout/cancel")({
   component: CheckoutCancelPage,
   head: () => ({
     meta: [
-      { title: "Checkout canceled — satus.sh" },
+      { title: "Checkout canceled—satus.sh" },
       { name: "description", content: "No charge was made. You can restart checkout anytime." },
       { name: "robots", content: "noindex,nofollow" },
     ],

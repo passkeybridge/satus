@@ -1,5 +1,5 @@
 /**
- * /blog/$slug — post detail.
+ * /blog/$slug—post detail.
  *
  * Wraps the parsed markdown HTML in the same Swiss-Red prose system used by
  * the rest of the site. Emits per-post head() (title, description, og,
@@ -15,7 +15,7 @@ import { getPostBySlug } from "@/lib/blog";
 
 const SITE_URL = "https://satus.sh";
 
-/* Single fixed TOC entry — markdown bodies are typically short enough that
+/* Single fixed TOC entry—markdown bodies are typically short enough that
  * splitting them into Sections is overkill, and parsing headings out of
  * pre-rendered HTML would add brittleness. The rail still anchors the page
  * visually and links back to the index. */
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/blog/$slug")({
 
     return {
       meta: [
-        { title: `${post.title} — satus.sh blog` },
+        { title: `${post.title}—satus.sh blog` },
         { name: "description", content: post.description },
         { name: "author", content: post.author },
         { property: "article:published_time", content: post.date },

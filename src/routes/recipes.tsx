@@ -3,7 +3,7 @@
  *
  * Task-oriented guides. Each recipe is a self-contained "I want to do X"
  * card: problem statement, the exact commands, and a note on caveats.
- * Recipes intentionally stay short — anything longer than a page belongs in
+ * Recipes intentionally stay short—anything longer than a page belongs in
  * the blog. v0.1 ships with four recipes covering the most common asks:
  * preview-branch seeding, GitHub Actions, Cypress/E2E reset, Neon branches.
  *
@@ -29,13 +29,13 @@ export const Route = createFileRoute("/recipes")({
   component: RecipesPage,
   head: () => ({
     meta: [
-      { title: "Recipes — satus" },
+      { title: "Recipes—satus" },
       {
         name: "description",
         content:
           "Copy-paste recipes for satus: seed a preview branch, wire into GitHub Actions, reset a Cypress database between tests, seed a fresh Neon branch.",
       },
-      { property: "og:title", content: "Recipes — satus" },
+      { property: "og:title", content: "Recipes—satus" },
       {
         property: "og:description",
         content:
@@ -206,7 +206,7 @@ function RecipesPage() {
         </Terminal>
 
         <Note>
-          Tear the branch down on PR close. Neon charges per active branch — a
+          Tear the branch down on PR close. Neon charges per active branch—a
           stale fleet of seeded branches will surprise the bill.
         </Note>
       </Section>

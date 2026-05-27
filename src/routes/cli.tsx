@@ -31,13 +31,13 @@ export const Route = createFileRoute("/cli")({
   component: CliPage,
   head: () => ({
     meta: [
-      { title: "CLI reference — satus" },
+      { title: "CLI reference—satus" },
       {
         name: "description",
         content:
           "Complete reference for the satus CLI: init, plan, generate. Every flag, every environment variable, every exit code. v0.1.0-alpha.",
       },
-      { property: "og:title", content: "CLI reference — satus" },
+      { property: "og:title", content: "CLI reference—satus" },
       {
         property: "og:description",
         content:
@@ -88,8 +88,8 @@ function CliPage() {
       >
         <Prose>
           <p>
-            The CLI exposes three subcommands — <code>init</code>, <code>plan</code>,{" "}
-            <code>generate</code> — and a handful of global flags. Every command reads
+            The CLI exposes three subcommands—<code>init</code>, <code>plan</code>,{" "}
+            <code>generate</code>—and a handful of global flags. Every command reads
             connection and provider credentials from the environment, never from
             flags, so secrets never land in shell history.
           </p>
@@ -98,7 +98,7 @@ function CliPage() {
             <a href="/quickstart" className="underline decoration-[var(--signal)] underline-offset-4">
               quickstart
             </a>{" "}
-            first — this page is the reference, not the tutorial.
+            first—this page is the reference, not the tutorial.
           </p>
         </Prose>
 
@@ -149,7 +149,7 @@ function CliPage() {
         <Prose>
           <p>
             Writes a profile and a config file to <code>./satus/</code>. Safe to
-            re-run — it will refuse to overwrite existing files unless{" "}
+            re-run—it will refuse to overwrite existing files unless{" "}
             <code>--force</code> is set.
           </p>
         </Prose>
@@ -209,8 +209,8 @@ function CliPage() {
         <Prose>
           <p>
             Runs <code>plan</code>, then writes every row inside a single
-            Postgres transaction. If any insert fails — FK violation, check
-            constraint, LLM timeout — the entire run rolls back and your
+            Postgres transaction. If any insert fails—FK violation, check
+            constraint, LLM timeout—the entire run rolls back and your
             database is left untouched.
           </p>
           <p>
@@ -256,7 +256,7 @@ function CliPage() {
         <ul className="mt-8 max-w-[760px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
           <Exit code="0" name="OK" body="Success." />
           <Exit code="1" name="E_GENERIC" body="Unhandled error. File an issue with the stack trace and CREATE TABLE statements." />
-          <Exit code="10" name="E_FK_CYCLE" body="Foreign-key cycle could not be broken automatically — every column on the cycle is NOT NULL with no DEFAULT. Mark one side nullable, add a DEFAULT, or declare the constraint DEFERRABLE." />
+          <Exit code="10" name="E_FK_CYCLE" body="Foreign-key cycle could not be broken automatically—every column on the cycle is NOT NULL with no DEFAULT. Mark one side nullable, add a DEFAULT, or declare the constraint DEFERRABLE." />
           <Exit code="11" name="E_DB_NOT_EMPTY" body="Database has more than 10,000 user rows. Re-run with --force or point at a fresh branch." />
           <Exit code="20" name="E_LLM_RATE_LIMIT" body="Provider rate-limited the run after 5 retries with exponential backoff. Lower --batch-size or upgrade your provider tier." />
           <Exit code="21" name="E_LLM_AUTH" body="OPENAI_API_KEY missing, malformed, or rejected by the provider." />
@@ -300,7 +300,7 @@ function Blank() {
   return <div className="h-3" />;
 }
 
-/* Environment variable list item — code/required/body grid. */
+/* Environment variable list item—code/required/body grid. */
 function EnvVar({ name, req, body }: { name: string; req: string; body: string }) {
   return (
     <li className="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[220px_1fr]">
@@ -315,7 +315,7 @@ function EnvVar({ name, req, body }: { name: string; req: string; body: string }
   );
 }
 
-/* Flag table — three columns on desktop, stacked on mobile. Forced to wrap
+/* Flag table—three columns on desktop, stacked on mobile. Forced to wrap
  * so long descriptions never trigger horizontal page scroll. */
 function FlagTable({ rows }: { rows: [string, string, string][] }) {
   return (
