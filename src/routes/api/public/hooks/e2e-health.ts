@@ -74,7 +74,9 @@ async function checkLicenseVerify(): Promise<CheckResult> {
 
 async function checkWebhookSignature(): Promise<CheckResult> {
   return timed('webhook_signature', async () => {
-    const res = await fetch(`${ORIGIN}/api/public/payments/webhook`, {
+    // ?env=sandbox so we actually reach the HMAC verifier instead of
+    // short-circuiting on the env-query guard (which would 400 regardless).
+    const res = await fetch(`${ORIGIN}/api/public/payments/webhook?env=sandbox`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: '{}',
