@@ -206,6 +206,12 @@
  * Swiss-Red discipline: hairlines, no radii, no shadows.
  * ============================================================ */
 .prose-satus {
+  /* Grid/flex children default to min-width: auto, which is "shrink to
+   * intrinsic content size". A wide <pre> or <table> then forces the
+   * column wider than the viewport even though it has overflow-x:auto.
+   * Pinning min-width: 0 restores the expected "shrink to track" behavior
+   * so overflow-x on descendants actually engages. */
+  min-width: 0;
   max-width: 68ch;
   font-family: var(--font-sans);
   font-size: 16px;
@@ -258,6 +264,10 @@
   border-left: 2px solid var(--signal);
   padding: 14px 18px;
   overflow-x: auto;
+  /* Belt-and-suspenders against ancestors that don't propagate min-width: 0.
+   * Combined with the parent rule above, this guarantees the page never
+   * gains horizontal scroll because of a wide code block. */
+  max-width: 100%;
 }
 .prose-satus pre code { background: none; padding: 0; font-size: inherit; }
 .prose-satus ul, .prose-satus ol { padding-left: 1.3em; }
@@ -277,7 +287,12 @@
   margin: 2em 0;
 }
 .prose-satus table {
+  /* display:block lets overflow-x:auto engage on narrow viewports;
+   * the visual difference vs display:table is negligible at our widths. */
+  display: block;
   width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   font-family: var(--font-mono);
   font-size: 13.5px;
