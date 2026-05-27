@@ -206,6 +206,12 @@
  * Swiss-Red discipline: hairlines, no radii, no shadows.
  * ============================================================ */
 .prose-satus {
+  /* Grid/flex children default to min-width: auto, which is "shrink to
+   * intrinsic content size". A wide <pre> or <table> then forces the
+   * column wider than the viewport even though it has overflow-x:auto.
+   * Pinning min-width: 0 restores the expected "shrink to track" behavior
+   * so overflow-x on descendants actually engages. */
+  min-width: 0;
   max-width: 68ch;
   font-family: var(--font-sans);
   font-size: 16px;
