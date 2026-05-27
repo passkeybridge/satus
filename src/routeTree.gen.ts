@@ -25,6 +25,8 @@ import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
+import { Route as DocsHowItWorksRouteImport } from './routes/docs.how-it-works'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
@@ -119,6 +121,16 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
+  id: '/docs/troubleshooting',
+  path: '/docs/troubleshooting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsHowItWorksRoute = DocsHowItWorksRouteImport.update({
+  id: '/docs/how-it-works',
+  path: '/docs/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   id: '/checkout/success',
   path: '/checkout/success',
@@ -206,6 +218,8 @@ export interface FileRoutesByFullPath {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/how-it-works': typeof DocsHowItWorksRoute
+  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
@@ -237,6 +251,8 @@ export interface FileRoutesByTo {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/how-it-works': typeof DocsHowItWorksRoute
+  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog': typeof BlogIndexRoute
   '/checkout': typeof CheckoutIndexRoute
@@ -269,6 +285,8 @@ export interface FileRoutesById {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/how-it-works': typeof DocsHowItWorksRoute
+  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
@@ -302,6 +320,8 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/how-it-works'
+    | '/docs/troubleshooting'
     | '/email/unsubscribe'
     | '/blog/'
     | '/checkout/'
@@ -333,6 +353,8 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/how-it-works'
+    | '/docs/troubleshooting'
     | '/email/unsubscribe'
     | '/blog'
     | '/checkout'
@@ -364,6 +386,8 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/how-it-works'
+    | '/docs/troubleshooting'
     | '/email/unsubscribe'
     | '/blog/'
     | '/checkout/'
@@ -396,6 +420,8 @@ export interface RootRouteChildren {
   BlogRssDotxmlRoute: typeof BlogRssDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  DocsHowItWorksRoute: typeof DocsHowItWorksRoute
+  DocsTroubleshootingRoute: typeof DocsTroubleshootingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   BlogIndexRoute: typeof BlogIndexRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
@@ -525,6 +551,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/troubleshooting': {
+      id: '/docs/troubleshooting'
+      path: '/docs/troubleshooting'
+      fullPath: '/docs/troubleshooting'
+      preLoaderRoute: typeof DocsTroubleshootingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/how-it-works': {
+      id: '/docs/how-it-works'
+      path: '/docs/how-it-works'
+      fullPath: '/docs/how-it-works'
+      preLoaderRoute: typeof DocsHowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/success': {
       id: '/checkout/success'
       path: '/checkout/success'
@@ -636,6 +676,8 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRssDotxmlRoute: BlogRssDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
+  DocsHowItWorksRoute: DocsHowItWorksRoute,
+  DocsTroubleshootingRoute: DocsTroubleshootingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   BlogIndexRoute: BlogIndexRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
