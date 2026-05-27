@@ -251,6 +251,7 @@ export function Footer() {
           title="product"
           links={[
             ["overview", "/"],
+            ["how it works", "/docs/how-it-works"],
             ["profiles", "/profiles"],
             ["compare", "/compare"],
             ["pricing", "/pricing"],
@@ -263,6 +264,7 @@ export function Footer() {
             ["quickstart", "/quickstart"],
             ["cli reference", "/cli"],
             ["recipes", "/recipes"],
+            ["troubleshooting", "/docs/troubleshooting"],
             ["blog", "/blog"],
             ["rss", "/blog/rss.xml"],
           ]}
@@ -270,6 +272,7 @@ export function Footer() {
         <FooterCol
           title="contact"
           links={[
+            ["satus", "https://satus.sh"],
             ["support@satus.sh", "mailto:support@satus.sh"],
             ["security", "/security"],
             ["terms", "/terms"],
