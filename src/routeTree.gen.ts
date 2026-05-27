@@ -18,13 +18,15 @@ import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CliRouteImport } from './routes/cli'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
+import { Route as DocsHowItWorksRouteImport } from './routes/docs.how-it-works'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
@@ -84,11 +86,6 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
@@ -104,6 +101,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   id: '/checkout/',
   path: '/checkout/',
@@ -117,6 +119,16 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
+  id: '/docs/troubleshooting',
+  path: '/docs/troubleshooting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsHowItWorksRoute = DocsHowItWorksRouteImport.update({
+  id: '/docs/how-it-works',
+  path: '/docs/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
@@ -193,7 +205,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
-  '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -207,9 +218,12 @@ export interface FileRoutesByFullPath {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/how-it-works': typeof DocsHowItWorksRoute
+  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -224,7 +238,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
-  '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -238,9 +251,12 @@ export interface FileRoutesByTo {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/how-it-works': typeof DocsHowItWorksRoute
+  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog': typeof BlogIndexRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/docs': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -256,7 +272,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
-  '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -270,9 +285,12 @@ export interface FileRoutesById {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/how-it-works': typeof DocsHowItWorksRoute
+  '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/blog/': typeof BlogIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -289,7 +307,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
-    | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -303,9 +320,12 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/how-it-works'
+    | '/docs/troubleshooting'
     | '/email/unsubscribe'
     | '/blog/'
     | '/checkout/'
+    | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -320,7 +340,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
-    | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -334,9 +353,12 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/how-it-works'
+    | '/docs/troubleshooting'
     | '/email/unsubscribe'
     | '/blog'
     | '/checkout'
+    | '/docs'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -351,7 +373,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
-    | '/docs'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -365,9 +386,12 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/how-it-works'
+    | '/docs/troubleshooting'
     | '/email/unsubscribe'
     | '/blog/'
     | '/checkout/'
+    | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
     | '/api/public/cli/run'
@@ -383,7 +407,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CliRoute: typeof CliRoute
   CompareRoute: typeof CompareRoute
-  DocsRoute: typeof DocsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -397,9 +420,12 @@ export interface RootRouteChildren {
   BlogRssDotxmlRoute: typeof BlogRssDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  DocsHowItWorksRoute: typeof DocsHowItWorksRoute
+  DocsTroubleshootingRoute: typeof DocsTroubleshootingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   BlogIndexRoute: typeof BlogIndexRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  DocsIndexRoute: typeof DocsIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
@@ -476,13 +502,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/compare': {
       id: '/compare'
       path: '/compare'
@@ -504,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/': {
       id: '/checkout/'
       path: '/checkout'
@@ -523,6 +549,20 @@ declare module '@tanstack/react-router' {
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/troubleshooting': {
+      id: '/docs/troubleshooting'
+      path: '/docs/troubleshooting'
+      fullPath: '/docs/troubleshooting'
+      preLoaderRoute: typeof DocsTroubleshootingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/how-it-works': {
+      id: '/docs/how-it-works'
+      path: '/docs/how-it-works'
+      fullPath: '/docs/how-it-works'
+      preLoaderRoute: typeof DocsHowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/success': {
@@ -623,7 +663,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CliRoute: CliRoute,
   CompareRoute: CompareRoute,
-  DocsRoute: DocsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfilesRoute: ProfilesRoute,
@@ -637,9 +676,12 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRssDotxmlRoute: BlogRssDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
+  DocsHowItWorksRoute: DocsHowItWorksRoute,
+  DocsTroubleshootingRoute: DocsTroubleshootingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   BlogIndexRoute: BlogIndexRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  DocsIndexRoute: DocsIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,

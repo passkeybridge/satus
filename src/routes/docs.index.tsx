@@ -21,7 +21,7 @@ const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "support", n: "04", label: "Support" },
 ];
 
-export const Route = createFileRoute("/docs")({
+export const Route = createFileRoute("/docs/")({
   component: DocsPage,
   head: () => ({
     meta: [
@@ -163,16 +163,16 @@ function DocsPage() {
 
         <CardGrid>
           <Card
+            to="/docs/how-it-works"
+            kicker="concept"
+            title="How it works"
+            body="The three guarantees satus makes—FK-cycle planning, the 10,000-row safety guard, and the single-transaction write—explained end to end."
+          />
+          <Card
             to="/blog/cyclic-fks-in-the-wild"
             kicker="essay"
             title="Cyclic FKs in the wild"
             body="Why a third of production Postgres schemas have foreign-key cycles, and how satus breaks them without giving up referential integrity."
-          />
-          <Card
-            to="/blog"
-            kicker="archive"
-            title="All posts"
-            body="The full engineering blog—release notes, postmortems, deep dives into Postgres internals and LLM-driven data generation."
           />
         </CardGrid>
       </Section>
@@ -184,6 +184,16 @@ function DocsPage() {
         title={<>one inbox. one repo.</>}
       >
         <Prose>
+          <p>
+            Hit an error code? Start with{" "}
+            <a
+              href="/docs/troubleshooting"
+              className="underline decoration-[var(--signal)] underline-offset-4"
+            >
+              troubleshooting
+            </a>
+            —every exit code, every common failure mode, with the fix.
+          </p>
           <p>
             File bugs and feature requests against the public repo. For private
             questions—invoices, procurement, security—write to{" "}
