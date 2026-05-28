@@ -1,7 +1,7 @@
 ---
 slug: medical-booking-profile
 title: "Inside the medical-booking profile: why appointments are harder than they seem"
-description: Appointments cluster around lunch, never at 3am, almost never on holidays, and have a long tail of no-shows. Here is what the satus medical-booking profile encodes, what we deliberately left out, and why.
+description: Appointments cluster around mid-morning and afternoon, never at 3am, almost never on holidays, and trail a long tail of no-shows. What the satus medical-booking profile encodes, and why.
 date: 2026-05-28
 author: satus.sh
 tags: [profile, medical, distributions, postgres, seeding]
