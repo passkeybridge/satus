@@ -160,7 +160,7 @@ If you are seeding a clinic-shaped schema and the default profile is wrong for y
 
 ## References
 
-- Dantas, L. F., Fleck, J. L., Cyrino Oliveira, F. L., Hamacher, S. (2018), "No-shows in appointment scheduling – a systematic literature review", *Health Policy*. [Publisher link](https://www.sciencedirect.com/science/article/pii/S0168851018300484).
+- Dantas, L. F., Fleck, J. L., Cyrino Oliveira, F. L., Hamacher, S. (2018), "No-shows in appointment scheduling – a systematic literature review", *Health Policy* 122(4):412–421. [PubMed entry](https://pubmed.ncbi.nlm.nih.gov/29482948/).
 - PostgreSQL documentation, [Date/Time Types](https://www.postgresql.org/docs/current/datatype-datetime.html).
 - PostgreSQL documentation, [pg_timezone_names](https://www.postgresql.org/docs/current/view-pg-timezone-names.html).
 - PostgreSQL documentation, [EXCLUDE constraints](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-EXCLUSION).
