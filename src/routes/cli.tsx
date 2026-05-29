@@ -2,7 +2,7 @@
  * CLI reference route ("/cli").
  *
  * Single-page reference for every subcommand and flag in the satus CLI as of
- * v0.1.0-alpha. Pulls its canonical command set from the site's other pages
+ * v0.1.1. Pulls its canonical command set from the site's other pages
  * (quickstart, profiles, cyclic-FKs post) so there's exactly one truth across
  * the marketing surface.
  *
