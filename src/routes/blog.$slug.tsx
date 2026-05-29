@@ -37,7 +37,7 @@ export const Route = createFileRoute("/blog/$slug")({
 
     /* Article schema improves citation behavior in AI search (Perplexity,
      * SearchGPT) and lets Google show date + author in the SERP. */
-    const jsonLd = {
+    const articleLd = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: post.title,
@@ -53,6 +53,18 @@ export const Route = createFileRoute("/blog/$slug")({
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
       image: ogImage,
       keywords: post.tags.join(", ") || undefined,
+    };
+
+    /* BreadcrumbList helps Google render the path (Home › Blog › Post) in
+     * the SERP and gives AI crawlers the route ancestry explicitly. */
+    const breadcrumbLd = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL + "/" },
+        { "@type": "ListItem", position: 2, name: "Blog", item: SITE_URL + "/blog" },
+        { "@type": "ListItem", position: 3, name: post.title, item: url },
+      ],
     };
 
     return {
@@ -76,7 +88,11 @@ export const Route = createFileRoute("/blog/$slug")({
         {
           type: "application/ld+json",
           /* TanStack head() accepts `children` for raw script bodies. */
-          children: JSON.stringify(jsonLd),
+          children: JSON.stringify(articleLd),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(breadcrumbLd),
         },
       ],
     };
