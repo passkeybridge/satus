@@ -26,27 +26,27 @@ const json = (status: number, body: unknown) =>
     headers: { 'Content-Type': 'application/json', ...CORS },
   })
 
-// 60 verify calls / 10 min / IP-hash. CLI caches; legit users shouldn't hit it.
-// TODO(rate-limit): This in-memory Map only counts within a single Worker isolate.
-// Cloudflare spawns many isolates, so bursty traffic from one IP can bypass the
-// limit. Replace with the Cloudflare `RateLimit` binding (or a Durable Object /
-// KV counter) when the Lovable Worker template exposes one. Abuse risk is low
-// at launch because the CLI caches verify results for ~24h, but this MUST be
-// hardened before we promote the endpoint or remove client-side caching.
-const RATE_WINDOW_MS = 10 * 60 * 1000
+// 60 verify calls / 10 min / IP-hash, counted in Postgres so the limit holds
+// across Cloudflare Worker isolates (an in-memory Map only counts within one
+// isolate, and CF spawns many). The CLI caches verify results for ~24h, so
+// this ceiling is generous for legit users and still squashes scripted abuse.
+const RATE_BUCKET = 'license_verify'
+const RATE_WINDOW_SECONDS = 600
 const RATE_LIMIT = 60
-const hits = new Map<string, number[]>()
 
-function rateLimited(key: string): boolean {
-  const now = Date.now()
-  const recent = (hits.get(key) ?? []).filter((t) => now - t < RATE_WINDOW_MS)
-  if (recent.length >= RATE_LIMIT) {
-    hits.set(key, recent)
-    return true
+async function rateLimited(key: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin.rpc('check_rate_limit', {
+    p_bucket: RATE_BUCKET,
+    p_key: key,
+    p_window_seconds: RATE_WINDOW_SECONDS,
+  })
+  if (error) {
+    // Fail open on counter errors—better to serve a few extra verifies than
+    // to lock everyone out if the counter table hiccups. Logged for triage.
+    console.error('[license/verify] rate-limit counter failed', error)
+    return false
   }
-  recent.push(now)
-  hits.set(key, recent)
-  return false
+  return typeof data === 'number' && data > RATE_LIMIT
 }
 
 function hashIp(ip: string | null): string | null {
@@ -86,7 +86,7 @@ export const Route = createFileRoute('/api/public/license/verify')({
           request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
           null
         const ipHash = hashIp(ip)
-        if (ipHash && rateLimited(ipHash)) {
+        if (ipHash && (await rateLimited(ipHash))) {
           return json(429, { valid: false, reason: 'rate_limited' })
         }
 

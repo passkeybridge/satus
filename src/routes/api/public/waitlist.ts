@@ -46,21 +46,27 @@ const Payload = z.object({
   source: z.string().trim().max(64).optional(),
 });
 
-/** Best-effort in-memory rate limit: 5 submissions / 10 min / IP-hash. */
-const RATE_WINDOW_MS = 10 * 60 * 1000;
+/**
+ * Cross-isolate rate limit: 5 submissions / 10 min / IP-hash, counted in
+ * Postgres via `check_rate_limit` so the cap holds even when Cloudflare
+ * fans the request out across many short-lived Worker isolates.
+ */
+const RATE_BUCKET = "waitlist_signup";
+const RATE_WINDOW_SECONDS = 600;
 const RATE_LIMIT = 5;
-const hits = new Map<string, number[]>();
 
-function rateLimited(key: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(key) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT) {
-    hits.set(key, recent);
-    return true;
+async function rateLimited(key: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin.rpc("check_rate_limit", {
+    p_bucket: RATE_BUCKET,
+    p_key: key,
+    p_window_seconds: RATE_WINDOW_SECONDS,
+  });
+  if (error) {
+    // Fail open: a transient counter error shouldn't block a legit signup.
+    console.error("[waitlist] rate-limit counter failed", error);
+    return false;
   }
-  recent.push(now);
-  hits.set(key, recent);
-  return false;
+  return typeof data === "number" && data > RATE_LIMIT;
 }
 
 function hashIp(ip: string | null): string | null {
@@ -102,7 +108,7 @@ export const Route = createFileRoute("/api/public/waitlist")({
           null;
         const ipHash = hashIp(ip);
 
-        if (ipHash && rateLimited(ipHash)) {
+        if (ipHash && (await rateLimited(ipHash))) {
           return json(429, { error: "rate_limited" });
         }
 
