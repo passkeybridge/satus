@@ -84,6 +84,19 @@ export const Route = createFileRoute("/quickstart")({
           ],
         }),
       },
+      {
+        /* BreadcrumbList: Home › Quickstart. Helps Google render the
+         * trail in the SERP and gives AI crawlers explicit ancestry. */
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL + "/" },
+            { "@type": "ListItem", position: 2, name: "Quickstart", item: SITE_URL + "/quickstart" },
+          ],
+        }),
+      },
     ],
   }),
 });

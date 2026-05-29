@@ -73,6 +73,20 @@ export const Route = createFileRoute("/docs/how-it-works")({
           ],
         }),
       },
+      {
+        /* BreadcrumbList: Home › Docs › How it works. Gives Google the
+         * route ancestry explicitly so the SERP can render the trail. */
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL + "/" },
+            { "@type": "ListItem", position: 2, name: "Docs", item: SITE_URL + "/docs" },
+            { "@type": "ListItem", position: 3, name: "How it works", item: SITE_URL + "/docs/how-it-works" },
+          ],
+        }),
+      },
     ],
   }),
 });
