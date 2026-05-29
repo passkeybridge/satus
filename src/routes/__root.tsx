@@ -138,7 +138,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
+      { title: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       {
         name: "description",
         content:
@@ -150,8 +150,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "satus" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@satusdev" },
-      { property: "og:title", content: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
-      { name: "twitter:title", content: "satus.sh - Realistic Postgres seed data, FK-safe CLI" },
+      { property: "og:title", content: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
+      { name: "twitter:title", content: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       { property: "og:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
       { name: "twitter:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
       { property: "og:image", content: "https://satus.sh/og-image.png" },
@@ -174,6 +174,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         src: "https://analytics.ahrefs.com/analytics.js",
         "data-key": "rwXxEkXYUzPB4EEg0oXcPw",
         async: true,
+      },
+      // Sitewide Organization schema. Identifies the publisher (PasskeyBridge
+      // LLC) and product (satus) for Google Knowledge Graph and generative
+      // engines. Logo points at the favicon; sameAs lists canonical
+      // off-site identities so disambiguation across the web is unambiguous.
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://satus.sh/#org",
+              name: "satus",
+              legalName: "PasskeyBridge LLC",
+              url: "https://satus.sh",
+              logo: "https://satus.sh/favicon.svg",
+              email: "support@satus.sh",
+              sameAs: [
+                "https://github.com/passkeybridge/satus",
+                "https://www.npmjs.com/package/@passkeybridge/satus",
+              ],
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://satus.sh/#site",
+              url: "https://satus.sh",
+              name: "satus.sh",
+              publisher: { "@id": "https://satus.sh/#org" },
+              inLanguage: "en",
+            },
+          ],
+        }),
       },
     ],
   }),

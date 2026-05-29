@@ -4,6 +4,28 @@
 
 satus is distributed as the npm package `@passkeybridge/satus` (binary: `satus`). It introspects your live Postgres schema, builds a dependency DAG from foreign keys, and emits inserts that load on the first try. Three built-in domain profiles (medical, e-commerce, SaaS) shape values so demo and QA data looks like a real business instead of `John Doe` and `Lorem Ipsum Corp`.
 
+## Canonical commands
+
+```bash
+# Install
+npm install -g @passkeybridge/satus
+
+# One-time setup in a project (writes ./satus/config.yml)
+satus init
+
+# Inspect the plan without writing data (DAG, row counts, profile binding)
+satus plan --schema public --profile medical
+
+# Generate and load seed data
+satus generate --schema public --profile medical --rows 1000
+
+# Required environment
+export DATABASE_URL=postgres://user:pass@host:5432/db
+export OPENAI_API_KEY=sk-...
+```
+
+Exit codes: `0` success, `10` schema unreachable, `11` target schema not empty, `20` LLM rate-limited, `21` LLM auth, `30` profile not found. Full reference: https://satus.sh/cli.
+
 ## Pages
 
 - [Overview](/): What satus is, how the pipeline works, and what it deliberately will not do.

@@ -312,6 +312,8 @@ export type Database = {
         }
         Returns: number
       }
+      prune_e2e_health_log: { Args: { retain_days?: number }; Returns: number }
+      prune_satus_runs: { Args: { retain_days?: number }; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
