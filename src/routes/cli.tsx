@@ -35,7 +35,7 @@ export const Route = createFileRoute("/cli")({
       {
         name: "description",
         content:
-          "Complete reference for the satus CLI: init, plan, generate. Every flag, every environment variable, every exit code. v0.1.0-alpha.",
+          "Complete reference for the satus CLI: init, plan, generate. Every flag, every environment variable, every exit code. v0.1.1.",
       },
       { property: "og:title", content: "CLI reference—satus" },
       {
