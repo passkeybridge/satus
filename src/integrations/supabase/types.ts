@@ -179,6 +179,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_counters: {
+        Row: {
+          bucket: string
+          hits: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          key: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       satus_runs: {
         Row: {
           cli_version: string | null
@@ -295,6 +316,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: { p_bucket: string; p_key: string; p_window_seconds: number }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -313,6 +338,7 @@ export type Database = {
         Returns: number
       }
       prune_e2e_health_log: { Args: { retain_days?: number }; Returns: number }
+      prune_rate_limit_counters: { Args: never; Returns: number }
       prune_satus_runs: { Args: { retain_days?: number }; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
