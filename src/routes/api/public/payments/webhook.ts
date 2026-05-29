@@ -184,7 +184,7 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
     .eq('environment', env)
     .maybeSingle()
 
-  await supabaseAdmin
+  const { error: updateErr } = await supabaseAdmin
     .from('licenses')
     .update({
       status: subscription.status,
@@ -196,6 +196,12 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
     })
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
+
+  if (updateErr) {
+    // Throw so the POST handler returns 500 and Stripe retries—silent
+    // 200s here cause license state to drift from Stripe's source of truth.
+    throw new Error(`license update failed: ${updateErr.message}`)
+  }
 
   if (
     existing?.email &&
@@ -223,7 +229,7 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     .eq('environment', env)
     .maybeSingle()
 
-  await supabaseAdmin
+  const { error: revokeErr } = await supabaseAdmin
     .from('licenses')
     .update({
       status: 'canceled',
@@ -231,6 +237,10 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     })
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
+
+  if (revokeErr) {
+    throw new Error(`license revoke failed: ${revokeErr.message}`)
+  }
 
   if (existing?.email) {
     await enqueueTransactionalEmail({

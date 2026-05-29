@@ -5,6 +5,7 @@ Allow: /
 # directive simply keeps them out of search-engine indexes.
 Disallow: /api/
 Disallow: /email/
+Disallow: /lovable/
 Disallow: /checkout/success
 Disallow: /unsubscribe
 

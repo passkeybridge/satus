@@ -21,9 +21,6 @@ const ALLOWED_PRICE_IDS = new Set<string>([
   "satus_pro_monthly",
   "satus_pro_yearly",
   "satus_team_seat_monthly",
-  // Temporary $0.50 SKU used to validate the live pipeline end-to-end.
-  // Remove after the smoke test + refund are confirmed.
-  "satus_live_smoke_test",
 ]);
 
 export const createCheckoutSession = createServerFn({ method: "POST" })

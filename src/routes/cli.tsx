@@ -2,7 +2,7 @@
  * CLI reference route ("/cli").
  *
  * Single-page reference for every subcommand and flag in the satus CLI as of
- * v0.1.0-alpha. Pulls its canonical command set from the site's other pages
+ * v0.1.1. Pulls its canonical command set from the site's other pages
  * (quickstart, profiles, cyclic-FKs post) so there's exactly one truth across
  * the marketing surface.
  *
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/cli")({
       {
         name: "description",
         content:
-          "Complete reference for the satus CLI: init, plan, generate. Every flag, every environment variable, every exit code. v0.1.0-alpha.",
+          "Complete reference for the satus CLI: init, plan, generate. Every flag, every environment variable, every exit code. v0.1.1.",
       },
       { property: "og:title", content: "CLI reference—satus" },
       {
@@ -264,7 +264,7 @@ function CliPage() {
         </ul>
 
         <p className="mt-10 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-          Reference for satus 0.1.0-alpha. Flags marked above are stable across the 0.1.x line.
+          Reference for satus 0.1.1. Flags marked above are stable across the 0.1.x line.
         </p>
       </Section>
     </PageShell>
