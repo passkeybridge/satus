@@ -40,11 +40,11 @@ export const Route = createFileRoute("/")({
         content:
           "Reads your Postgres schema and writes realistic seed data that respects every foreign key, constraint, and business rule. Built for demos and QA.",
       },
-      { property: "og:title", content: "satus, seed data that looks like a real business" },
+      { property: "og:title", content: "satus—relationally-coherent seed data for Postgres" },
       {
         property: "og:description",
         content:
-          "Stop demoing with John Doe and Lorem Ipsum Corp. satus reads your Postgres schema and writes data that respects every foreign key.",
+          "Reads your Postgres schema and writes realistic seed data that respects every foreign key, constraint, and business rule. Built for demos and QA.",
       },
       { property: "og:url", content: SITE_URL + "/" },
       { property: "og:type", content: "website" },
