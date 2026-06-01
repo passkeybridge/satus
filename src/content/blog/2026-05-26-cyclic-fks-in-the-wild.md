@@ -8,7 +8,7 @@ tags: [postgres, foreign-keys, graphs, seeding]
 draft: false
 ---
 
-The textbook description of seeding a relational database is: topologically sort the table dependency graph, then insert in order. Parent rows first, child rows next, done. It works exactly until you meet the first schema with a cycle, which — in our experience with private SaaS, marketplace, and audit-heavy schemas — is common enough that no production seed tool can pretend cycles are an edge case. (The structural audit of five public OSS schemas we publish at [`corpus/audit-2026-06-01.json`](https://github.com/passkeybridge/satus/blob/main/corpus/audit-2026-06-01.json) found zero FK cycles across 227 foreign keys; cycles primarily live in private codebases where the bootstrap row was always the awkward case.)
+The textbook description of seeding a relational database is: topologically sort the table dependency graph, then insert in order. Parent rows first, child rows next, done. It works exactly until you meet the first schema with a cycle, which — in our experience with private SaaS, marketplace, and audit-heavy schemas — is common enough that no production seed tool can pretend cycles are an edge case. (The structural audit of five public OSS schemas we publish at [`corpus/audit-2026-06-01.json`](https://satus.sh/corpus/audit-2026-06-01.json) found zero FK cycles across 227 foreign keys; cycles primarily live in private codebases where the bootstrap row was always the awkward case.)
 
 This post walks through how [satus](/) detects cycles in the foreign-key graph, why we refuse to disable constraints during a seed run, and the two-pass insert strategy we settled on after burning a few weekends on alternatives.
 
@@ -127,6 +127,6 @@ The [quickstart](/quickstart) shows the full setup. The [saas-subscriptions prof
 - PostgreSQL documentation, [pg_catalog.pg_constraint](https://www.postgresql.org/docs/current/catalog-pg-constraint.html).
 - Kahn, A. B. (1962). [Topological sorting of large networks](https://dl.acm.org/doi/10.1145/368996.369025). *Communications of the ACM*, 5(11), 558–562.
 - Earlier in this log: [Introducing the satus log](/blog/introducing-the-log).
-- The corpus underlying this post's structural counts: [`corpus/audit-2026-06-01.json`](https://github.com/passkeybridge/satus/blob/main/corpus/audit-2026-06-01.json) (5 schemas, 151 tables, 227 FKs, Postgres 17).
+- The corpus underlying this post's structural counts: [`corpus/audit-2026-06-01.json`](https://satus.sh/corpus/audit-2026-06-01.json) (5 schemas, 151 tables, 227 FKs, Postgres 17).
 
 —the satus.sh team
