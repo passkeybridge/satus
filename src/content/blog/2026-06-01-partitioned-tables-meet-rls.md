@@ -95,20 +95,11 @@ Two lines, run once per missing partition. The choice between `ENABLE` and `ENAB
 
 There is a deeper question buried in this: should the parent's policies be *automatically* attached to new partitions? Postgres has chosen no. New partitions are independent tables; their RLS state is whatever `CREATE TABLE PARTITION OF` and any subsequent `ALTER TABLE` give them. There is no `INHERIT POLICIES` keyword. The CREATE POLICY documentation is explicit that policies are per-table ([PostgreSQL: CREATE POLICY, Notes](https://www.postgresql.org/docs/current/sql-createpolicy.html)). This is a defensible design—policies often need to differ by partition for retention or archival reasons—but it makes the partition-creation step a security boundary that most ORMs and migration tools do not surface.
 
-A short scan of the partitioned schemas in our review corpus, where the parent has at least one RLS policy:
+We ran a structural audit of five open-source Postgres schemas that ship raw SQL migrations (listmonk, lemmy, powerdns, penpot, pagila) on Postgres 17, covering 151 user tables. The full results are in [`corpus/audit-2026-06-01.json`](https://github.com/passkeybridge/satus/blob/main/corpus/audit-2026-06-01.json). The number of declarative-partitioned parent tables across all five: **one**. The number of parents whose policies could be bypassed by writing directly to a child: zero in this corpus, because only one schema partitioned at all and it has no RLS policies on the parent.
 
-```text
-                        parents w/ RLS      children missing RLS
-                        on parent           on at least one child
-                       ──────────────────  ──────────────────────
-saas-subscriptions     11                  9  (82%)
-medical-booking        4                   3  (75%)
-ecommerce              6                   4  (67%)
-─────────────────────  ──────────────────  ──────────────────────
-total                  21                  16 (76%)
-```
+That is itself the headline. Declarative partitioning is rare in published open-source OLTP schemas; teams that adopt it almost always do so inside private codebases (per-tenant SaaS, time-series telemetry, audit logs) that are exactly where RLS *also* gets adopted. The intersection is small and almost never visible in public corpora, which is part of why this footgun keeps surprising people: there is no public schema to copy a working pattern from.
 
-The pattern is not "some teams forgot once". It is the default outcome of every workflow we have seen, including ones written by experienced platform teams. The migration that creates the parent enables RLS on the parent. The migration that creates the next month's partition does not, because it is a copy-paste of last month's, which did not need to.
+The pattern is not "some teams forgot once". It is the default outcome of every workflow we have seen on private schemas, including ones written by experienced platform teams. The migration that creates the parent enables RLS on the parent. The migration that creates the next month's partition does not, because it is a copy-paste of last month's, which did not need to.
 
 ## The seeding workaround, in two lines
 
@@ -122,7 +113,7 @@ A few things this detection deliberately does not try to handle:
 
 - **Policy drift.** If `events_2026_05` has RLS enabled but a different policy than the parent, satus does not currently diff the policy expressions. We have not seen this be the failure mode in practice; the dominant mode is "no policy at all on the child".
 - **Default partition gaps.** A `DEFAULT` partition with mismatched RLS is the worst version of this bug, because rows that do not match any other range end up there and may be silently invisible. We flag it the same way as any other partition, with no special call-out yet. That should change; it is on the v0.3 list.
-- **Inheritance (the legacy `INHERITS` mechanism, not declarative partitioning).** Pre-PG10 inheritance has slightly different RLS semantics for some access paths. We see it in fewer than one schema per fifty and currently do not run the partition check on inheritance trees. If you are on legacy inheritance and want this, file an issue.
+- **Inheritance (the legacy `INHERITS` mechanism, not declarative partitioning).** Pre-PG10 inheritance has slightly different RLS semantics for some access paths. We see it rarely in modern schemas and currently do not run the partition check on inheritance trees. If you are on legacy inheritance and want this, file an issue.
 
 ## The shorter version
 
@@ -136,6 +127,7 @@ A few things this detection deliberately does not try to handle:
 - PostgreSQL documentation, [ALTER TABLE](https://www.postgresql.org/docs/current/sql-altertable.html) (ENABLE / FORCE ROW LEVEL SECURITY).
 - PostgreSQL documentation, [Event Triggers](https://www.postgresql.org/docs/current/event-triggers.html).
 - Earlier in this log: [NULL vs NOT NULL is not the question](/blog/null-vs-not-null-is-not-the-question), [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild).
+- The corpus underlying this post's structural counts: [`corpus/audit-2026-06-01.json`](https://github.com/passkeybridge/satus/blob/main/corpus/audit-2026-06-01.json) (5 schemas, 151 tables, Postgres 17).
 - See also: [satus profiles](/profiles), [quickstart](/quickstart).
 
 —the satus.sh team

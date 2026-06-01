@@ -1,0 +1,40 @@
+{
+  "$comment": "Schemas that ship as raw .sql and apply cleanly to vanilla Postgres 17. Pin to a specific commit/tag so re-runs are reproducible. Each source: shallow-clone, create extensions, apply files in order. A source whose files don't apply is recorded as failed and contributes no metrics.",
+  "sources": [
+    {
+      "name": "listmonk",
+      "repo": "https://github.com/knadh/listmonk.git",
+      "ref": "v3.0.0",
+      "extensions": [],
+      "files": ["schema.sql"]
+    },
+    {
+      "name": "lemmy",
+      "repo": "https://github.com/LemmyNet/lemmy.git",
+      "ref": "0.19.5",
+      "extensions": ["pg_trgm", "ltree"],
+      "filesGlob": "migrations/*/up.sql"
+    },
+    {
+      "name": "powerdns",
+      "repo": "https://github.com/PowerDNS/pdns.git",
+      "ref": "auth-4.9.3",
+      "extensions": [],
+      "files": ["modules/gpgsqlbackend/schema.pgsql.sql"]
+    },
+    {
+      "name": "penpot",
+      "repo": "https://github.com/penpot/penpot.git",
+      "ref": "2.4.3",
+      "extensions": [],
+      "filesGlob": "backend/src/app/migrations/sql/*.sql"
+    },
+    {
+      "name": "pagila",
+      "repo": "https://github.com/devrimgunduz/pagila.git",
+      "ref": "master",
+      "extensions": [],
+      "files": ["pagila-schema.sql"]
+    }
+  ]
+}
