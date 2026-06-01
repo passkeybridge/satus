@@ -22,7 +22,7 @@ Most schema reviews assume two states for any column: it has a value, or it is `
 | **Defaulted**    | the `DEFAULT` expression's value | a real value the app never wrote    | `attnotnull = false/true`, `atthasdef`  |
 | **Generated**    | computed from other columns      | derived, never authored by the app  | `attgenerated = 's'` (stored)           |
 
-Generated columns ([PostgreSQL docs: Generated Columns](https://www.postgresql.org/docs/current/ddl-generated-columns.html)) landed in Postgres 12 and remain under-used in practice — a structural audit of five public OSS schemas covering 1,095 columns ([`corpus/audit-2026-06-01.json`](https://github.com/passkeybridge/satus/blob/main/corpus/audit-2026-06-01.json)) found zero generated columns. They are the answer to a surprising number of seeding bugs, and we get to them at the end.
+Generated columns ([PostgreSQL docs: Generated Columns](https://www.postgresql.org/docs/current/ddl-generated-columns.html)) landed in Postgres 12 and remain under-used in practice — a structural audit of five public OSS schemas covering 1,095 columns ([`corpus/audit-2026-06-01.json`](https://satus.sh/corpus/audit-2026-06-01.json)) found zero generated columns. They are the answer to a surprising number of seeding bugs, and we get to them at the end.
 
 The bug from the opening was a category error between the first two rows of that table. `deleted_at` is nullable in the catalog, but in the application's mental model it is a **defaulted column whose default is NULL**. Those are not the same column.
 
