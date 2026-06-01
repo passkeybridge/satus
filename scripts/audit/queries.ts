@@ -87,6 +87,9 @@ export const CONSTRAINT_COUNTS = `
  * here and do cycle detection (Tarjan SCC) in TS rather than SQL — the
  * cycle algorithm is easier to test outside the database.
  */
+// FK_EDGES qualifies the namespace filter to ns.nspname (the constraint's
+// own schema) explicitly — the source-side. Cross-schema FKs are still
+// returned because the join brings in fns.nspname for the destination.
 export const FK_EDGES = `
   SELECT
     ns.nspname || '.' || cls.relname AS src,
@@ -97,5 +100,7 @@ export const FK_EDGES = `
   JOIN pg_namespace ns ON ns.oid = cls.relnamespace
   JOIN pg_class fcls ON fcls.oid = con.confrelid
   JOIN pg_namespace fns ON fns.oid = fcls.relnamespace
-  WHERE con.contype = 'f' AND (${USER_SCHEMAS_FILTER});
+  WHERE con.contype = 'f'
+    AND ns.nspname NOT IN ('pg_catalog','information_schema','pg_toast','extensions','graphql','graphql_public','realtime','storage','vault','pgsodium','pgsodium_masks','supabase_functions','net','pgmq','auth','cron')
+    AND ns.nspname NOT LIKE 'pg_%';
 `;
