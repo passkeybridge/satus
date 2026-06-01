@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-01T10:46:57.503Z",
+  "generated_at": "2026-06-01T10:47:23.880Z",
   "postgres_major": 17,
   "source_count": 5,
-  "ok_count": 3,
+  "ok_count": 4,
   "results": [
     {
       "name": "listmonk",
@@ -109,27 +109,26 @@
       "name": "pagila",
       "repo": "https://github.com/devrimgunduz/pagila.git",
       "ref": "master",
-      "applied_files": 0,
-      "apply_status": "failed",
+      "applied_files": 1,
+      "apply_status": "ok",
       "metrics": {
-        "tables_total": null,
-        "partitioned_parents": null,
-        "partitioned_parents_with_rls": null,
-        "partitioned_parents_with_unprotected_child": null,
-        "columns_total": null,
-        "columns_nullable": null,
-        "columns_notnull": null,
-        "columns_generated": null,
-        "citext_columns": null,
-        "text_email_columns": null,
-        "check_constraints": null,
-        "unique_constraints_single_col": null,
-        "unique_constraints_multi_col": null,
-        "fk_total": null,
-        "fk_cycle_count": null,
-        "largest_cycle_size": null
-      },
-      "error_message": "pagila-schema.sql: psql:/tmp/corpus-cache/pagila/pagila-schema.sql:26: ERROR:  role \"postgres\" does not exist "
+        "tables_total": 21,
+        "partitioned_parents": 1,
+        "partitioned_parents_with_rls": 0,
+        "partitioned_parents_with_unprotected_child": 0,
+        "columns_total": 171,
+        "columns_nullable": 57,
+        "columns_notnull": 114,
+        "columns_generated": 0,
+        "citext_columns": 0,
+        "text_email_columns": 2,
+        "check_constraints": 1,
+        "unique_constraints_single_col": 0,
+        "unique_constraints_multi_col": 0,
+        "fk_total": 36,
+        "fk_cycle_count": 0,
+        "largest_cycle_size": 0
+      }
     }
   ]
 }
