@@ -1,0 +1,48 @@
+{
+  "$comment": "Schemas that ship as raw .sql and apply cleanly to vanilla Postgres 17. Pin to a specific commit so re-runs are reproducible. Each source: shallow-clone, create extensions, apply files in order. Files missing on disk are skipped with a warning; apply errors abort that source and mark it 'failed' (it contributes no metrics).",
+  "sources": [
+    {
+      "name": "listmonk",
+      "repo": "https://github.com/knadh/listmonk.git",
+      "ref": "v3.0.0",
+      "extensions": [],
+      "files": ["schema.sql"]
+    },
+    {
+      "name": "umami",
+      "repo": "https://github.com/umami-software/umami.git",
+      "ref": "v2.13.0",
+      "extensions": [],
+      "files": ["db/postgresql/schema.sql"]
+    },
+    {
+      "name": "lemmy",
+      "repo": "https://github.com/LemmyNet/lemmy.git",
+      "ref": "0.19.5",
+      "extensions": ["pg_trgm", "ltree"],
+      "filesGlob": "migrations/*/up.sql"
+    },
+    {
+      "name": "powerdns",
+      "repo": "https://github.com/PowerDNS/pdns.git",
+      "ref": "auth-4.9.3",
+      "extensions": [],
+      "files": ["modules/gpgsqlbackend/schema.pgsql.sql"]
+    },
+    {
+      "name": "penpot",
+      "repo": "https://github.com/penpot/penpot.git",
+      "ref": "2.4.3",
+      "extensions": [],
+      "filesGlob": "backend/resources/app/migrations/sql/*.up.sql"
+    },
+    {
+      "name": "satus-self",
+      "repo": "local",
+      "ref": "HEAD",
+      "extensions": [],
+      "filesGlob": "supabase/migrations/*.sql",
+      "applyAsSuperuser": true
+    }
+  ]
+}
