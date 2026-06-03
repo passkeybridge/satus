@@ -13,8 +13,9 @@
  * supplies its own sections array and content.
  */
 
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+import { Menu, X } from "lucide-react";
 import type { SectionMeta } from "./primitives";
 
 /* ------------------------------------------------------------------ *
