@@ -485,15 +485,6 @@ function SampleOutput() {
           </article>
         ))}
       </div>
-    </Section>
-  );
-}
-
-/* ------------------ §06 Continue reading ------------------ */
-
-          </article>
-        ))}
-      </div>
 
       {/* Inline proof-stage CTA. Visitors who read the sample rows have
        *  signaled interest in realism—point them at the rest of the profiles. */}
@@ -508,6 +499,7 @@ function SampleOutput() {
 }
 
 /* ------------------ §06 Continue reading ------------------ */
+
 
 const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string; desc: string }[] = [
   { to: "/profiles", label: "Reference profiles", desc: "Three hand-tuned domains: medical, e-commerce, SaaS." },
