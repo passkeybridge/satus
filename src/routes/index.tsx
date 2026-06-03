@@ -113,9 +113,17 @@ function Overview() {
         <InstallLine />
       </div>
 
-      <Link to="/quickstart" className="link-underline mt-6 inline-flex font-mono text-[13px]">
-        read the quickstart →
-      </Link>
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <Link to="/quickstart" className="link-underline font-mono text-[13px]">
+          read the quickstart →
+        </Link>
+        <Link
+          to="/docs"
+          className="link-underline font-mono text-[13px] text-[var(--mute)] hover:text-[var(--ink)]"
+        >
+          read the docs →
+        </Link>
+      </div>
 
       <div className="mt-10 max-w-[640px] border-t border-[var(--hairline)] pt-6">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
@@ -477,11 +485,21 @@ function SampleOutput() {
           </article>
         ))}
       </div>
+
+      {/* Inline proof-stage CTA. Visitors who read the sample rows have
+       *  signaled interest in realism—point them at the rest of the profiles. */}
+      <Link
+        to="/profiles"
+        className="link-underline mt-10 inline-flex font-mono text-[13px]"
+      >
+        see all three reference profiles →
+      </Link>
     </Section>
   );
 }
 
 /* ------------------ §06 Continue reading ------------------ */
+
 
 const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string; desc: string }[] = [
   { to: "/profiles", label: "Reference profiles", desc: "Three hand-tuned domains: medical, e-commerce, SaaS." },
@@ -491,29 +509,69 @@ const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string;
 
 function Next() {
   return (
-    <Section
-      id="next"
-      n="06"
-      label="Continue reading"
-      title={<>the rest of the specification.</>}
-    >
-      <div className="max-w-[760px] border-t border-[var(--hairline)]">
-        {NEXT_LINKS.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className="group grid grid-cols-[200px_1fr] gap-x-8 border-b border-[var(--hairline)] py-5 transition-colors hover:bg-[var(--ink)]/[0.02]"
-          >
-            <span className="font-mono text-[14px] font-medium text-[var(--ink)]">
-              {item.label}
-              <span className="ml-2 text-[var(--signal)] transition-transform group-hover:translate-x-0.5">
-                →
+    <>
+      <Section
+        id="next"
+        n="06"
+        label="Continue reading"
+        title={<>the rest of the specification.</>}
+      >
+        <div className="max-w-[760px] border-t border-[var(--hairline)]">
+          {NEXT_LINKS.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="group grid grid-cols-[200px_1fr] gap-x-8 border-b border-[var(--hairline)] py-5 transition-colors hover:bg-[var(--ink)]/[0.02]"
+            >
+              <span className="font-mono text-[14px] font-medium text-[var(--ink)]">
+                {item.label}
+                <span className="ml-2 text-[var(--signal)] transition-transform group-hover:translate-x-0.5">
+                  →
+                </span>
               </span>
-            </span>
-            <span className="text-[15px] leading-[1.6] text-[var(--ink)]/85">{item.desc}</span>
+              <span className="text-[15px] leading-[1.6] text-[var(--ink)]/85">{item.desc}</span>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      <ClosingBand />
+    </>
+  );
+}
+
+/* ------------------ Pre-footer closing band ------------------ */
+
+/**
+ * Last-chance CTA strip. Lives outside any numbered Section so it reads as
+ * page chrome rather than a numbered clause. Two-column on desktop (value
+ * prop left, action right), stacked on mobile. Hairline borders only; one
+ * --signal accent on the primary arrow to match the rest of the page.
+ */
+function ClosingBand() {
+  return (
+    <aside
+      aria-label="Get started"
+      className="mt-20 border-y-2 border-[var(--ink)] py-8"
+    >
+      <div className="grid grid-cols-1 items-baseline gap-x-10 gap-y-5 md:grid-cols-[1fr_auto]">
+        <p className="max-w-[52ch] font-sans text-[16px] leading-[1.55] text-[var(--ink)]">
+          The free tier seeds up to 500 rows per run against any Postgres database. No account, no
+          credit card, no hosted runtime.
+        </p>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[13px] md:justify-end">
+          <Link to="/quickstart" className="link-underline text-[var(--ink)]">
+            start with the free tier{" "}
+            <span className="text-[var(--signal)]">→</span>
           </Link>
-        ))}
+          <Link
+            to="/pricing"
+            className="link-underline text-[var(--mute)] hover:text-[var(--ink)]"
+          >
+            see pricing →
+          </Link>
+        </div>
       </div>
-    </Section>
+    </aside>
   );
 }
