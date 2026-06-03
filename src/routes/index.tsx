@@ -113,9 +113,17 @@ function Overview() {
         <InstallLine />
       </div>
 
-      <Link to="/quickstart" className="link-underline mt-6 inline-flex font-mono text-[13px]">
-        read the quickstart →
-      </Link>
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <Link to="/quickstart" className="link-underline font-mono text-[13px]">
+          read the quickstart →
+        </Link>
+        <Link
+          to="/docs"
+          className="link-underline font-mono text-[13px] text-[var(--mute)] hover:text-[var(--ink)]"
+        >
+          read the docs →
+        </Link>
+      </div>
 
       <div className="mt-10 max-w-[640px] border-t border-[var(--hairline)] pt-6">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
