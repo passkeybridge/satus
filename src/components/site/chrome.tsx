@@ -37,6 +37,24 @@ export const GITHUB_URL = "https://github.com/passkeybridge/satus";
 /* ------------------ TopBar ------------------ */
 
 export function TopBar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll while the drawer is open.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
+
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--hairline)] bg-[var(--paper)]/95 backdrop-blur-[2px]">
       <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between px-6 lg:px-10">
@@ -76,38 +94,69 @@ export function TopBar() {
           </span>
           <Link
             to="/quickstart"
-            className="font-mono text-[12px] text-[var(--ink)] transition-opacity hover:opacity-70"
+            className="hidden font-mono text-[12px] text-[var(--ink)] transition-opacity hover:opacity-70 md:inline"
           >
             install →
           </Link>
+
+          {/* Hamburger: shown only on phones where the primary nav is hidden. */}
+          <button
+            type="button"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-drawer"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="-mr-2 inline-flex h-9 w-9 items-center justify-center text-[var(--ink)] md:hidden"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile-only secondary nav row. The primary <nav> above is md:flex
-       *  (hidden < 768px) because four monospace nav items don't fit alongside
-       *  the wordmark and the github link on phones. This strip keeps the
-       *  routes one tap away without a hamburger menu—on-brand for a
-       *  documentation-style site. */}
-      <nav
-        aria-label="Primary mobile"
-        className="flex items-center gap-5 overflow-x-auto border-t border-[var(--hairline)] bg-[var(--paper)] px-6 py-2 font-mono text-[12px] text-[var(--mute)] md:hidden"
-      >
-        {SITE_NAV.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            activeOptions={{ exact: true }}
-            activeProps={{
-              className: "text-[var(--ink)]",
-              "aria-current": "page",
-            }}
-            inactiveProps={{ className: "hover:text-[var(--ink)]" }}
-            className="shrink-0 transition-colors"
+      {/* Mobile drawer. Slides down from the TopBar; full-width spec-document
+       *  styling to match the rest of the chrome. */}
+      {mobileOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 top-14 z-30 bg-[var(--ink)]/20 md:hidden"
+          />
+          <nav
+            id="mobile-nav-drawer"
+            aria-label="Primary mobile"
+            className="absolute inset-x-0 top-full z-40 border-b border-[var(--hairline)] bg-[var(--paper)] md:hidden"
           >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+            <ol className="mx-auto max-w-[1280px] px-6 py-3">
+              {SITE_NAV.map((item) => (
+                <li key={item.to} className="border-b border-[var(--hairline)] last:border-b-0">
+                  <Link
+                    to={item.to}
+                    activeOptions={{ exact: true }}
+                    activeProps={{
+                      className: "text-[var(--ink)]",
+                      "aria-current": "page",
+                    }}
+                    inactiveProps={{ className: "text-[var(--mute)] hover:text-[var(--ink)]" }}
+                    className="block py-3 font-mono text-[14px] transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+              <li className="mt-2 border-t border-[var(--ink)] pt-3">
+                <Link
+                  to="/quickstart"
+                  className="block py-2 font-mono text-[13px] text-[var(--ink)]"
+                >
+                  install →
+                </Link>
+              </li>
+            </ol>
+          </nav>
+        </>
+      )}
     </header>
   );
 }
