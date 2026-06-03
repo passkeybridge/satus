@@ -146,7 +146,8 @@ export function LeftRail({
   }, [sections]);
 
   return (
-    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-[240px] shrink-0 overflow-y-auto border-r border-[var(--hairline)] py-10 pr-6 lg:block">
+    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-[240px] shrink-0 overflow-y-auto border-r border-[var(--hairline)] py-10 pr-6 xl:block">
+
       <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
         On this page
       </div>
@@ -355,8 +356,9 @@ export function PageShell({
       <TopBar />
       <div className="mx-auto flex max-w-[1280px] px-6 lg:px-10">
         <LeftRail sections={sections} currentPath={currentPath} />
-        <main className="min-w-0 flex-1 py-10 lg:pl-12">{children}</main>
+        <main className="min-w-0 flex-1 py-10 xl:pl-12">{children}</main>
       </div>
+
       <Footer />
     </div>
   );
