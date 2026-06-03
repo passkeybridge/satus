@@ -10,7 +10,7 @@ draft: false
 
 A user opened a ticket last week: *"satus said it inserted 10,000 rows. `SELECT count(*) FROM users` returns 6,200. What happened to the rest?"* Postgres had not lost anything. The `users.email` column was declared `CITEXT`, the column had a `UNIQUE` constraint, and the seeder had cheerfully generated names like `Alice.Smith@example.com` and `alice.smith@example.com` from the same distribution. To the unique index those are the same value. About 38% of the inserts hit a conflict and were swallowed by the `ON CONFLICT DO NOTHING` clause that satus uses to keep partial runs idempotent. The math worked out exactly.
 
-That was the visible bug. The bigger trap is that CITEXT is a 2007-era extension that the Postgres documentation now openly discourages in favor of nondeterministic ICU collations introduced in Postgres 12, and almost every schema that "needs case-insensitive text" has quietly stopped using it without telling anyone. We looked.
+That was the visible bug. The bigger trap is that the Postgres documentation itself now tips readers toward nondeterministic ICU collations (introduced in Postgres 12) over the `citext` extension, and almost every schema that "needs case-insensitive text" has quietly stopped using it without telling anyone. We looked.
 
 ## What CITEXT actually is
 
@@ -118,7 +118,7 @@ If you are starting a schema today and want case-insensitive uniqueness on an em
 
 1. **`text` with a functional unique index on `lower(col)`.** Works on every Postgres, preserves `LIKE`, makes the case-folding explicit at every site that cares. This is what the OSS schemas we audited do, and it is what satus generates against without any special handling.
 2. **`text COLLATE <nondeterministic-icu>` for the column.** Cleaner at the schema level, predictable Unicode rules, but you lose `LIKE` on the column and you take a hard dependency on ICU being available (Postgres builds without ICU exist, especially in older containers).
-3. **`CITEXT`.** Only if you are extending a schema that already uses it, or if you have a specific reason to want the extension's libc-based folding behavior. New code should not reach for it; the maintainers themselves prefer the collation route ([PostgreSQL: citext, "Note"](https://www.postgresql.org/docs/current/citext.html)).
+3. **`CITEXT`.** Only if you are extending a schema that already uses it, or if you have a specific reason to want the extension's `lower()`-based folding behavior. New code should not reach for it; the citext docs themselves contain a Tip recommending nondeterministic collations instead ([PostgreSQL: citext](https://www.postgresql.org/docs/current/citext.html)).
 
 The thing every option has in common, and the thing satus learned the hard way, is that "case-insensitive" is a property of the comparison, not of the data. The row on disk still has the case the user typed. The index, the collation, or the functional expression decides what counts as equal. If your seeder ignores that and treats the column as plain text, the database will silently disagree with it and the disagreement will show up as a count that does not match. The opening ticket was the cleanest possible version of that story. We have since seen it in three other shapes (a `usernames` table, a `tags` table, and a tenancy `subdomains` table) and the resolution is the same in all of them: detect the case-folding contract on the column, fold inside the generator, let the database see only values it has not seen before.
 
