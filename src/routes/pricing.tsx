@@ -26,7 +26,7 @@ const TIERS = [
     id: "free",
     name: "Free",
     price: "$0",
-    cadence: "open source · MIT",
+    cadence: "free tier · 25 rows × 5 tables",
     cta: "install from npm",
     href: "/quickstart",
     primary: false,
@@ -82,7 +82,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is there a free trial on Pro?",
-    a: "No. The Free tier is the trial—it's the full CLI under MIT, with community profiles and no time limit. Pro adds the three official profiles, hosted profile updates, and priority triage. If those don't earn $19 a month, you should stay on Free.",
+    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with community profiles and no time limit. Pro lifts the caps and adds the three official profiles, hosted profile updates, and priority triage. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
   },
   {
     q: "What's the refund policy?",
@@ -106,7 +106,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "satus pricing: Free (MIT open source), Pro at $19/mo, Team at $49/seat. Bring-your-own LLM key on every tier. We don't resell tokens.",
+          "satus pricing: Free tier (25 rows × 5 tables), Pro at $19/mo, Team at $49/seat. Bring-your-own LLM key on every tier. We don't resell tokens.",
       },
       { property: "og:title", content: "Pricing—satus" },
       {
