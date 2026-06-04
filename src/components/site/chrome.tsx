@@ -17,6 +17,11 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import type { SectionMeta } from "./primitives";
+import {
+  SATUS_SPEC,
+  SATUS_VERSION_TAG,
+  SATUS_RELEASED_AT,
+} from "@/lib/version";
 
 /* ------------------------------------------------------------------ *
  * Route-level navigation. Defined once, used by TopBar and LeftRail. *
