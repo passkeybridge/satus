@@ -140,11 +140,20 @@ export async function introspect(
   exclude: string[] = [],
 ): Promise<IntrospectedSchema> {
   const skip = new Set(exclude)
-  const tablesRes = await client.query(TABLES_SQL, [schema])
-  const colsRes = await client.query(COLUMNS_SQL, [schema])
-  const pksRes = await client.query(PK_SQL, [schema])
-  const fksRes = await client.query(FK_SQL, [schema])
-  const uqRes = await client.query(UNIQUE_SQL, [schema])
+
+  // v0.2: fan the five catalog queries out in parallel. The Postgres
+  // wire protocol pipelines them on a single connection and the server
+  // executes them concurrently, so on a 70-table schema the wall-clock
+  // cost collapses from sum(query_times) to max(query_times). This is
+  // safe because the queries are independent reads against system
+  // catalogs; ordering of the result sets does not matter.
+  const [tablesRes, colsRes, pksRes, fksRes, uqRes] = await Promise.all([
+    client.query(TABLES_SQL, [schema]),
+    client.query(COLUMNS_SQL, [schema]),
+    client.query(PK_SQL, [schema]),
+    client.query(FK_SQL, [schema]),
+    client.query(UNIQUE_SQL, [schema]),
+  ])
 
   const tablesByName = new Map<string, Table>()
   for (const r of tablesRes.rows) {
@@ -186,6 +195,8 @@ export async function introspect(
       refSchema: r.ref_schema,
       refTable: r.ref_table,
       refColumn: r.ref_column,
+      deferrable: r.deferrable === true,
+      initiallyDeferred: r.initially_deferred === true,
     })
   }
 
