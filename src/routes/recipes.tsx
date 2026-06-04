@@ -4,8 +4,8 @@
  * Task-oriented guides. Each recipe is a self-contained "I want to do X"
  * card: problem statement, the exact commands, and a note on caveats.
  * Recipes intentionally stay short—anything longer than a page belongs in
- * the blog. v0.1 ships with four recipes covering the most common asks:
- * preview-branch seeding, GitHub Actions, Cypress/E2E reset, Neon branches.
+ * the blog. The current set covers four common asks: preview-branch
+ * seeding, GitHub Actions, Cypress/E2E reset, and Neon branches.
  *
  * GEO: each recipe is emitted as a HowTo node inside an ItemList so
  * generative engines can quote a single recipe without parsing the whole page.
