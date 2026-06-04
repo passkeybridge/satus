@@ -50,11 +50,11 @@ satus generate --profile saas --dry-run   # plan only, no LLM call, no writes
 
 ## License tiers
 
-| Tier | Price | Rows per run | Profiles | LLM key |
-|---|---|---|---|---|
-| Free | $0 | up to 1,000 | `saas` only | BYO |
-| Pro | $19/mo | unlimited | all three | BYO |
-| Team | $79/mo | unlimited | all three + custom | BYO, shared license |
+| Tier | Price | Rows/table | Max tables | Profiles | LLM key |
+|---|---|---|---|---|---|
+| Free | $0 | 25 | 5 | all three | BYO |
+| Pro | $19/mo | unlimited | unlimited | all three | BYO |
+| Team | $79/mo | unlimited | unlimited | all three + custom | BYO, shared license |
 
 License keys are verified against `https://satus.sh/api/public/license/verify` and cached locally for 24 hours under `~/.satus/`.
 
