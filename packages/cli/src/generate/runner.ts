@@ -28,7 +28,10 @@ export interface RunOptions {
   apiKey: string
   maxCostUsd: number
   dryRun: boolean
+  /** Soft-cycle back-edges to populate after every table is seeded. */
+  brokenEdges?: Array<{ table: string; column: string; refTable: string; refColumn: string }>
 }
+
 
 export interface TablePlan {
   table: string
