@@ -141,7 +141,7 @@ function DocsPage() {
             to="/pricing"
             kicker="commercial"
             title="Pricing &amp; tiers"
-            body="Free is MIT and complete. Pro adds private profiles and priority support. Team is a waitlist. No token resale."
+            body="Free runs the same CLI binary, capped at 25 rows × 5 tables. Pro lifts the caps and adds private profiles and priority support. Team is a waitlist. No token resale."
           />
         </CardGrid>
       </Section>
