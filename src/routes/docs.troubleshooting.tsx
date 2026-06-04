@@ -273,9 +273,10 @@ function TroubleshootingPage() {
       >
         <Prose>
           <p>
-            Free is MIT and complete; license-keyed activation only applies to
-            Pro. The CLI verifies once, caches for 24 hours, and works offline
-            within that window.
+            Free runs uncapped time-wise but caps each run at 25 rows per
+            table across 5 tables; license-keyed activation lifts those caps
+            and applies to Pro and Team. The CLI verifies once, caches for
+            24 hours, and works offline within that window.
           </p>
         </Prose>
         <FaqList items={groupFor("license")} />
