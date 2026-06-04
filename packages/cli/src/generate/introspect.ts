@@ -90,13 +90,19 @@ const PK_SQL = `
 // privilege-filtered: a role that can read the table but not the parent
 // table will see zero FK rows, which silently breaks the topo sort.
 // pg_catalog returns FK metadata for any role that can see the table.
+//
+// v0.2: also surface the deferrable / initially-deferred flags from
+// pg_constraint. The runner uses these to decide whether a topo-cycle
+// can be broken by SET CONSTRAINTS ALL DEFERRED instead of erroring.
 const FK_SQL = `
   select
     cls.relname        as table_name,
     att.attname        as column_name,
     fns.nspname        as ref_schema,
     fcls.relname       as ref_table,
-    fatt.attname       as ref_column
+    fatt.attname       as ref_column,
+    con.condeferrable  as deferrable,
+    con.condeferred    as initially_deferred
   from pg_constraint con
   join pg_class cls    on cls.oid = con.conrelid
   join pg_namespace ns on ns.oid = cls.relnamespace
