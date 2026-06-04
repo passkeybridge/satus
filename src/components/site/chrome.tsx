@@ -95,7 +95,7 @@ export function TopBar() {
 
         <div className="flex items-center gap-5">
           <span className="hidden font-mono text-[11px] text-[var(--mute)] sm:inline">
-            v0.1.1
+            {SATUS_VERSION_TAG}
           </span>
           <Link
             to="/quickstart"
