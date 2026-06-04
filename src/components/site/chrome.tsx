@@ -17,6 +17,11 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import type { SectionMeta } from "./primitives";
+import {
+  SATUS_SPEC,
+  SATUS_VERSION_TAG,
+  SATUS_RELEASED_AT,
+} from "@/lib/version";
 
 /* ------------------------------------------------------------------ *
  * Route-level navigation. Defined once, used by TopBar and LeftRail. *
@@ -90,7 +95,7 @@ export function TopBar() {
 
         <div className="flex items-center gap-5">
           <span className="hidden font-mono text-[11px] text-[var(--mute)] sm:inline">
-            v0.1.1
+            {SATUS_VERSION_TAG}
           </span>
           <Link
             to="/quickstart"
@@ -256,16 +261,16 @@ export function LeftRail({
           Document
         </div>
         <dl className="mt-3 space-y-1.5 font-mono text-[11.5px] text-[var(--mute)]">
-          <Meta k="spec" v="satus/0.1" />
+          <Meta k="spec" v={SATUS_SPEC} />
           <Meta
             k="status"
             v={
               <span>
-                <span className="text-[var(--signal)]">●</span> v0.1.1
+                <span className="text-[var(--signal)]">●</span> {SATUS_VERSION_TAG}
               </span>
             }
           />
-          <Meta k="updated" v="2026-05-27" />
+          <Meta k="updated" v={SATUS_RELEASED_AT} />
           <Meta k="author" v="satus.sh" />
         </dl>
       </div>

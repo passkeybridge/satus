@@ -1,30 +1,36 @@
 /**
  * CLI reference route ("/cli").
  *
- * Single-page reference for every subcommand and flag in the satus CLI as of
- * v0.1.1. Pulls its canonical command set from the site's other pages
- * (quickstart, profiles, cyclic-FKs post) so there's exactly one truth across
- * the marketing surface.
+ * Single-page reference for every subcommand and flag in the satus CLI,
+ * matched verbatim against the binary's runtime --help output for the
+ * currently published version. Source of truth for the version string lives
+ * in src/lib/version.ts; the binary's own surface lives in
+ * packages/cli/src/commands/. When the CLI changes, this page changes too.
  *
- * GEO/SEO: TechArticle JSON-LD + a per-command "Command" abstract embedded as
- * SoftwareApplication.featureList in plain English so generative engines can
- * quote individual flags without parsing tables.
+ * GEO/SEO: TechArticle JSON-LD + a SoftwareApplication.featureList plus a
+ * per-command FlagTable so generative engines can quote individual flags
+ * without parsing the whole document.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
+import { SATUS_VERSION, SATUS_VERSION_TAG, SATUS_RELEASED_AT } from "@/lib/version";
 
 const SITE_URL = "https://satus.sh";
 
+// Section order mirrors the order the user encounters commands in a real
+// session: install (covered in /quickstart), init, generate, then the
+// licensing commands and the operational notes.
 const SECTIONS: ReadonlyArray<SectionMeta> = [
   { id: "synopsis", n: "01", label: "Synopsis" },
   { id: "env", n: "02", label: "Environment" },
   { id: "init", n: "03", label: "satus init" },
-  { id: "plan", n: "04", label: "satus plan" },
-  { id: "generate", n: "05", label: "satus generate" },
-  { id: "exit-codes", n: "06", label: "Exit codes" },
+  { id: "generate", n: "04", label: "satus generate" },
+  { id: "activate", n: "05", label: "satus activate" },
+  { id: "whoami", n: "06", label: "satus whoami" },
+  { id: "notes", n: "07", label: "Operational notes" },
 ];
 
 export const Route = createFileRoute("/cli")({
@@ -34,14 +40,13 @@ export const Route = createFileRoute("/cli")({
       { title: "CLI reference—satus" },
       {
         name: "description",
-        content:
-          "Complete reference for the satus CLI: init, plan, generate. Every flag, every environment variable, every exit code. v0.1.1.",
+        content: `Complete reference for the satus CLI ${SATUS_VERSION_TAG}: init, generate, activate, whoami. Every flag, every environment variable, taken directly from the published binary.`,
       },
       { property: "og:title", content: "CLI reference—satus" },
       {
         property: "og:description",
         content:
-          "Every subcommand, every flag, every exit code in the satus CLI. One page.",
+          "Every subcommand and every flag in the satus CLI, matched against the published binary. One page.",
       },
       { property: "og:url", content: SITE_URL + "/cli" },
       { property: "og:type", content: "article" },
@@ -68,9 +73,9 @@ export const Route = createFileRoute("/cli")({
             name: "PasskeyBridge LLC",
             url: "https://passkeybridge.io",
           },
-          dateModified: "2026-05-26",
+          dateModified: SATUS_RELEASED_AT,
           proficiencyLevel: "Beginner",
-          dependencies: "Node.js 18+; Postgres 14+",
+          dependencies: "Node.js 20+; PostgreSQL 14+",
         }),
       },
     ],
@@ -84,18 +89,22 @@ function CliPage() {
         id="synopsis"
         n="01"
         label="Synopsis"
-        title={<>three verbs. one binary.</>}
+        title={<>four verbs. one binary.</>}
       >
         <Prose>
           <p>
-            The CLI exposes three subcommands—<code>init</code>, <code>plan</code>,{" "}
-            <code>generate</code>—and a handful of global flags. Every command reads
-            connection and provider credentials from the environment, never from
-            flags, so secrets never land in shell history.
+            The CLI exposes four subcommands—<code>init</code>,{" "}
+            <code>generate</code>, <code>activate</code>, <code>whoami</code>—and
+            two global flags. Connection strings and provider keys are read from
+            the environment by default so secrets never land in shell history;
+            equivalent overrides are documented per command below.
           </p>
           <p>
             New here? Walk through the{" "}
-            <a href="/quickstart" className="underline decoration-[var(--signal)] underline-offset-4">
+            <a
+              href="/quickstart"
+              className="underline decoration-[var(--signal)] underline-offset-4"
+            >
               quickstart
             </a>{" "}
             first—this page is the reference, not the tutorial.
@@ -108,6 +117,7 @@ function CliPage() {
           <Blank />
           <Cmt>{`# global flags`}</Cmt>
           <Shell>{`satus --version`}</Shell>
+          <Out>{`satus ${SATUS_VERSION}`}</Out>
           <Shell>{`satus --help`}</Shell>
         </Terminal>
       </Section>
@@ -116,13 +126,13 @@ function CliPage() {
         id="env"
         n="02"
         label="Environment"
-        title={<>two variables. nothing else required.</>}
+        title={<>two variables. one optional override.</>}
       >
         <Prose>
           <p>
-            satus reads exactly two variables at runtime. Both are required for{" "}
-            <code>plan</code> and <code>generate</code>; <code>init</code> needs
-            neither.
+            satus reads two environment variables at runtime. Both are required
+            for <code>generate</code>; <code>init</code>, <code>activate</code>,
+            and <code>whoami</code> need neither.
           </p>
         </Prose>
 
@@ -130,12 +140,12 @@ function CliPage() {
           <EnvVar
             name="DATABASE_URL"
             req="required"
-            body="Standard libpq connection string. SSL is auto-negotiated. The 10,000-row safety guard introspects this database before any write; pass --force to override."
+            body="Standard libpq connection string. SATUS_DATABASE_URL is also accepted and takes precedence. Either can be overridden per run with --dsn on generate."
           />
           <EnvVar
             name="OPENAI_API_KEY"
             req="required"
-            body="Bring-your-own key. satus never proxies LLM calls; the request goes directly from your machine to your provider. OpenAI is the only supported provider at launch. Anthropic and Gemini land in 0.2 (ANTHROPIC_API_KEY, GOOGLE_API_KEY)."
+            body="Bring-your-own key. satus never proxies LLM calls; the request goes directly from your machine to OpenAI. OPENAI_BASE_URL is honored if you need to point at an OpenAI-compatible endpoint."
           />
         </ul>
       </Section>
@@ -144,127 +154,176 @@ function CliPage() {
         id="init"
         n="03"
         label="satus init"
-        title={<>fork a profile into your repo.</>}
+        title={<>scaffold a config in the current directory.</>}
       >
         <Prose>
           <p>
-            Writes a profile and a config file to <code>./satus/</code>. Safe to
-            re-run—it will refuse to overwrite existing files unless{" "}
-            <code>--force</code> is set.
+            Writes <code>satus.config.json</code> to the current working
+            directory. Interactive prompts ask for the connection string (blank
+            falls back to <code>$DATABASE_URL</code>), the schema, the profile,
+            and the row count. Safe to re-run; existing config is preserved
+            unless <code>--force</code> is set.
           </p>
         </Prose>
 
         <Terminal>
-          <Shell>{`satus init --profile <name>`}</Shell>
+          <Shell>{`satus init`}</Shell>
         </Terminal>
 
         <FlagTable
           rows={[
-            ["--profile <name>", "required", "One of: medical-booking, e-commerce, saas-subscriptions. See /profiles."],
-            ["--out <dir>", "./satus", "Directory to write profile + config into."],
-            ["--force", "false", "Overwrite existing satus/ files."],
-          ]}
-        />
-      </Section>
-
-      <Section
-        id="plan"
-        n="04"
-        label="satus plan"
-        title={<>introspect &amp; resolve. no writes.</>}
-      >
-        <Prose>
-          <p>
-            Reads either <code>DATABASE_URL</code> or a <code>--schema</code>{" "}
-            file, builds the dependency graph, breaks any FK cycles, and prints
-            the planned insert order plus a cost estimate. No rows are written.
-            Useful in CI to diff plans across schema migrations.
-          </p>
-        </Prose>
-
-        <Terminal>
-          <Cmt>{`# plan against the live database`}</Cmt>
-          <Shell>{`satus plan --profile saas-subscriptions`}</Shell>
-          <Blank />
-          <Cmt>{`# plan against a checked-in schema file (no DATABASE_URL needed)`}</Cmt>
-          <Shell>{`satus plan --schema ./schema.sql --profile saas-subscriptions`}</Shell>
-        </Terminal>
-
-        <FlagTable
-          rows={[
-            ["--profile <name>", "required", "Profile to plan against."],
-            ["--schema <path>", "—", "Read schema from a .sql file instead of DATABASE_URL."],
-            ["--out <path>", "stdout", "Write the plan to a file instead of stdout."],
-            ["--json", "false", "Emit machine-readable JSON (for CI diffs)."],
+            ["--force", "false", "Overwrite an existing satus.config.json."],
           ]}
         />
       </Section>
 
       <Section
         id="generate"
-        n="05"
+        n="04"
         label="satus generate"
         title={<>one transaction. all-or-nothing.</>}
       >
         <Prose>
           <p>
-            Runs <code>plan</code>, then writes every row inside a single
-            Postgres transaction. If any insert fails—FK violation, check
-            constraint, LLM timeout—the entire run rolls back and your
+            Introspects the target schema, builds the foreign-key DAG, breaks
+            any cycles whose back-edge is nullable, calls the LLM for realistic
+            rows, then writes the entire dataset inside a single Postgres
+            transaction. If any insert fails the whole run rolls back and your
             database is left untouched.
           </p>
           <p>
-            <code>--dry</code> runs the full pipeline but pipes the SQL to
-            stdout instead of executing it. Diff it, review it, commit it as a
-            fixture.
+            <code>--dry-run</code> performs introspection, planning, and cost
+            estimation but skips both the LLM call and the write phase. It is
+            the right way to preview what a run would do before spending tokens.
           </p>
         </Prose>
 
         <Terminal>
-          <Shell>{`satus generate --profile e-commerce`}</Shell>
-          <Out>{`✓ 4,812 rows · $0.07 · 11.4s`}</Out>
+          <Shell>{`satus generate --profile saas --rows 25`}</Shell>
           <Blank />
-          <Cmt>{`# preview without writing`}</Cmt>
-          <Shell>{`satus generate --profile e-commerce --dry > seed.sql`}</Shell>
+          <Cmt>{`# preview the plan without spending tokens or writing rows`}</Cmt>
+          <Shell>{`satus generate --profile saas --dry-run`}</Shell>
         </Terminal>
 
         <FlagTable
           rows={[
-            ["--profile <name>", "required", "Profile to generate with."],
-            ["--dry", "false", "Print SQL to stdout. Do not execute."],
-            ["--force", "false", "Bypass the 10,000-row safety guard."],
-            ["--batch-size <n>", "50", "Rows per LLM call. Lower if you hit provider rate limits."],
-            ["--max-cost <usd>", "1.00", "Refuse to proceed if the planned token cost exceeds this ceiling. Pass --yes to skip the confirmation prompt."],
-            ["--seed <n>", "random", "Deterministic seed for reproducible runs."],
+            [
+              "--profile <name>",
+              "from config",
+              "Reference profile. One of: saas, ecommerce, b2b.",
+            ],
+            [
+              "--rows <n>",
+              "50",
+              "Rows to generate per table. Free tier caps at 25 rows/table and 5 tables.",
+            ],
+            [
+              "--batch-size <n>",
+              "25",
+              "Rows per LLM call. Lower if you hit provider rate limits.",
+            ],
+            [
+              "--max-cost <usd>",
+              "1.00",
+              "Abort before any LLM spend if the estimated cost exceeds this ceiling.",
+            ],
+            [
+              "--dsn <url>",
+              "from env",
+              "Postgres connection string. Overrides DATABASE_URL and the config file.",
+            ],
+            [
+              "--schema <name>",
+              "from config",
+              "Postgres schema to seed. Defaults to public when neither config nor flag is set.",
+            ],
+            [
+              "--model <id>",
+              "from config",
+              "OpenAI model id. Overrides the model recorded in satus.config.json.",
+            ],
+            [
+              "--truncate",
+              "false",
+              "TRUNCATE target tables (RESTART IDENTITY CASCADE) before inserting.",
+            ],
+            [
+              "--dry-run",
+              "false",
+              "Plan only. Print the insert order and the cost estimate; do not call the LLM and do not write to the database.",
+            ],
           ]}
         />
       </Section>
 
       <Section
-        id="exit-codes"
-        n="06"
-        label="Exit codes"
-        title={<>predictable. scriptable.</>}
+        id="activate"
+        n="05"
+        label="satus activate"
+        title={<>swap free for pro or team.</>}
       >
         <Prose>
           <p>
-            Every error is mapped to a stable exit code so CI pipelines can
-            branch on the failure mode. Codes are stable across the 0.x line.
+            Validates a license key against{" "}
+            <code>https://satus.sh/api/public/license/verify</code> and writes
+            the result to the local cache (<code>~/.satus/license-cache.json</code>,
+            24-hour TTL). Until activated, generation runs under the Free tier
+            limits noted above.
           </p>
         </Prose>
 
-        <ul className="mt-8 max-w-[760px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
-          <Exit code="0" name="OK" body="Success." />
-          <Exit code="1" name="E_GENERIC" body="Unhandled error. File an issue with the stack trace and CREATE TABLE statements." />
-          <Exit code="10" name="E_FK_CYCLE" body="Foreign-key cycle could not be broken automatically—every column on the cycle is NOT NULL with no DEFAULT. Mark one side nullable, add a DEFAULT, or declare the constraint DEFERRABLE." />
-          <Exit code="11" name="E_DB_NOT_EMPTY" body="Database has more than 10,000 user rows. Re-run with --force or point at a fresh branch." />
-          <Exit code="20" name="E_LLM_RATE_LIMIT" body="Provider rate-limited the run after 5 retries with exponential backoff. Lower --batch-size or upgrade your provider tier." />
-          <Exit code="21" name="E_LLM_AUTH" body="OPENAI_API_KEY missing, malformed, or rejected by the provider." />
-          <Exit code="30" name="E_PROFILE_NOT_FOUND" body="--profile name doesn't match a bundled profile or a file in ./satus/profiles/." />
-        </ul>
+        <Terminal>
+          <Shell>{`satus activate satus_live_••••••••`}</Shell>
+        </Terminal>
+      </Section>
+
+      <Section
+        id="whoami"
+        n="06"
+        label="satus whoami"
+        title={<>read the cached license.</>}
+      >
+        <Prose>
+          <p>
+            Prints the currently activated tier and the email the license was
+            issued to. Reads the local cache only; no network call is made.
+          </p>
+        </Prose>
+
+        <Terminal>
+          <Shell>{`satus whoami`}</Shell>
+        </Terminal>
+      </Section>
+
+      <Section
+        id="notes"
+        n="07"
+        label="Operational notes"
+        title={<>exit codes, privacy, and the wire shape.</>}
+      >
+        <Prose>
+          <p>
+            Every command returns <code>0</code> on success and <code>1</code>{" "}
+            on any error, with a one-line diagnostic written to stderr. Stable
+            per-failure-mode exit codes are planned for a future minor release;
+            today, scripts that need to branch on failure should match the
+            stderr message.
+          </p>
+          <p>
+            satus never sends your schema, your data, or your column names to
+            satus.sh. The only network call to satus.sh is the license verify,
+            which sends your license key and nothing else. LLM calls go directly
+            from your machine to your provider with your key. Telemetry, when
+            you opt in, sends an anonymized run summary (table count, row
+            count, duration, exit code)—never table or column names, never
+            row data.
+          </p>
+        </Prose>
 
         <p className="mt-10 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-          Reference for satus 0.1.1. Flags marked above are stable across the 0.1.x line.
+          Reference matches the published binary at {SATUS_VERSION_TAG}{" "}
+          (released {SATUS_RELEASED_AT}). Flag defaults are stable across the
+          0.x line; new flags may be added in minor releases.
         </p>
       </Section>
     </PageShell>
@@ -338,20 +397,5 @@ function FlagTable({ rows }: { rows: [string, string, string][] }) {
         ))}
       </ul>
     </div>
-  );
-}
-
-/* Exit-code list item. */
-function Exit({ code, name, body }: { code: string; name: string; body: string }) {
-  return (
-    <li className="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[180px_1fr]">
-      <div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--signal)]">
-          exit {code}
-        </div>
-        <div className="mt-1.5 font-mono text-[12.5px] text-[var(--ink)]">{name}</div>
-      </div>
-      <p className="max-w-[62ch] text-[14.5px] leading-[1.6] text-[var(--ink)]/80">{body}</p>
-    </li>
   );
 }
