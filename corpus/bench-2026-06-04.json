@@ -36,7 +36,12 @@
   "cycle_breaking": {
     "algorithm": "After Kahn's topo sort fails, scan the residual edges for an FK column marked nullable. Remove it from the DAG (recorded as a BrokenEdge), retry Kahn's. Repeat until acyclic or no nullable back-edge remains. At runtime the child rows are inserted with NULL on the broken column, and a post-insert UPDATE pass — inside the same transaction, after the parent table is fully seeded — wires each child to a random parent PK. SET CONSTRAINTS ALL DEFERRED is issued before inserts so any DEFERRABLE constraints in the user's schema validate at COMMIT.",
     "unit_tests": "packages/cli/src/generate/dag.test.ts — 5/5 passing",
-    "integration_test": "deferred to local-Postgres CI on the release runner (Supabase pooler in this sandbox has no DDL rights)",
+    "integration_test": {
+      "fixture": "two-table cycle: users(primary_org_id -> orgs) and orgs(owner_user_id -> users NOT NULL); users.primary_org_id is nullable, so it is the broken edge.",
+      "postgres_version": "PostgreSQL 17 (local, unix socket)",
+      "command": "satus generate --rows 5 with profile=saas, model=gpt-5-mini",
+      "result": "10 rows inserted across 2 tables; 0/5 NULL FKs on users.primary_org_id after the wire-up pass; both directions of the cycle reference valid parents."
+    },
     "limitations": "NOT NULL cycle FKs remain unsupported. The CLI fails with an actionable message naming the cycle and suggesting either making the column nullable or excluding one of the cycle members."
   },
   "tests": {
