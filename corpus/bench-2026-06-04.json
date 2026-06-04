@@ -8,7 +8,7 @@
     "is_remote": true,
     "target_schema": "public",
     "tables_in_target_schema": 9,
-    "notes": "Pooled connection lacks DDL rights, so the synthetic cyclic-schema integration test was deferred to local-Postgres CI on the release runner. Algorithm covered by unit tests."
+    "notes": "Benchmark workload uses pooled Supabase as the high-latency remote target. The cyclic-schema integration test runs against a local Postgres 17 instance (see cycle_breaking.integration_test)."
   },
   "introspection_ms": {
     "iterations": 15,
