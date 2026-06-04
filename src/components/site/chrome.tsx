@@ -261,16 +261,16 @@ export function LeftRail({
           Document
         </div>
         <dl className="mt-3 space-y-1.5 font-mono text-[11.5px] text-[var(--mute)]">
-          <Meta k="spec" v="satus/0.1" />
+          <Meta k="spec" v={SATUS_SPEC} />
           <Meta
             k="status"
             v={
               <span>
-                <span className="text-[var(--signal)]">●</span> v0.1.1
+                <span className="text-[var(--signal)]">●</span> {SATUS_VERSION_TAG}
               </span>
             }
           />
-          <Meta k="updated" v="2026-05-27" />
+          <Meta k="updated" v={SATUS_RELEASED_AT} />
           <Meta k="author" v="satus.sh" />
         </dl>
       </div>
