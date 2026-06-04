@@ -13,20 +13,20 @@ ITERS="${2:-20}"
 WARMUP=3
 
 LEGACY_SQL='\set ON_ERROR_STOP on
-select table_name from information_schema.tables where table_schema = :schema and table_type='\''BASE TABLE'\'';
-select table_name, column_name, data_type from information_schema.columns where table_schema = :schema;
-select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:schema and tc.constraint_type='\''PRIMARY KEY'\'';
-select cls.relname, att.attname, fcls.relname, fatt.attname, con.condeferrable, con.condeferred from pg_constraint con join pg_class cls on cls.oid=con.conrelid join pg_namespace ns on ns.oid=cls.relnamespace join pg_class fcls on fcls.oid=con.confrelid join lateral unnest(con.conkey) with ordinality as ck(attnum,ord) on true join lateral unnest(con.confkey) with ordinality as fk(attnum,ord) on fk.ord=ck.ord join pg_attribute att on att.attrelid=cls.oid and att.attnum=ck.attnum join pg_attribute fatt on fatt.attrelid=fcls.oid and fatt.attnum=fk.attnum where con.contype='\''f'\'' and ns.nspname=:schema;
-select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:schema and tc.constraint_type='\''UNIQUE'\'';
+select table_name from information_schema.tables where table_schema = :'schema' and table_type='\''BASE TABLE'\'';
+select table_name, column_name, data_type from information_schema.columns where table_schema = :'schema';
+select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:'schema' and tc.constraint_type='\''PRIMARY KEY'\'';
+select cls.relname, att.attname, fcls.relname, fatt.attname, con.condeferrable, con.condeferred from pg_constraint con join pg_class cls on cls.oid=con.conrelid join pg_namespace ns on ns.oid=cls.relnamespace join pg_class fcls on fcls.oid=con.confrelid join lateral unnest(con.conkey) with ordinality as ck(attnum,ord) on true join lateral unnest(con.confkey) with ordinality as fk(attnum,ord) on fk.ord=ck.ord join pg_attribute att on att.attrelid=cls.oid and att.attnum=ck.attnum join pg_attribute fatt on fatt.attrelid=fcls.oid and fatt.attnum=fk.attnum where con.contype='\''f'\'' and ns.nspname=:'schema';
+select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:'schema' and tc.constraint_type='\''UNIQUE'\'';
 '
 
 CTE_SQL='\set ON_ERROR_STOP on
 with
-  v_tables as (select table_name from information_schema.tables where table_schema=:schema and table_type='\''BASE TABLE'\''),
-  v_columns as (select table_name, column_name, data_type from information_schema.columns where table_schema=:schema),
-  v_pks as (select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:schema and tc.constraint_type='\''PRIMARY KEY'\''),
-  v_fks as (select cls.relname as t, att.attname as c from pg_constraint con join pg_class cls on cls.oid=con.conrelid join pg_namespace ns on ns.oid=cls.relnamespace join lateral unnest(con.conkey) as a(n) on true join pg_attribute att on att.attrelid=cls.oid and att.attnum=a.n where con.contype='\''f'\'' and ns.nspname=:schema),
-  v_uniques as (select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:schema and tc.constraint_type='\''UNIQUE'\'')
+  v_tables as (select table_name from information_schema.tables where table_schema=:'schema' and table_type='\''BASE TABLE'\''),
+  v_columns as (select table_name, column_name, data_type from information_schema.columns where table_schema=:'schema'),
+  v_pks as (select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:'schema' and tc.constraint_type='\''PRIMARY KEY'\''),
+  v_fks as (select cls.relname as t, att.attname as c from pg_constraint con join pg_class cls on cls.oid=con.conrelid join pg_namespace ns on ns.oid=cls.relnamespace join lateral unnest(con.conkey) as a(n) on true join pg_attribute att on att.attrelid=cls.oid and att.attnum=a.n where con.contype='\''f'\'' and ns.nspname=:'schema'),
+  v_uniques as (select kcu.table_name, kcu.column_name from information_schema.table_constraints tc join information_schema.key_column_usage kcu on tc.constraint_schema=kcu.constraint_schema and tc.constraint_name=kcu.constraint_name where tc.table_schema=:'schema' and tc.constraint_type='\''UNIQUE'\'')
 select
   (select jsonb_agg(to_jsonb(v_tables.*))  from v_tables)  as tables,
   (select jsonb_agg(to_jsonb(v_columns.*)) from v_columns) as columns,
