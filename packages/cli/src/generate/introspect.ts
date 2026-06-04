@@ -28,6 +28,10 @@ export interface ForeignKey {
   refSchema: string
   refTable: string
   refColumn: string
+  /** SQL-level DEFERRABLE (vs the default NOT DEFERRABLE). */
+  deferrable: boolean
+  /** DEFERRABLE INITIALLY DEFERRED. Implies deferrable=true. */
+  initiallyDeferred: boolean
 }
 
 export interface Table {
