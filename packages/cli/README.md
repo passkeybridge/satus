@@ -10,7 +10,7 @@
 
 ## Status
 
-`v0.0.1` — scaffold only. Commands are stubbed; the introspection, DAG, and generation pipeline land in `v0.1`. See the roadmap in [satus.sh/cli](https://satus.sh/cli).
+`v0.2.0` — released 2026-06-04. Stable: schema introspection (single round-trip CTE), foreign-key DAG with cycle breaking on nullable back-edges, profile-driven generation, single-transaction writes, and BYO-key OpenAI integration. Roadmap and release notes live at [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).
 
 ## Install
 
@@ -25,19 +25,19 @@ Requires Node.js 20+.
 ## Quickstart
 
 ```bash
-satus init                          # write satus.config.json
-satus generate --profile saas       # seed against the configured DB
-satus generate --profile saas --dry-run --rows 25
+satus init                                # write satus.config.json
+satus generate --profile saas --rows 25   # seed against the configured DB
+satus generate --profile saas --dry-run   # plan only, no LLM call, no writes
 ```
 
 ## Commands
 
 | Command | Description |
 |---|---|
-| `satus init` | Scaffold `satus.config.json` in the current directory. |
-| `satus generate` | Introspect schema and write seed rows. Flags: `--profile`, `--rows`, `--max-cost`, `--dry-run`. |
+| `satus init` | Scaffold `satus.config.json` in the current directory. Flags: `--force`. |
+| `satus generate` | Introspect schema and write seed rows. Flags: `--profile`, `--rows`, `--max-cost`, `--batch-size`, `--dsn`, `--schema`, `--model`, `--truncate`, `--dry-run`. |
 | `satus activate <key>` | Activate a Pro or Team license key. |
-| `satus whoami` | Print the currently activated plan (from local cache). |
+| `satus whoami` | Print the currently activated license (from local cache). |
 | `satus --help` | Full command reference. |
 
 ## Reference profiles
