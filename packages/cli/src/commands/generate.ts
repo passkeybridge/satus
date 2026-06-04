@@ -189,6 +189,13 @@ export function registerGenerate(program: Command): void {
 
         await client.query('begin')
         try {
+          if (brokenEdges.length > 0) {
+            // Soft cycles: NULLs land at insert time and we close them out
+            // with UPDATEs after every table is seeded. Defer any FKs the
+            // schema marked DEFERRABLE so they validate at COMMIT rather
+            // than per-statement; harmless when none are deferrable.
+            await client.query('set constraints all deferred')
+          }
           if (opts.truncate) {
             console.log(pc.dim('  truncating target tables...'))
             await truncate(client, ordered)
@@ -201,7 +208,9 @@ export function registerGenerate(program: Command): void {
             apiKey: apiKey!,
             maxCostUsd: Number(opts.maxCost),
             dryRun: false,
+            brokenEdges,
           })
+
           await client.query('commit')
           const total = Object.values(report.inserted).reduce((a, b) => a + b, 0)
           console.log(pc.green(`\n✓ inserted ${total} rows across ${Object.keys(report.inserted).length} tables`))
