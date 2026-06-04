@@ -83,3 +83,42 @@ export async function truncate(client: Client, tables: Table[]): Promise<void> {
   // CASCADE handles FK chains so callers don't have to order the truncate.
   await client.query(`truncate ${names} restart identity cascade`)
 }
+
+/**
+ * Populate a previously-NULLed FK column on already-inserted rows. Used to
+ * close soft cycles (see dag.ts BrokenEdge): the child rows landed with
+ * NULL in `column`, and now that the parent table is fully seeded we wire
+ * each child to a random parent PK.
+ *
+ * One UPDATE per child row keyed by PK. The row count is bounded by --rows
+ * times the number of broken edges, which in practice is one or two.
+ */
+export async function updateBrokenEdge(
+  client: Client,
+  childTable: Table,
+  column: string,
+  parentRefColumn: string,
+  parentPkRows: Array<Record<string, unknown>>,
+): Promise<number> {
+  if (parentPkRows.length === 0 || childTable.primaryKey.length === 0) return 0
+  const pkCols = childTable.primaryKey.map(quoteIdent).join(', ')
+  const sel = await client.query(
+    `select ${pkCols} from ${quoteIdent(childTable.schema)}.${quoteIdent(childTable.name)} ` +
+      `where ${quoteIdent(column)} is null`,
+  )
+  if (sel.rowCount === 0) return 0
+
+  let updated = 0
+  for (const row of sel.rows as Array<Record<string, unknown>>) {
+    const parent = parentPkRows[Math.floor(Math.random() * parentPkRows.length)]!
+    const where = childTable.primaryKey.map((c, i) => `${quoteIdent(c)} = $${i + 2}`).join(' and ')
+    const sql =
+      `update ${quoteIdent(childTable.schema)}.${quoteIdent(childTable.name)} ` +
+      `set ${quoteIdent(column)} = $1 where ${where}`
+    const params = [parent[parentRefColumn], ...childTable.primaryKey.map((c) => row[c])]
+    const r = await client.query(sql, params)
+    updated += r.rowCount ?? 0
+  }
+  return updated
+}
+

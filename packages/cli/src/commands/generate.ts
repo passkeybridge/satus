@@ -105,8 +105,12 @@ export function registerGenerate(program: Command): void {
         const sort = topoSort(schema.tables)
         if (sort.cycle) {
           console.error(
-            pc.red('FK cycle detected among: ') + sort.cycle.join(', ') +
-              '\n  Exclude one of these in satus.config.json `exclude` and re-run.',
+            pc.red('FK cycle detected with no nullable back-edge: ') + sort.cycle.join(', ') +
+              '\n  satus v0.2 breaks cycles by NULLing a nullable back-edge column and populating' +
+              '\n  it after every table is seeded. None of the cycle FKs are nullable, so the' +
+              '\n  cycle cannot be broken without violating NOT NULL.' +
+              '\n  Fix: make one of the FK columns nullable, or `exclude` one of the tables in' +
+              '\n  satus.config.json and re-run.',
           )
           process.exit(1)
         }
@@ -121,13 +125,29 @@ export function registerGenerate(program: Command): void {
           ordered = ordered.slice(0, FREE_MAX_TABLES)
         }
 
+        // brokenEdges may reference tables we trimmed off the free-tier cap;
+        // filter so the runner never tries to UPDATE a table it never wrote.
+        const includedNames = new Set(ordered.map((t) => t.name))
+        const brokenEdges = sort.brokenEdges.filter(
+          (e) => includedNames.has(e.table) && includedNames.has(e.refTable),
+        )
+
         console.log(pc.bold(`\nsatus generate`))
         console.log(pc.dim(`  schema:   ${schemaName}`))
         console.log(pc.dim(`  profile:  ${profile}`))
         console.log(pc.dim(`  model:    ${model}`))
         console.log(pc.dim(`  rows:     ${rowsPerTable} per table`))
         console.log(pc.dim(`  tables:   ${ordered.map((t) => t.name).join(' -> ')}`))
+        if (brokenEdges.length > 0) {
+          console.log(
+            pc.dim(`  cycles:   `) +
+              brokenEdges
+                .map((e) => `${e.table}.${e.column} -> ${e.refTable} (deferred)`)
+                .join(', '),
+          )
+        }
         console.log()
+
 
         if (opts.dryRun) {
           const plan = planRun(ordered, {
@@ -169,6 +189,13 @@ export function registerGenerate(program: Command): void {
 
         await client.query('begin')
         try {
+          if (brokenEdges.length > 0) {
+            // Soft cycles: NULLs land at insert time and we close them out
+            // with UPDATEs after every table is seeded. Defer any FKs the
+            // schema marked DEFERRABLE so they validate at COMMIT rather
+            // than per-statement; harmless when none are deferrable.
+            await client.query('set constraints all deferred')
+          }
           if (opts.truncate) {
             console.log(pc.dim('  truncating target tables...'))
             await truncate(client, ordered)
@@ -181,7 +208,9 @@ export function registerGenerate(program: Command): void {
             apiKey: apiKey!,
             maxCostUsd: Number(opts.maxCost),
             dryRun: false,
+            brokenEdges,
           })
+
           await client.query('commit')
           const total = Object.values(report.inserted).reduce((a, b) => a + b, 0)
           console.log(pc.green(`\n✓ inserted ${total} rows across ${Object.keys(report.inserted).length} tables`))
