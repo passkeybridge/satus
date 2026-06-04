@@ -168,5 +168,26 @@ export async function runGenerate(
     process.stdout.write(pc.green(` ${result.inserted}\n`))
   }
 
+  // Soft-cycle close-out. Each broken edge corresponds to a child table that
+  // was inserted with NULL in `column` because its parent hadn't been seeded
+  // yet (the dependency was a cycle back-edge). Now that every table is
+  // populated, wire the children to random parent PKs. Failures here roll
+  // back the whole transaction along with the inserts.
+  if (!opts.dryRun && opts.brokenEdges && opts.brokenEdges.length > 0) {
+    const byName = new Map(tables.map((t) => [t.name, t]))
+    for (const edge of opts.brokenEdges) {
+      const child = byName.get(edge.table)
+      const parents = pkPool.get(edge.refTable) ?? []
+      if (!child || parents.length === 0) continue
+      const n = await updateBrokenEdge(client, child, edge.column, edge.refColumn, parents)
+      if (n > 0) {
+        process.stdout.write(
+          pc.dim(`  wired ${edge.table}.${edge.column} -> ${edge.refTable} (${n} rows)\n`),
+        )
+      }
+    }
+  }
+
   return { inserted, spentUsd: budget.spentUsd }
 }
+
