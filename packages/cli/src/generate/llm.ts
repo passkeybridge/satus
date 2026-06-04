@@ -64,8 +64,14 @@ function priceFor(model: string) {
   return FALLBACK_PRICE
 }
 
+// GPT-5 family pins temperature at 1; sending any other value is a 400.
+// Detect by prefix so future minor releases (gpt-5.x, gpt-5-mini, ...) are covered.
+function supportsCustomTemperature(model: string): boolean {
+  return !/^gpt-5/i.test(model)
+}
+
 export async function chatJson<T>(req: ChatRequest): Promise<ChatResponse<T>> {
-  const body = {
+  const body: Record<string, unknown> = {
     model: req.model,
     messages: [
       { role: 'system', content: req.system },
@@ -75,7 +81,9 @@ export async function chatJson<T>(req: ChatRequest): Promise<ChatResponse<T>> {
       type: 'json_schema',
       json_schema: { name: req.jsonSchema.name, schema: req.jsonSchema.schema, strict: true },
     },
-    temperature: 0.7,
+  }
+  if (supportsCustomTemperature(req.model)) {
+    body.temperature = 0.7
   }
 
   const res = await fetch(`${DEFAULT_BASE}/chat/completions`, {
