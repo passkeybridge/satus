@@ -17,7 +17,7 @@ import { buildRowSchema } from './schema.js'
 import type { Table } from './introspect.js'
 import { CostBudget, chatJson } from './llm.js'
 import { profilePrompt, type ProfileName } from './profiles.js'
-import { insertRows } from './writer.js'
+import { insertRows, updateBrokenEdge } from './writer.js'
 
 export interface RunOptions {
   rowsPerTable: number
