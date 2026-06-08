@@ -48,7 +48,7 @@ CREATE TABLE comment_thread (
 
 The lemmy example is a degree harder. The `activity` table stores an ActivityPub payload as `data jsonb NOT NULL`. ActivityPub envelopes contain fields like `actor`, `object`, `to`, and `cc` whose values are URIs ([ActivityPub §4.5](https://www.w3.org/TR/activitypub/#object-without-create)). On a federated instance many of those URIs resolve to rows on the same Postgres cluster — local users, local communities, local posts. From Postgres's point of view it is a string inside JSON. From the application's point of view it is a foreign key spelled in URL form.
 
-The listmonk case is the negative control. `subscribers.attribs` ([schema.sql, line 49](https://github.com/knadh/listmonk/blob/v3.0.0/schema.sql#L49)) is a true bag — declared `JSONB NOT NULL DEFAULT '{}'`, used for whatever per-subscriber attributes the operator wants to track, never queried for cross-table integrity. The same column declaration syntax, the same catalog metadata, completely different semantics.
+The listmonk case is the negative control. `subscribers.attribs` ([schema.sql](https://github.com/knadh/listmonk/blob/v3.0.0/schema.sql)) is a true bag — declared `JSONB NOT NULL DEFAULT '{}'`, used for whatever per-subscriber attributes the operator wants to track, never queried for cross-table integrity. The same column declaration syntax, the same catalog metadata, completely different semantics.
 
 ## Why a generator cannot ignore the distinction
 
