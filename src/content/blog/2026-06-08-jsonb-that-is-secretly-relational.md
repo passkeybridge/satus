@@ -1,7 +1,7 @@
 ---
 slug: jsonb-that-is-secretly-relational
 title: JSONB columns that are secretly relational
-description: Some JSONB columns are key/value bags. Others are foreign keys wearing a trench coat — arrays of IDs that point at real rows with no constraint to prove it. Here is how to tell them apart, and what it means for seeding.
+description: Half the JSONB columns we see are key/value bags. The other half are foreign keys in disguise — arrays of IDs pointing at real rows, with no constraint to prove it. How to tell them apart.
 date: 2026-06-08
 author: satus.sh
 tags: [postgres, jsonb, modeling, seeding]
