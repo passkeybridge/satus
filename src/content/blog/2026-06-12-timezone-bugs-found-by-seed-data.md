@@ -132,7 +132,7 @@ Within that scope, timezone bugs are an unusually good fit. They are determinist
 
 ## Where this fits in satus
 
-The business-hours sampler is on by default for every profile in v0.2.0. The detector for bug 2 (`date_trunc` without a timezone argument) is part of `satus plan` and prints to stdout; it does not fail the run. The DST-window biasing for bug 3 is enabled in the `medical-booking` profile and disabled elsewhere, with a per-profile knob to turn it on:
+The business-hours sampler is on by default for every built-in profile. The detector for bug 2 (`date_trunc` without a timezone argument) runs as part of `satus plan` and prints to stdout; it does not fail the run. The DST-window biasing for bug 3 is enabled in the `medical-booking` profile and disabled elsewhere, with a per-profile knob to turn it on:
 
 ```text
 # in your profile YAML
