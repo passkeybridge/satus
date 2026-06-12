@@ -68,7 +68,7 @@ WHERE date_trunc('day', occurred_at) = date_trunc('day', now());
 
 `occurred_at` was `timestamptz`. The cluster ran in UTC. Most users were on the US East coast. Under uniform seed data the test "events_today returns the count of today's events" passed reliably, because uniformity hides the failure mode: with events spread evenly across the day, the count for the current UTC day and the count for the current local day differ by a small constant ratio, and the assertion was a range check.
 
-Under business-hours-clustered seed data on a New York profile, the failure mode showed up immediately. New York business hours are 09:00 to 17:00 Eastern, which is 13:00 to 21:00 UTC most of the year. Most events landed comfortably inside a single UTC day. But the evening ramp (17:00–20:00 Eastern, 21:00–00:00 UTC) regularly pushed events past UTC midnight. The dashboard, which was rendered on a developer machine running in `America/New_York`, asked for "today" in local time and got back a `date_trunc` computed in UTC. About 18% of the day's events were silently filed under "tomorrow" from the user's perspective. The assertion that "events_today is non-zero at 09:30 local" broke twice a week in CI, on exactly the days the seeded clusters happened to land late enough.
+Under business-hours-clustered seed data on a New York profile, the failure mode showed up immediately. New York business hours are 09:00 to 17:00 Eastern, which is 13:00 to 21:00 UTC during EST and 13:00 to 21:00 (offset by one) under EDT. Most events landed comfortably inside a single UTC day. But the evening ramp (17:00–20:00 Eastern, roughly 21:00–00:00 UTC under EST and 21:00–00:00 shifted forward an hour under EDT) regularly pushed events past UTC midnight. The dashboard, rendered on a developer machine running in `America/New_York`, asked for "today" in local time and got back a `date_trunc` computed in UTC. A meaningful slice of the late-day events was silently filed under "tomorrow" from the user's perspective. The assertion that "events_today is non-zero at 09:30 local" broke intermittently in CI, on exactly the days the seeded clusters happened to land late enough.
 
 `date_trunc` has had a three-argument form that takes a target timezone since Postgres 12 ([PostgreSQL: date_trunc](https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TRUNC)). The query the team landed on was:
 
@@ -89,19 +89,18 @@ satus plan: view `public.events_daily` calls
   on a timestamptz column without a timezone argument.
   Seed data clusters around business hours in the
   saas-subscriptions profile (America/Los_Angeles), which
-  will produce events that fall on different UTC dates
-  than local dates for ~12% of rows. If your dashboard
-  reads this view, the count will not match the user's
-  "today".
+  will produce events whose UTC date differs from their
+  local date. If your dashboard reads this view, the count
+  will not match the user's "today".
 ```
 
 We do not fix the query; that is the application's call. We do make sure the test suite has the inputs that would have caught the disagreement.
 
 ## Bug 3: DST gaps in `timestamp without time zone`
 
-The schema was a medical-booking application with an `appointments` table. The `scheduled_for` column was declared `timestamp without time zone`, which is unfortunately common in calendar-shaped schemas because the developer intent was *"this appointment is at 9am wall-clock time on this date, regardless of what UTC thinks"*. Postgres stores `timestamp` values as instants in the server's session timezone and does not record which zone produced them—the well-known footgun documented in [Date/Time Types](https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-TIMEZONES) and called out in the Postgres wiki's [Don't Do This](https://wiki.postgresql.org/wiki/Don%27t_Do_This#Don.27t_use_timestamp_.28without_time_zone.29) list.
+The schema was a medical-booking application with an `appointments` table. The `scheduled_for` column was declared `timestamp without time zone`, which is unfortunately common in calendar-shaped schemas because the developer intent was *"this appointment is at 9am wall-clock time on this date, regardless of what UTC thinks"*. A `timestamp without time zone` value is stored as a literal wall-clock date and time with no timezone attached; Postgres has no record of which zone the writer meant, so any later `AT TIME ZONE` conversion is purely a guess on the application's part. This is the well-known footgun documented in [Date/Time Types](https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-TIMEZONES) and called out in the Postgres wiki's [Don't Do This](https://wiki.postgresql.org/wiki/Don%27t_Do_This#Don.27t_use_timestamp_.28without_time_zone.29) list.
 
-Under uniform random timestamps drawn from the same 90-day window, the test suite seeded thousands of appointments and never produced one that landed on a DST transition. There are two such transitions per year per zone; the probability of any uniformly drawn timestamp falling in a one-hour DST gap is on the order of `1 / (90 * 24)` per row, which means a 1,000-row fixture has roughly a 38% chance of catching even one. CI passed on the days it missed and failed inscrutably on the days it did not.
+Under uniform random timestamps drawn from a 90-day window, the test suite seeded thousands of appointments and almost never produced one that landed on a DST transition. Each year has exactly one spring-forward instant per zone where a one-hour wall-clock interval does not exist, and one fall-back instant where a one-hour interval exists twice; both are vanishingly small targets for a uniform sampler whose window may not even contain the relevant Sunday. CI passed on the runs that missed and failed inscrutably on the rare runs that did not.
 
 The `medical-booking` profile in satus does two things differently. First, it clusters appointment times on the hour and half-hour during business hours, because that is what booking systems actually do. Second, it shifts the date window deliberately to span the most recent spring-forward Sunday and the most recent fall-back Sunday in the profile's timezone (`America/New_York` by default). The result is that every test run sees a handful of appointments declared for `2026-03-08 02:30`—a wall-clock time that does not exist in Eastern time, because the clocks jumped from 01:59 to 03:00—and a handful declared for `2026-11-01 01:30`, which exists twice.
 
@@ -133,7 +132,7 @@ Within that scope, timezone bugs are an unusually good fit. They are determinist
 
 ## Where this fits in satus
 
-The business-hours sampler is on by default for every profile in v0.2.0. The detector for bug 2 (`date_trunc` without a timezone argument) is part of `satus plan` and prints to stdout; it does not fail the run. The DST-window biasing for bug 3 is enabled in the `medical-booking` profile and disabled elsewhere, with a per-profile knob to turn it on:
+The business-hours sampler is on by default for every built-in profile. The detector for bug 2 (`date_trunc` without a timezone argument) runs as part of `satus plan` and prints to stdout; it does not fail the run. The DST-window biasing for bug 3 is enabled in the `medical-booking` profile and disabled elsewhere, with a per-profile knob to turn it on:
 
 ```text
 # in your profile YAML
