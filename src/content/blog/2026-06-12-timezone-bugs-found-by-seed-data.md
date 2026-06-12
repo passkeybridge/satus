@@ -89,10 +89,9 @@ satus plan: view `public.events_daily` calls
   on a timestamptz column without a timezone argument.
   Seed data clusters around business hours in the
   saas-subscriptions profile (America/Los_Angeles), which
-  will produce events that fall on different UTC dates
-  than local dates for ~12% of rows. If your dashboard
-  reads this view, the count will not match the user's
-  "today".
+  will produce events whose UTC date differs from their
+  local date. If your dashboard reads this view, the count
+  will not match the user's "today".
 ```
 
 We do not fix the query; that is the application's call. We do make sure the test suite has the inputs that would have caught the disagreement.
