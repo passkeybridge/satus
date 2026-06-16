@@ -28,7 +28,7 @@ The profile is a YAML document the CLI reads at planning time. It is intentional
 
 | Shape | Encoded as | Default | Notes |
 | --- | --- | --- | --- |
-| SKU popularity | Zipf over catalog rows | exponent s ≈ 1.07 | top SKU ≈ 10× the median, top 5% ≈ 50% of orders |
+| SKU popularity | Zipf over catalog rows | exponent s ≈ 0.8 | over 10k SKUs: top 5% carry ≈ 48% of orders, bottom 50% carry ≈ 15% |
 | Catalog size growth | log-normal over `created_at` | median age ≈ 9 months | new SKUs are rarer than old ones, with a recent-launch bump |
 | Price | log-normal in currency minor units | median ≈ 24.00, p95 ≈ 199.00 | snapped to .99 / .49 / .00 endings, clamped to schema CHECK if present |
 | Basket size | shifted-Zipf in items per order | mode = 1, p95 = 5, p99.9 ≈ 22 | the long right tail is the point |
