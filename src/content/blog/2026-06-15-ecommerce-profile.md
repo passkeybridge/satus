@@ -28,7 +28,7 @@ The profile is a YAML document the CLI reads at planning time. It is intentional
 
 | Shape | Encoded as | Default | Notes |
 | --- | --- | --- | --- |
-| SKU popularity | Zipf over catalog rows | exponent s ≈ 1.07 | top SKU ≈ 10× the median, top 5% ≈ 50% of orders |
+| SKU popularity | Zipf over catalog rows | exponent s ≈ 0.8 | over 10k SKUs: top 5% carry ≈ 48% of orders, bottom 50% carry ≈ 15% |
 | Catalog size growth | log-normal over `created_at` | median age ≈ 9 months | new SKUs are rarer than old ones, with a recent-launch bump |
 | Price | log-normal in currency minor units | median ≈ 24.00, p95 ≈ 199.00 | snapped to .99 / .49 / .00 endings, clamped to schema CHECK if present |
 | Basket size | shifted-Zipf in items per order | mode = 1, p95 = 5, p99.9 ≈ 22 | the long right tail is the point |
@@ -39,25 +39,25 @@ The profile is a YAML document the CLI reads at planning time. It is intentional
 | Return rate | per-category override | apparel 0.20, electronics 0.08, home 0.05, other 0.07 | applied as a post-pass over fulfilled rows |
 | Country | weighted categorical | US 0.42, GB 0.11, DE 0.09, FR 0.06, JP 0.05, other 0.27 | matches the spoken locales in the prompt |
 
-The Zipf distribution for SKU popularity is the load-bearing choice in this profile, and it is the one that most often surprises users coming from uniform fixtures. Zipf is a discrete power law in which the frequency of the k-th most popular item is proportional to 1/k^s, and it appears in catalog telemetry across consumer commerce, content recommendation, and search ([Wikipedia: Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law), with the canonical reference being Newman's review of power laws in empirical data, [arXiv:cond-mat/0412004](https://arxiv.org/abs/cond-mat/0412004)). The "long tail" framing from Anderson's 2004 essay in *Wired* is downstream of the same shape ([Anderson, "The Long Tail", *Wired* 12.10, October 2004](https://www.wired.com/2004/10/tail/)). We do not claim s ≈ 1.07 is the right exponent for your catalog; we claim it is closer than s = 0 (uniform) for almost any catalog.
+The Zipf distribution for SKU popularity is the load-bearing choice in this profile, and it is the one that most often surprises users coming from uniform fixtures. Zipf is a discrete power law in which the frequency of the k-th most popular item is proportional to 1/k^s, and it appears in catalog telemetry across consumer commerce, content recommendation, and search ([Wikipedia: Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law), with the canonical reference being Newman's review of power laws in empirical data, [arXiv:cond-mat/0412004](https://arxiv.org/abs/cond-mat/0412004)). The "long tail" framing from Anderson's 2004 essay in *Wired* is downstream of the same shape ([Anderson, "The Long Tail", *Wired* 12.10, October 2004](https://www.wired.com/2004/10/tail/)). We do not claim s ≈ 0.8 is the right exponent for your catalog; we claim it is closer than s = 0 (uniform) for almost any catalog.
 
 A quick visualisation of the default SKU popularity curve over a 10,000-SKU catalog, bucketed by decile of rank:
 
 ```text
-share of orders by SKU popularity decile (Zipf s=1.07, 10k SKUs)
-top 0–10%   ████████████████████████████████████████  52%
-10–20%      ███████████                               14%
-20–30%      ██████                                     8%
-30–40%      ████                                       5%
-40–50%      ███                                        4%
-50–60%      ███                                        4%
-60–70%      ██                                         3%
-70–80%      ██                                         3%
-80–90%      ██                                         3%
-90–100%     ██                                         4%
+share of orders by SKU popularity decile (Zipf s=0.8, 10k SKUs)
+top 0–10%   ████████████████████████████  57%
+10–20%      █████                         11%
+20–30%      ████                           7%
+30–40%      ███                            5%
+40–50%      ██                             4%
+50–60%      ██                             4%
+60–70%      ██                             3%
+70–80%      █                              3%
+80–90%      █                              3%
+90–100%     █                              2%
 ```
 
-The "top 0–10%" bar carries about half the volume. The bottom 50% of the catalog together carry roughly 17%. A uniform fixture flattens this into ten 10% bars; the planner sees a different table.
+The top decile carries roughly 57% of the volume. The bottom 50% of the catalog together carry roughly 15%. A uniform fixture flattens this into ten 10% bars; the planner sees a different table.
 
 ## Basket size, which is where most schemas hide their bugs
 
@@ -66,7 +66,7 @@ Basket size in real stores is a power-law-ish discrete distribution. The mode is
 The profile samples basket size from a shifted Zipf with a small additive constant so the mode lands cleanly at 1:
 
 ```text
-items per order, default profile, 1M sampled orders
+items per order, default profile (illustrative shape, not a measurement)
  1 item   ████████████████████████████████████████  62%
  2        ██████████████████                        22%
  3        █████████                                  9%
