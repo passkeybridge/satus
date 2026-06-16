@@ -66,7 +66,7 @@ Basket size in real stores is a power-law-ish discrete distribution. The mode is
 The profile samples basket size from a shifted Zipf with a small additive constant so the mode lands cleanly at 1:
 
 ```text
-items per order, default profile, 1M sampled orders
+items per order, default profile (illustrative shape, not a measurement)
  1 item   ████████████████████████████████████████  62%
  2        ██████████████████                        22%
  3        █████████                                  9%
