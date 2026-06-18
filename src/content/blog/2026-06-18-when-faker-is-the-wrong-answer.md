@@ -58,7 +58,7 @@ The most quietly broken faker output is a row where each cell is individually pl
 
 Every field is a real value. The row is geographic nonsense: a Norwegian country code, an Oregonian state, and an Atlanta ZIP. If your application validates the address on read, the test fails. If it doesn't, you ship a feature with quietly broken addresses in dev and discover the validation gap in production.
 
-The same issue recurs everywhere. `first_name = "Yuki"` with `email = "john@example.com"`. `birth_date = 1947-03-12` with `age = 24`. `currency = "JPY"` with `amount = 12.99`. faker has no row-level context, so it cannot keep the cells consistent. The fix in faker user code is to call `faker.location.zipCodeByState(state)` (one of a few correlated helpers it does provide), then build the rest of the address by hand. Done table by table, this is the bulk of the code in a real faker-based seeder.
+The same issue recurs everywhere. `first_name = "Yuki"` with `email = "john@example.com"`. `birth_date = 1947-03-12` with `age = 24`. `currency = "JPY"` with `amount = 12.99`. faker has no row-level context, so it cannot keep the cells consistent. The fix in faker user code is to pass correlating options where the API supports them (`faker.location.zipCode({ state })` is one of the few), then build the rest of the address by hand. Done table by table, this is the bulk of the code in a real faker-based seeder.
 
 ### 4. Distributions across rows
 
