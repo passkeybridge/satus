@@ -34,7 +34,7 @@ The mismatch shows up the moment you move from "fake value" to "row a real datab
 
 faker has no notion of a foreign key, because faker has no notion of another table. If your `orders` table has a `customer_id` column that references `customers.id`, no `faker.string.uuid()` call will produce an ID that exists in `customers`. The standard workaround is to insert customers first, hold their IDs in an array, and pick from that array when generating orders. This works for two tables. It does not scale to a real schema, where the FK graph is a DAG (and sometimes a [cyclic one](/blog/cyclic-fks-in-the-wild)), and the right order to insert tables is something you have to compute, not guess.
 
-The corpus we audit for our test fixtures (described in [Inside the e-commerce profile](/blog/ecommerce-profile)) currently has 5 schemas, 151 tables, and 227 foreign keys with zero cycles after deferred-constraint resolution. A hand-rolled faker script that has to keep ID arrays for each parent table, in topological order, is implementing a topological sort and a referential-integrity layer in user code. That is the job, not a detail.
+The corpus we audit for our test fixtures (described in [Inside the e-commerce profile](/blog/ecommerce-profile)) currently has 5 schemas, 151 tables, and 227 foreign keys across them. A hand-rolled faker script that has to keep ID arrays for each parent table, in topological order, is implementing a topological sort and a referential-integrity layer in user code. That is the job, not a detail.
 
 ### 2. Uniqueness
 
@@ -58,7 +58,7 @@ The most quietly broken faker output is a row where each cell is individually pl
 
 Every field is a real value. The row is geographic nonsense: a Norwegian country code, an Oregonian state, and an Atlanta ZIP. If your application validates the address on read, the test fails. If it doesn't, you ship a feature with quietly broken addresses in dev and discover the validation gap in production.
 
-The same issue recurs everywhere. `first_name = "Yuki"` with `email = "john@example.com"`. `birth_date = 1947-03-12` with `age = 24`. `currency = "JPY"` with `amount = 12.99`. faker has no row-level context, so it cannot keep the cells consistent. The fix in faker user code is to call `faker.location.zipCodeByState(state)` (one of a few correlated helpers it does provide), then build the rest of the address by hand. Done table by table, this is the bulk of the code in a real faker-based seeder.
+The same issue recurs everywhere. `first_name = "Yuki"` with `email = "john@example.com"`. `birth_date = 1947-03-12` with `age = 24`. `currency = "JPY"` with `amount = 12.99`. faker has no row-level context, so it cannot keep the cells consistent. The fix in faker user code is to pass correlating options where the API supports them (`faker.location.zipCode({ state })` is one of the few), then build the rest of the address by hand. Done table by table, this is the bulk of the code in a real faker-based seeder.
 
 ### 4. Distributions across rows
 
