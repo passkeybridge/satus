@@ -34,7 +34,7 @@ The mismatch shows up the moment you move from "fake value" to "row a real datab
 
 faker has no notion of a foreign key, because faker has no notion of another table. If your `orders` table has a `customer_id` column that references `customers.id`, no `faker.string.uuid()` call will produce an ID that exists in `customers`. The standard workaround is to insert customers first, hold their IDs in an array, and pick from that array when generating orders. This works for two tables. It does not scale to a real schema, where the FK graph is a DAG (and sometimes a [cyclic one](/blog/cyclic-fks-in-the-wild)), and the right order to insert tables is something you have to compute, not guess.
 
-The corpus we audit for our test fixtures (described in [Inside the e-commerce profile](/blog/ecommerce-profile)) currently has 5 schemas, 151 tables, and 227 foreign keys with zero cycles after deferred-constraint resolution. A hand-rolled faker script that has to keep ID arrays for each parent table, in topological order, is implementing a topological sort and a referential-integrity layer in user code. That is the job, not a detail.
+The corpus we audit for our test fixtures (described in [Inside the e-commerce profile](/blog/ecommerce-profile)) currently has 5 schemas, 151 tables, and 227 foreign keys across them. A hand-rolled faker script that has to keep ID arrays for each parent table, in topological order, is implementing a topological sort and a referential-integrity layer in user code. That is the job, not a detail.
 
 ### 2. Uniqueness
 
