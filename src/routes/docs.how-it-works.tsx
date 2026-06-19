@@ -31,7 +31,7 @@ export const Route = createFileRoute("/docs/how-it-works")({
       {
         name: "description",
         content:
-          "The three guarantees satus makes: the FK-cycle planner that breaks cyclic foreign keys without losing referential integrity, the 10,000-row safety guard, and the single-transaction write that is all-or-nothing.",
+          "The three guarantees satus makes: the FK-cycle planner, the 10,000-row safety guard, and the single-transaction write that is all-or-nothing.",
       },
       { property: "og:title", content: "How it works—satus" },
       {
