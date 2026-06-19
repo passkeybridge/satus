@@ -127,7 +127,7 @@ export const Route = createFileRoute("/docs/troubleshooting")({
       {
         name: "description",
         content:
-          "Every known satus failure mode with the fix. Install errors, schema errors (E_FK_CYCLE, E_DB_NOT_EMPTY), LLM rate limits, license activation, and how to recover from a failed run.",
+          "Every known satus failure mode with the fix. Install errors, schema errors (E_FK_CYCLE, E_DB_NOT_EMPTY), LLM rate limits, license activation, recovery.",
       },
       { property: "og:title", content: "Troubleshooting—satus" },
       {

@@ -133,11 +133,47 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+/**
+ * Root loader: capture the request host server-side so head() can mark
+ * preview/staging origins as noindex. Runs on every navigation, but the
+ * host is only knowable during SSR — on client navigations getRequestHost
+ * throws, we swallow it, and the value cached from the initial SSR pass
+ * stays in effect. This is the canonical fix for the lovable.app /
+ * satus.lovable.app duplicate-content risk: even though rel=canonical
+ * already consolidates ranking signals, an explicit noindex on the
+ * preview hosts removes any ambiguity for crawlers that arrive there
+ * via a stray backlink.
+ */
+async function rootLoader() {
+  let host = "";
+  try {
+    // Dynamic import keeps this module out of the client bundle entry.
+    const mod = await import("@tanstack/react-start/server");
+    host = mod.getRequestHost({ xForwardedHost: true });
+  } catch {
+    // Client-side render or no request in scope — leave host empty;
+    // we treat unknown hosts as the canonical (indexable) origin.
+  }
+  return { host };
+}
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  loader: rootLoader,
+  head: ({ loaderData }) => {
+    const host = loaderData?.host ?? "";
+    // Match any lovable-managed preview/published host (id-preview--*.lovable.app
+    // and satus.lovable.app). Custom domains satus.sh / www.satus.sh remain
+    // fully indexable.
+    const isPreviewHost = host.endsWith(".lovable.app");
+    return {
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // Hostname-conditional noindex: belt-and-suspenders on top of the
+      // per-route rel=canonical pointing at https://satus.sh.
+      ...(isPreviewHost
+        ? [{ name: "robots", content: "noindex, nofollow" }]
+        : []),
       { title: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       {
         name: "description",
@@ -154,8 +190,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       { property: "og:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
       { name: "twitter:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
-      { property: "og:image", content: "https://satus.sh/og-image.png" },
-      { name: "twitter:image", content: "https://satus.sh/og-image.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -209,7 +243,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         }),
       },
     ],
-  }),
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

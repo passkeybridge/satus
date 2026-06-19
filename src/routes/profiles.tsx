@@ -105,7 +105,7 @@ export const Route = createFileRoute("/profiles")({
       {
         name: "description",
         content:
-          "satus ships three hand-tuned reference profiles—medical booking, e-commerce, SaaS subscriptions—with documented constraints and sample output. Fork the closest one locally.",
+          "Three hand-tuned reference profiles for satus—medical booking, e-commerce, SaaS subscriptions—with documented constraints and sample output.",
       },
       { property: "og:title", content: "Reference profiles—satus" },
       {
