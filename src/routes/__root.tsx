@@ -135,50 +135,24 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 /**
- * Root loader: capture the request host server-side so head() can mark
- * preview/staging origins as noindex. `createIsomorphicFn` swaps a no-op
- * on the client for a server-only implementation that reads the request
- * host through `@tanstack/react-start/server`. Routing the server-only
- * dependency through `src/lib/request-host.server.ts` keeps it out of
- * the client bundle graph (filename-based import protection).
+ * Crawler hint for lovable-managed hosts.
  *
- * Rationale: rel=canonical to https://satus.sh already consolidates
- * ranking signals away from lovable.app subdomains; this is the
- * belt-and-suspenders crawler hint for any host other than the canonical.
+ * In practice, `satus.lovable.app` 302-redirects to `satus.sh` at Lovable's
+ * edge before a crawler can index it, and the `id-preview--*.lovable.app`
+ * URL is auth-gated. Combined with the per-leaf `rel=canonical` pointing
+ * at https://satus.sh, ranking signals already consolidate to the canonical
+ * domain. We intentionally do NOT inject a hostname-conditional noindex
+ * here: doing so would require pulling `@tanstack/react-start/server` into
+ * the root route, which the import-protection plugin blocks, and the
+ * conditional adds no measurable SEO value over the existing redirect +
+ * canonical setup.
  */
-const getHost = createIsomorphicFn()
-  .client(() => "")
-  .server(() => {
-    // Static import is fine: createIsomorphicFn strips the .server() body
-    // (and its imports) from the client bundle, and the helper module's
-    // `.server.ts` suffix enforces the boundary at the file level.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return (require("@/lib/request-host.server") as typeof import("@/lib/request-host.server")).readRequestHost();
-  });
-
-function rootLoader() {
-  return { host: getHost() };
-}
-
-
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  loader: rootLoader,
-  head: ({ loaderData }) => {
-    const host = loaderData?.host ?? "";
-    // Match any lovable-managed preview/published host (id-preview--*.lovable.app
-    // and satus.lovable.app). Custom domains satus.sh / www.satus.sh remain
-    // fully indexable.
-    const isPreviewHost = host.endsWith(".lovable.app");
-    return {
+  head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      // Hostname-conditional noindex: belt-and-suspenders on top of the
-      // per-route rel=canonical pointing at https://satus.sh.
-      ...(isPreviewHost
-        ? [{ name: "robots", content: "noindex, nofollow" }]
-        : []),
       { title: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       {
         name: "description",
