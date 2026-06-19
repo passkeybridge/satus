@@ -136,27 +136,32 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 /**
  * Root loader: capture the request host server-side so head() can mark
- * preview/staging origins as noindex. Runs on every navigation, but the
- * host is only knowable during SSR — on client navigations getRequestHost
- * throws, we swallow it, and the value cached from the initial SSR pass
- * stays in effect. This is the canonical fix for the lovable.app /
- * satus.lovable.app duplicate-content risk: even though rel=canonical
- * already consolidates ranking signals, an explicit noindex on the
- * preview hosts removes any ambiguity for crawlers that arrive there
- * via a stray backlink.
+ * preview/staging origins as noindex. `createIsomorphicFn` swaps a no-op
+ * on the client for a server-only implementation that reads the request
+ * host through `@tanstack/react-start/server`. Routing the server-only
+ * dependency through `src/lib/request-host.server.ts` keeps it out of
+ * the client bundle graph (filename-based import protection).
+ *
+ * Rationale: rel=canonical to https://satus.sh already consolidates
+ * ranking signals away from lovable.app subdomains; this is the
+ * belt-and-suspenders crawler hint for any host other than the canonical.
  */
-async function rootLoader() {
-  let host = "";
-  try {
-    // Dynamic import keeps this module out of the client bundle entry.
-    const mod = await import("@tanstack/react-start/server");
-    host = mod.getRequestHost({ xForwardedHost: true });
-  } catch {
-    // Client-side render or no request in scope — leave host empty;
-    // we treat unknown hosts as the canonical (indexable) origin.
-  }
-  return { host };
+const getHost = createIsomorphicFn()
+  .client(() => "")
+  .server(() => {
+    // Lazy require keeps the server-only module out of the client graph
+    // even though createIsomorphicFn already swaps the impl per env.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { readRequestHost } = require("@/lib/request-host.server") as {
+      readRequestHost: () => string;
+    };
+    return readRequestHost();
+  });
+
+function rootLoader() {
+  return { host: getHost() };
 }
+
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   loader: rootLoader,
