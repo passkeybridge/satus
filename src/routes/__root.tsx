@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { createIsomorphicFn } from "@tanstack/react-start";
+
 
 import appCss from "../styles.css?url";
 import { PaymentTestModeBanner } from "@/components/site/PaymentTestModeBanner";
