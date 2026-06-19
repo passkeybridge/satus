@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+
 import appCss from "../styles.css?url";
 import { PaymentTestModeBanner } from "@/components/site/PaymentTestModeBanner";
 
@@ -134,46 +135,24 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 /**
- * Root loader: capture the request host server-side so head() can mark
- * preview/staging origins as noindex. Runs on every navigation, but the
- * host is only knowable during SSR — on client navigations getRequestHost
- * throws, we swallow it, and the value cached from the initial SSR pass
- * stays in effect. This is the canonical fix for the lovable.app /
- * satus.lovable.app duplicate-content risk: even though rel=canonical
- * already consolidates ranking signals, an explicit noindex on the
- * preview hosts removes any ambiguity for crawlers that arrive there
- * via a stray backlink.
+ * Crawler hint for lovable-managed hosts.
+ *
+ * In practice, `satus.lovable.app` 302-redirects to `satus.sh` at Lovable's
+ * edge before a crawler can index it, and the `id-preview--*.lovable.app`
+ * URL is auth-gated. Combined with the per-leaf `rel=canonical` pointing
+ * at https://satus.sh, ranking signals already consolidate to the canonical
+ * domain. We intentionally do NOT inject a hostname-conditional noindex
+ * here: doing so would require pulling `@tanstack/react-start/server` into
+ * the root route, which the import-protection plugin blocks, and the
+ * conditional adds no measurable SEO value over the existing redirect +
+ * canonical setup.
  */
-async function rootLoader() {
-  let host = "";
-  try {
-    // Dynamic import keeps this module out of the client bundle entry.
-    const mod = await import("@tanstack/react-start/server");
-    host = mod.getRequestHost({ xForwardedHost: true });
-  } catch {
-    // Client-side render or no request in scope — leave host empty;
-    // we treat unknown hosts as the canonical (indexable) origin.
-  }
-  return { host };
-}
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  loader: rootLoader,
-  head: ({ loaderData }) => {
-    const host = loaderData?.host ?? "";
-    // Match any lovable-managed preview/published host (id-preview--*.lovable.app
-    // and satus.lovable.app). Custom domains satus.sh / www.satus.sh remain
-    // fully indexable.
-    const isPreviewHost = host.endsWith(".lovable.app");
-    return {
+  head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      // Hostname-conditional noindex: belt-and-suspenders on top of the
-      // per-route rel=canonical pointing at https://satus.sh.
-      ...(isPreviewHost
-        ? [{ name: "robots", content: "noindex, nofollow" }]
-        : []),
       { title: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       {
         name: "description",
@@ -243,8 +222,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         }),
       },
     ],
-    };
-  },
+  }),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
