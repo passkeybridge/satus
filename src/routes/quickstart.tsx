@@ -29,7 +29,7 @@ export const Route = createFileRoute("/quickstart")({
       {
         name: "description",
         content:
-          "From zero to a seeded Postgres database in under a minute. Install satus, point it at Supabase / Neon / Railway / RDS / local, pick a profile, preview, and ship.",
+          "Zero to a seeded Postgres database in under a minute. Install satus, point at Supabase / Neon / Railway / RDS / local, pick a profile, ship.",
       },
       { property: "og:title", content: "Quickstart—satus" },
       {
