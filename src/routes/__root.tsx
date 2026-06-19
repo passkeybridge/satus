@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  createIsomorphicFn,
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
