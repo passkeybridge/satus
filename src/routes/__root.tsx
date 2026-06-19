@@ -149,18 +149,17 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 const getHost = createIsomorphicFn()
   .client(() => "")
   .server(() => {
-    // Lazy require keeps the server-only module out of the client graph
-    // even though createIsomorphicFn already swaps the impl per env.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { readRequestHost } = require("@/lib/request-host.server") as {
-      readRequestHost: () => string;
-    };
-    return readRequestHost();
+    // Static import is fine: createIsomorphicFn strips the .server() body
+    // (and its imports) from the client bundle, and the helper module's
+    // `.server.ts` suffix enforces the boundary at the file level.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return (require("@/lib/request-host.server") as typeof import("@/lib/request-host.server")).readRequestHost();
   });
 
 function rootLoader() {
   return { host: getHost() };
 }
+
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
