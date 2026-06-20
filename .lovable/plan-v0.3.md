@@ -164,16 +164,15 @@ These are good ideas but not this release:
 | **5** | README, quickstart, how-it-works, llms.txt, CHANGELOG. Version bump to 0.3.0. `npm publish`. Smoke test the published tarball in a clean dir against both providers. | Tarball install + run succeeds end-to-end on both providers. GitHub release tagged. |
 | **6** | Blog post (Week 4 Slot 3) written against the shipped 0.3.0 binary. Real command output, real cost numbers from a real run, real error text. | Founder review against `mem://content/post-rules` and `mem://content/no-fabricated-stats`. |
 
-## 6. Open questions for founder before Pass 2
+## 6. Decisions locked (2026-06-20)
 
-1. **Anthropic default model.** Comfortable with `claude-haiku-4-5` (or
-   the cheapest current Haiku at build time), or do you want the default
-   to be a Sonnet for higher quality at higher cost? Default sets users'
-   first impression of "Claude on satus."
-2. **`--json` mode field names.** Snake_case (matches telemetry payload)
-   or camelCase (matches TypeScript ergonomics)? I'll go snake_case
-   unless you object — it reads more naturally for CI shell scripts.
-3. **Verbose flag spelling.** `--verbose` or `-v`? I'll wire both unless
-   you'd rather pick one.
+1. **Anthropic default model:** `claude-haiku-4-5`. Verify exact id at
+   implementation time and pin with a dated comment.
+2. **`--json` field names:** snake_case. Matches the existing telemetry
+   payload, matches the Postgres column names users will join against,
+   and matches CLI-JSON convention (`gh`, `aws`, `kubectl`).
+3. **Verbose flag:** wire both `--verbose` and `-v`. Standard Commander
+   shape, no collision with `--version`.
 
-Awaiting your approval (or edits) before starting Pass 2.
+Awaiting founder go-ahead before starting Pass 2.
+
