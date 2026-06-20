@@ -126,13 +126,22 @@ function CliPage() {
         id="env"
         n="02"
         label="Environment"
-        title={<>two variables. one optional override.</>}
+        title={<>one db url. one provider key.</>}
       >
         <Prose>
           <p>
-            satus reads two environment variables at runtime. Both are required
-            for <code>generate</code>; <code>init</code>, <code>activate</code>,
-            and <code>whoami</code> need neither.
+            satus reads its connection string and an LLM provider key from
+            the environment. Both are required for <code>generate</code>;{" "}
+            <code>init</code>, <code>activate</code>, and <code>whoami</code>{" "}
+            need neither.
+          </p>
+          <p>
+            Pick one provider per run. If both <code>OPENAI_API_KEY</code> and{" "}
+            <code>ANTHROPIC_API_KEY</code> are exported and no{" "}
+            <code>--provider</code> flag or <code>provider</code> config field
+            is set, the run aborts with a clear message — auto-detect
+            deliberately refuses to guess so a misplaced key never spends on
+            the wrong invoice.
           </p>
         </Prose>
 
@@ -144,8 +153,13 @@ function CliPage() {
           />
           <EnvVar
             name="OPENAI_API_KEY"
-            req="required"
-            body="Bring-your-own key. satus never proxies LLM calls; the request goes directly from your machine to OpenAI. OPENAI_BASE_URL is honored if you need to point at an OpenAI-compatible endpoint."
+            req="one of two"
+            body="Bring-your-own OpenAI key. satus never proxies LLM calls; the request goes directly from your machine to OpenAI. OPENAI_BASE_URL is honored if you need to point at an OpenAI-compatible endpoint (Groq, Together, a local proxy)."
+          />
+          <EnvVar
+            name="ANTHROPIC_API_KEY"
+            req="one of two"
+            body="Bring-your-own Anthropic key. The CLI calls api.anthropic.com directly using the pinned Messages API (anthropic-version: 2023-06-01) with tool-use forcing for structured output. ANTHROPIC_BASE_URL is honored if you need a compatible proxy."
           />
         </ul>
       </Section>
