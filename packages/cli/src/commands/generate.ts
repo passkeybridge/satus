@@ -95,7 +95,23 @@ export function registerGenerate(program: Command): void {
     .option('--model <id>', 'model id (overrides config; falls back to the provider default)')
     .option('--truncate', 'truncate target tables before inserting')
     .option('--dry-run', 'plan only, do not write to the database')
+    .option('-v, --verbose', 'print per-batch token + cost breakdown')
+    .option('--json', 'emit a single machine-readable JSON object on stdout (human output goes to stderr)')
     .action(async (opts) => {
+      // --json mode contract: stdout MUST contain exactly one JSON object
+      // when the run finishes, so every human-readable byte gets routed to
+      // stderr. We capture the real stdout write first to use for the
+      // final JSON emission. Saves threading a logger through every site.
+      const jsonMode = Boolean(opts.json)
+      const realStdoutWrite = process.stdout.write.bind(process.stdout)
+      if (jsonMode) {
+        const stderrWrite = process.stderr.write.bind(process.stderr)
+        ;(process.stdout as unknown as { write: typeof process.stdout.write }).write =
+          stderrWrite as unknown as typeof process.stdout.write
+        console.log = (...args: unknown[]) =>
+          stderrWrite(args.map((a) => (typeof a === 'string' ? a : String(a))).join(' ') + '\n')
+      }
+      const verbose = Boolean(opts.verbose)
       const cfg = await loadConfig()
       const dsn = resolveDsn(opts.dsn, cfg)
       if (!dsn) {
