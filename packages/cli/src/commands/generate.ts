@@ -266,6 +266,7 @@ export function registerGenerate(program: Command): void {
         const env = (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live'
         const baseTelemetry = {
           profile,
+          provider: providerId,
           model,
           target_schema: schemaName,
           environment: env,
@@ -275,10 +276,6 @@ export function registerGenerate(program: Command): void {
         await client.query('begin')
         try {
           if (brokenEdges.length > 0) {
-            // Soft cycles: NULLs land at insert time and we close them out
-            // with UPDATEs after every table is seeded. Defer any FKs the
-            // schema marked DEFERRABLE so they validate at COMMIT rather
-            // than per-statement; harmless when none are deferrable.
             await client.query('set constraints all deferred')
           }
           if (opts.truncate) {
@@ -294,32 +291,88 @@ export function registerGenerate(program: Command): void {
             maxCostUsd: Number(opts.maxCost),
             dryRun: false,
             brokenEdges,
+            onBatch: verbose
+              ? (ev) =>
+                  // Stable, parseable line shape: `verbose  table batch=N
+                  // rows=R in=I out=O $0.XXXX`. Routed through console.log
+                  // so --json mode redirects it to stderr.
+                  console.log(
+                    pc.dim(
+                      `  · ${ev.table.padEnd(28)} batch=${ev.batch} rows=${ev.rows} ` +
+                        `in=${ev.inputTokens} out=${ev.outputTokens} $${ev.usd.toFixed(4)}`,
+                    ),
+                  )
+              : undefined,
           })
 
 
           await client.query('commit')
           const total = Object.values(report.inserted).reduce((a, b) => a + b, 0)
+          const durationMs = Date.now() - startedAt
           console.log(pc.green(`\n✓ inserted ${total} rows across ${Object.keys(report.inserted).length} tables`))
-          console.log(pc.dim(`  spent: $${report.spentUsd.toFixed(4)}`))
+          console.log(
+            pc.dim(
+              `  tokens: ${report.inputTokens} in / ${report.outputTokens} out` +
+                `   spent: $${report.spentUsd.toFixed(4)}`,
+            ),
+          )
+          const tablesReport = Object.entries(report.inserted).map(([name, rows_generated]) => ({
+            name,
+            rows_generated,
+          }))
           await reportRun(runId, {
             ...baseTelemetry,
             status: 'success',
-            tables: Object.entries(report.inserted).map(([name, rows_generated]) => ({
-              name,
-              rows_generated,
-            })),
+            tables: tablesReport,
             total_rows: total,
             total_cost_usd: Number(report.spentUsd.toFixed(6)),
-            duration_ms: Date.now() - startedAt,
+            input_tokens: report.inputTokens,
+            output_tokens: report.outputTokens,
+            duration_ms: durationMs,
           })
+
+          if (jsonMode) {
+            // The contract documented in the README + llms.txt. snake_case
+            // matches the telemetry payload and Postgres column names.
+            const payload = {
+              run_id: runId,
+              status: 'success' as const,
+              provider: providerId,
+              model,
+              profile,
+              target_schema: schemaName,
+              tables: tablesReport,
+              total_rows: total,
+              total_cost_usd: Number(report.spentUsd.toFixed(6)),
+              input_tokens: report.inputTokens,
+              output_tokens: report.outputTokens,
+              duration_ms: durationMs,
+            }
+            realStdoutWrite(JSON.stringify(payload) + '\n')
+          }
         } catch (err) {
+          const durationMs = Date.now() - startedAt
           await client.query('rollback').catch(() => {})
+          const errorMessage = (err as Error).message?.slice(0, 1900)
           await reportRun(runId, {
             ...baseTelemetry,
             status: 'failed',
-            error_message: (err as Error).message?.slice(0, 1900),
-            duration_ms: Date.now() - startedAt,
+            error_message: errorMessage,
+            duration_ms: durationMs,
           })
+          if (jsonMode) {
+            const payload = {
+              run_id: runId,
+              status: 'failed' as const,
+              provider: providerId,
+              model,
+              profile,
+              target_schema: schemaName,
+              duration_ms: durationMs,
+              error_message: errorMessage,
+            }
+            realStdoutWrite(JSON.stringify(payload) + '\n')
+          }
           throw err
         }
       } finally {
