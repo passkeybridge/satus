@@ -37,21 +37,25 @@ export function registerInit(program: Command): void {
       )
       const schema = await ask('Schema to seed:', 'public')
       const profile = await ask('Reference profile (saas | ecommerce | b2b):', 'saas')
-      const model = await ask('OpenAI model:', 'gpt-4o-mini')
+      const provider = await ask('LLM provider (openai | anthropic):', 'openai')
+      const defaultModel = provider === 'anthropic' ? 'claude-haiku-4-5' : 'gpt-4o-mini'
+      const model = await ask('Model id:', defaultModel)
       rl.close()
 
       const cfg = ConfigSchema.parse({
         databaseUrl: databaseUrl || undefined,
         schema,
         profile,
+        provider,
         model,
         exclude: [],
       })
       const written = await writeConfig(cfg)
       console.log(pc.green('\n✓ ') + `wrote ${pc.bold(written)}`)
+      const envVar = provider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY'
       console.log(
         pc.dim(
-          '\nNext: export OPENAI_API_KEY=sk-... and run `satus generate --rows 25 --dry-run`',
+          `\nNext: export ${envVar}=... and run \`satus generate --rows 25 --dry-run\``,
         ),
       )
     })
