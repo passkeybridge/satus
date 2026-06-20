@@ -101,6 +101,8 @@ export async function runGenerate(
 ): Promise<RunReport> {
   const budget = new CostBudget(opts.maxCostUsd)
   const inserted: Record<string, number> = {}
+  let totalInputTokens = 0
+  let totalOutputTokens = 0
   // PK values per table, keyed by table name. Used to satisfy FKs from
   // children later in the run.
   const pkPool: Map<string, Array<Record<string, unknown>>> = new Map()
