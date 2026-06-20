@@ -96,7 +96,10 @@ export function registerGenerate(program: Command): void {
     .option('--provider <id>', 'LLM provider (openai | anthropic); auto-detected from env when omitted')
     .option('--model <id>', 'model id (overrides config; falls back to the provider default)')
     .option('--truncate', 'truncate target tables before inserting')
-    .option('--dry-run', 'plan only, do not write to the database')
+    .option(
+      '--dry-run',
+      'simulate LLM output and run relational validation without writing rows or spending credits',
+    )
     .option('-v, --verbose', 'print per-batch token + cost breakdown')
     .option('--json', 'emit a single machine-readable JSON object on stdout (human output goes to stderr)')
     .action(async (opts) => {
