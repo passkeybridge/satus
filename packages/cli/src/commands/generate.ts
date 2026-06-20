@@ -269,7 +269,7 @@ export function registerGenerate(program: Command): void {
             console.log(pc.dim('  truncating target tables...'))
             await truncate(client, ordered)
           }
-          const provider = createOpenAiProvider({ apiKey: apiKey!, model })
+          const provider = buildProvider(providerId, apiKey!, model)
           const report = await runGenerate(client, ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),
