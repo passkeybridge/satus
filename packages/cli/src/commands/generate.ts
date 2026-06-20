@@ -23,7 +23,60 @@ import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
 import { newRunId, reportRun } from '../generate/telemetry.js'
 import { readCachedLicense } from '../license.js'
-import { createOpenAiProvider } from '../generate/providers/index.js'
+import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
+import type { Provider } from '../generate/providers/index.js'
+
+type ProviderId = 'openai' | 'anthropic'
+
+const DEFAULT_MODELS: Record<ProviderId, string> = {
+  openai: 'gpt-4o-mini',
+  // Pinned 2026-06-20 from Anthropic's model lineup. Override with
+  // --model or the `model` field in satus.config.json.
+  anthropic: 'claude-haiku-4-5',
+}
+
+const PROVIDER_ENV: Record<ProviderId, string> = {
+  openai: 'OPENAI_API_KEY',
+  anthropic: 'ANTHROPIC_API_KEY',
+}
+
+/**
+ * Resolve the active provider id from (in order): explicit flag, config
+ * file, env-var auto-detect. Errors clearly when both keys are set with
+ * no explicit choice, so a user never wonders which provider just spent
+ * their budget.
+ */
+function resolveProviderId(
+  cliProvider: string | undefined,
+  cfgProvider: ProviderId | undefined,
+): ProviderId {
+  if (cliProvider) {
+    if (cliProvider !== 'openai' && cliProvider !== 'anthropic') {
+      throw new Error(`Unknown --provider: ${cliProvider}. Use openai | anthropic.`)
+    }
+    return cliProvider
+  }
+  if (cfgProvider) return cfgProvider
+
+  const hasOpenAi = Boolean(process.env.OPENAI_API_KEY)
+  const hasAnthropic = Boolean(process.env.ANTHROPIC_API_KEY)
+  if (hasOpenAi && hasAnthropic) {
+    throw new Error(
+      'Both OPENAI_API_KEY and ANTHROPIC_API_KEY are set. Pass `--provider openai|anthropic` ' +
+        'or set `provider` in satus.config.json so we know which one to use.',
+    )
+  }
+  if (hasAnthropic) return 'anthropic'
+  // Default to openai when neither is set so the existing
+  // "OPENAI_API_KEY is not set" error keeps firing (backward compat
+  // with v0.2.0's error message).
+  return 'openai'
+}
+
+function buildProvider(id: ProviderId, apiKey: string, model: string): Provider {
+  if (id === 'anthropic') return createAnthropicProvider({ apiKey, model })
+  return createOpenAiProvider({ apiKey, model })
+}
 
 const FREE_MAX_ROWS = 25
 const FREE_MAX_TABLES = 5
@@ -38,7 +91,8 @@ export function registerGenerate(program: Command): void {
     .option('--batch-size <n>', 'rows per LLM call', '25')
     .option('--dsn <url>', 'Postgres connection string (overrides config + env)')
     .option('--schema <name>', 'Postgres schema to seed (overrides config)')
-    .option('--model <id>', 'OpenAI model (overrides config)')
+    .option('--provider <id>', 'LLM provider (openai | anthropic); auto-detected from env when omitted')
+    .option('--model <id>', 'model id (overrides config; falls back to the provider default)')
     .option('--truncate', 'truncate target tables before inserting')
     .option('--dry-run', 'plan only, do not write to the database')
     .action(async (opts) => {
@@ -52,11 +106,20 @@ export function registerGenerate(program: Command): void {
         process.exit(1)
       }
 
-      const apiKey = process.env.OPENAI_API_KEY
+      let providerId: ProviderId
+      try {
+        providerId = resolveProviderId(opts.provider, cfg?.provider)
+      } catch (err) {
+        console.error(pc.red((err as Error).message))
+        process.exit(1)
+      }
+
+      const apiKeyEnv = PROVIDER_ENV[providerId]
+      const apiKey = process.env[apiKeyEnv]
       if (!apiKey && !opts.dryRun) {
         console.error(
-          pc.red('OPENAI_API_KEY is not set.') +
-            '\n  Export it before running, or pass --dry-run to plan without calling the model.',
+          pc.red(`${apiKeyEnv} is not set.`) +
+            `\n  Export it before running, or pass --dry-run to plan without calling the model.`,
         )
         process.exit(1)
       }
@@ -76,7 +139,7 @@ export function registerGenerate(program: Command): void {
 
       const schemaName = opts.schema ?? cfg?.schema ?? 'public'
       const profile = resolveProfile(opts.profile, cfg)
-      const model = opts.model ?? cfg?.model ?? 'gpt-4o-mini'
+      const model = opts.model ?? cfg?.model ?? DEFAULT_MODELS[providerId]
       const exclude = cfg?.exclude ?? []
 
       // Hosted Postgres (Supabase, Neon, RDS) terminates TLS with certs that
@@ -136,6 +199,7 @@ export function registerGenerate(program: Command): void {
         console.log(pc.bold(`\nsatus generate`))
         console.log(pc.dim(`  schema:   ${schemaName}`))
         console.log(pc.dim(`  profile:  ${profile}`))
+        console.log(pc.dim(`  provider: ${providerId}`))
         console.log(pc.dim(`  model:    ${model}`))
         console.log(pc.dim(`  rows:     ${rowsPerTable} per table`))
         console.log(pc.dim(`  tables:   ${ordered.map((t) => t.name).join(' -> ')}`))
@@ -151,14 +215,15 @@ export function registerGenerate(program: Command): void {
 
 
         if (opts.dryRun) {
-          // Dry run: never instantiate a provider — we only need the
-          // heuristic from planRun(), which uses static OpenAI rates as
-          // a representative estimate.
+          // Dry run: never instantiate a provider for the real upstream —
+          // we only need planRun()'s heuristic. Build whichever provider
+          // matches the active id so the dry-run estimate is at least
+          // shaped by the right pricing table.
           const plan = planRun(ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),
             profile,
-            provider: createOpenAiProvider({ apiKey: apiKey ?? '', model }),
+            provider: buildProvider(providerId, apiKey ?? '', model),
             maxCostUsd: Number(opts.maxCost),
             dryRun: true,
           })
@@ -204,7 +269,7 @@ export function registerGenerate(program: Command): void {
             console.log(pc.dim('  truncating target tables...'))
             await truncate(client, ordered)
           }
-          const provider = createOpenAiProvider({ apiKey: apiKey!, model })
+          const provider = buildProvider(providerId, apiKey!, model)
           const report = await runGenerate(client, ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),

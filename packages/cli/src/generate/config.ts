@@ -24,8 +24,18 @@ export const ConfigSchema = z.object({
   schema: z.string().default('public'),
   /** Reference profile that guides the generator's tone and content. */
   profile: z.enum(['saas', 'ecommerce', 'b2b']).default('saas'),
-  /** OpenAI-compatible model id. Defaults to gpt-4o-mini. */
-  model: z.string().default('gpt-4o-mini'),
+  /**
+   * LLM provider. When omitted, the CLI auto-detects from which API key
+   * env var is set (OPENAI_API_KEY vs ANTHROPIC_API_KEY). If both are
+   * set, the CLI errors and asks the user to be explicit.
+   */
+  provider: z.enum(['openai', 'anthropic']).optional(),
+  /**
+   * Model id. When omitted, falls back to the selected provider's
+   * default (gpt-4o-mini for openai, claude-haiku-4-5 for anthropic).
+   * Cross-provider model names are not validated client-side.
+   */
+  model: z.string().optional(),
   /** Tables to skip entirely (e.g. audit logs, system tables you manage). */
   exclude: z.array(z.string()).default([]),
 })
