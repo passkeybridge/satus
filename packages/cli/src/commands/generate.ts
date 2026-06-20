@@ -91,7 +91,8 @@ export function registerGenerate(program: Command): void {
     .option('--batch-size <n>', 'rows per LLM call', '25')
     .option('--dsn <url>', 'Postgres connection string (overrides config + env)')
     .option('--schema <name>', 'Postgres schema to seed (overrides config)')
-    .option('--model <id>', 'OpenAI model (overrides config)')
+    .option('--provider <id>', 'LLM provider (openai | anthropic); auto-detected from env when omitted')
+    .option('--model <id>', 'model id (overrides config; falls back to the provider default)')
     .option('--truncate', 'truncate target tables before inserting')
     .option('--dry-run', 'plan only, do not write to the database')
     .action(async (opts) => {
@@ -105,11 +106,20 @@ export function registerGenerate(program: Command): void {
         process.exit(1)
       }
 
-      const apiKey = process.env.OPENAI_API_KEY
+      let providerId: ProviderId
+      try {
+        providerId = resolveProviderId(opts.provider, cfg?.provider)
+      } catch (err) {
+        console.error(pc.red((err as Error).message))
+        process.exit(1)
+      }
+
+      const apiKeyEnv = PROVIDER_ENV[providerId]
+      const apiKey = process.env[apiKeyEnv]
       if (!apiKey && !opts.dryRun) {
         console.error(
-          pc.red('OPENAI_API_KEY is not set.') +
-            '\n  Export it before running, or pass --dry-run to plan without calling the model.',
+          pc.red(`${apiKeyEnv} is not set.`) +
+            `\n  Export it before running, or pass --dry-run to plan without calling the model.`,
         )
         process.exit(1)
       }
@@ -129,7 +139,7 @@ export function registerGenerate(program: Command): void {
 
       const schemaName = opts.schema ?? cfg?.schema ?? 'public'
       const profile = resolveProfile(opts.profile, cfg)
-      const model = opts.model ?? cfg?.model ?? 'gpt-4o-mini'
+      const model = opts.model ?? cfg?.model ?? DEFAULT_MODELS[providerId]
       const exclude = cfg?.exclude ?? []
 
       // Hosted Postgres (Supabase, Neon, RDS) terminates TLS with certs that
