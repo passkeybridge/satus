@@ -199,6 +199,7 @@ export function registerGenerate(program: Command): void {
         console.log(pc.bold(`\nsatus generate`))
         console.log(pc.dim(`  schema:   ${schemaName}`))
         console.log(pc.dim(`  profile:  ${profile}`))
+        console.log(pc.dim(`  provider: ${providerId}`))
         console.log(pc.dim(`  model:    ${model}`))
         console.log(pc.dim(`  rows:     ${rowsPerTable} per table`))
         console.log(pc.dim(`  tables:   ${ordered.map((t) => t.name).join(' -> ')}`))
