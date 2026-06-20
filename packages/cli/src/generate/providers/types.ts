@@ -35,8 +35,12 @@ export interface ProviderResponse<T> {
 }
 
 export interface Provider {
-  /** Stable identifier; surfaces in telemetry and JSON output. */
-  readonly id: 'openai' | 'anthropic'
+  /**
+   * Stable identifier; surfaces in telemetry and JSON output. The
+   * 'simulated' variant is used by `satus generate --dry-run` to drive the
+   * runner without an upstream LLM call (see ../simulate.ts).
+   */
+  readonly id: 'openai' | 'anthropic' | 'simulated'
   /** Model id actually being called; surfaces in telemetry and logs. */
   readonly model: string
   generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>>
