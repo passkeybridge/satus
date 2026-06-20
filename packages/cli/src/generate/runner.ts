@@ -118,6 +118,7 @@ export async function runGenerate(
 
     const remaining = opts.rowsPerTable
     const allRows: Array<Record<string, unknown>> = []
+    let batchIndex = 0
 
     for (let produced = 0; produced < remaining; ) {
       const thisBatch = Math.min(opts.batchSize, remaining - produced)
