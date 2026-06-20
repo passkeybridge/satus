@@ -92,7 +92,7 @@ audit_log      bounded by N(audit_log)              —
 categories     bounded by N(categories)             bounded by N(categories)
 ```
 
-Pass 2 is always a single bulk `UPDATE` per back-edge, never row-at-a-time. Its cost is linear in the number of rows in the **deferring** table, not in the product of the two tables. In the typical SaaS shape — many users, fewer organizations, very many audit rows — pass 2 touches only the organizations table for the `owner_id` back-edge and only the users table for the `last_audit_id` back-edge. The 1M-row audit_log never appears in pass 2 because no back-edge defers onto it.
+Pass 2 is always a single bulk `UPDATE` per back-edge, never row-at-a-time. Its cost is linear in the number of rows in the **deferring** table, not in the product of the two tables. In the typical SaaS shape—many users, fewer organizations, very many audit rows—pass 2 touches only the organizations table for the `owner_id` back-edge and only the users table for the `last_audit_id` back-edge. The 1M-row audit_log never appears in pass 2 because no back-edge defers onto it.
 
 That property is the whole reason this approach is viable on schemas with cycles and millions of rows: the back-patch work scales with the smaller side.
 
