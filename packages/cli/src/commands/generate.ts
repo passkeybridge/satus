@@ -25,6 +25,9 @@ import { newRunId, reportRun } from '../generate/telemetry.js'
 import { readCachedLicense } from '../license.js'
 import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
 import type { Provider } from '../generate/providers/index.js'
+// createOpenAiProvider and createAnthropicProvider are wired through buildProvider() below.
+void createOpenAiProvider
+void createAnthropicProvider
 
 type ProviderId = 'openai' | 'anthropic'
 
