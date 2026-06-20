@@ -15,11 +15,16 @@ export interface RunTelemetry {
   status: 'running' | 'success' | 'failed'
   license_key?: string
   profile?: string
+  /** v0.3.0: which LLM provider ran the generation. */
+  provider?: 'openai' | 'anthropic'
   model?: string
   target_schema?: string
   tables?: Array<{ name: string; rows_generated: number }>
   total_rows?: number
   total_cost_usd?: number
+  /** v0.3.0: aggregate token counts across the whole run. */
+  input_tokens?: number
+  output_tokens?: number
   duration_ms?: number
   error_message?: string
   environment?: 'dev' | 'live'

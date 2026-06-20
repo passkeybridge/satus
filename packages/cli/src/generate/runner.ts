@@ -19,6 +19,16 @@ import { CostBudget, type Provider } from './providers/index.js'
 import { profilePrompt, type ProfileName } from './profiles.js'
 import { insertRows, updateBrokenEdge } from './writer.js'
 
+export interface BatchEvent {
+  table: string
+  /** 1-based batch index within the table. */
+  batch: number
+  rows: number
+  inputTokens: number
+  outputTokens: number
+  usd: number
+}
+
 export interface RunOptions {
   rowsPerTable: number
   /** Hard cap on rows per LLM call. Keeps response sizes predictable. */
@@ -33,6 +43,12 @@ export interface RunOptions {
   dryRun: boolean
   /** Soft-cycle back-edges to populate after every table is seeded. */
   brokenEdges?: Array<{ table: string; column: string; refTable: string; refColumn: string }>
+  /**
+   * Optional per-batch hook. Fires after every successful LLM call so the
+   * CLI can render a verbose breakdown without the runner deciding the
+   * presentation. Errors thrown here propagate and abort the run.
+   */
+  onBatch?: (event: BatchEvent) => void
 }
 
 
@@ -46,6 +62,9 @@ export interface TablePlan {
 export interface RunReport {
   inserted: Record<string, number>
   spentUsd: number
+  /** v0.3.0: aggregate token usage across every LLM call in the run. */
+  inputTokens: number
+  outputTokens: number
 }
 
 /**
@@ -82,6 +101,8 @@ export async function runGenerate(
 ): Promise<RunReport> {
   const budget = new CostBudget(opts.maxCostUsd)
   const inserted: Record<string, number> = {}
+  let totalInputTokens = 0
+  let totalOutputTokens = 0
   // PK values per table, keyed by table name. Used to satisfy FKs from
   // children later in the run.
   const pkPool: Map<string, Array<Record<string, unknown>>> = new Map()
@@ -97,6 +118,7 @@ export async function runGenerate(
 
     const remaining = opts.rowsPerTable
     const allRows: Array<Record<string, unknown>> = []
+    let batchIndex = 0
 
     for (let produced = 0; produced < remaining; ) {
       const thisBatch = Math.min(opts.batchSize, remaining - produced)
@@ -123,6 +145,17 @@ export async function runGenerate(
 
 
       budget.add(usage)
+      totalInputTokens += usage.inputTokens
+      totalOutputTokens += usage.outputTokens
+      batchIndex += 1
+      opts.onBatch?.({
+        table: table.name,
+        batch: batchIndex,
+        rows: thisBatch,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        usd: usage.usd,
+      })
       if (budget.exceeded()) {
         throw new Error(
           `Cost budget exceeded mid-table ($${budget.spentUsd.toFixed(4)} > $${opts.maxCostUsd}). Aborting at ${table.name}.`,
@@ -193,6 +226,11 @@ export async function runGenerate(
     }
   }
 
-  return { inserted, spentUsd: budget.spentUsd }
+  return {
+    inserted,
+    spentUsd: budget.spentUsd,
+    inputTokens: totalInputTokens,
+    outputTokens: totalOutputTokens,
+  }
 }
 
