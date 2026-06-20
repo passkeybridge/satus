@@ -122,7 +122,7 @@ function QuickstartPage() {
           <Blank />
           <Cmt>{`# verify`}</Cmt>
           <Shell>{`satus --version`}</Shell>
-          <Out>{`satus 0.2.0`}</Out>
+          <Out>{`satus 0.3.0`}</Out>
         </Terminal>
       </Section>
 
@@ -135,12 +135,19 @@ function QuickstartPage() {
         <Prose>
           <p>
             Supabase, Neon, Railway, RDS, or a local instance—satus reads <code>DATABASE_URL</code>{" "}
-            and your LLM key from the environment. It will refuse to run against a database with
+            and your LLM provider key from the environment. It will refuse to run against a database with
             more than 10,000 user rows unless you pass <code>--force</code>.
+          </p>
+          <p>
+            Pick one provider: export <code>OPENAI_API_KEY</code> or{" "}
+            <code>ANTHROPIC_API_KEY</code>. If both are set, pass{" "}
+            <code>--provider openai|anthropic</code> on{" "}
+            <code>satus generate</code>—auto-detect deliberately refuses to
+            guess so a misplaced key never spends on the wrong invoice.
           </p>
         </Prose>
         <Terminal>
-          <Cmt>{`# 1 · database & llm provider`}</Cmt>
+          <Cmt>{`# 1 · database & llm provider (openai shown; swap for ANTHROPIC_API_KEY for Claude)`}</Cmt>
           <Shell>{`export DATABASE_URL="postgres://user:pass@localhost:5432/app"`}</Shell>
           <Shell>{`export OPENAI_API_KEY="sk-..."`}</Shell>
           <Blank />

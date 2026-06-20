@@ -20,8 +20,13 @@ satus plan --schema public --profile medical
 satus generate --schema public --profile medical --rows 1000
 
 # Required environment
+# Required environment
 export DATABASE_URL=postgres://user:pass@host:5432/db
+
+# LLM provider (pick one; set both and pass --provider, or set the
+# provider field in satus.config.json to disambiguate).
 export OPENAI_API_KEY=sk-...
+export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 Exit codes: `0` success, `10` schema unreachable, `11` target schema not empty, `20` LLM rate-limited, `21` LLM auth, `30` profile not found. Full reference: https://satus.sh/cli.
