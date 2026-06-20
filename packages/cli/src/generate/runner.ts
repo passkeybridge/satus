@@ -117,8 +117,10 @@ export async function runGenerate(
   const inserted: Record<string, number> = {}
   let totalInputTokens = 0
   let totalOutputTokens = 0
+  const findings: Finding[] = []
   // PK values per table, keyed by table name. Used to satisfy FKs from
-  // children later in the run.
+  // children later in the run. In dry-run mode this is populated with
+  // synthesized PKs so downstream tables still get plausible FK targets.
   const pkPool: Map<string, Array<Record<string, unknown>>> = new Map()
 
   for (const table of tables) {
