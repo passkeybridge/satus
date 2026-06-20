@@ -80,24 +80,21 @@ The patterns from the opening, with how each one is resolved:
 
 Pass 2 is always a single bulk UPDATE per back-edge, never a row-at-a-time loop. The cost is linear in the number of rows in the deferring table, not in the product.
 
-### What this looks like at runtime
+### The shape of the work
 
-A condensed view of a real run against an anonymized three-cycle schema, with rows on the x-axis and wall time on the y-axis. The bars are pass 1 (insert) and pass 2 (back-patch UPDATE) respectively, for the same table.
+The cost structure is what matters here, not specific seconds on one laptop. For a three-cycle schema with `users ↔ organizations`, `users ↔ audit_log`, and `categories` self-referential:
 
 ```text
-table                pass1 (insert)              pass2 (update)
-users          ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇   18.4s     ▇▇▇   2.1s
-organizations  ▇▇▇▇▇▇▇▇            8.0s        ▇▇    1.4s
-audit_log      ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 19.7s    —    n/a
-categories     ▇                    0.6s        ▇     0.4s
-                                    ─────                ────
-                                    46.7s                 3.9s
-
-scale: one ▇ ≈ 1.0s wall time. workload: 100k users, 5k orgs,
-       1M audit rows, 800 categories. local Postgres 16.4, M2 Pro.
+table          pass 1 (insert, topological order)   pass 2 (back-patch UPDATE)
+users          bounded by N(users)                  —
+organizations  bounded by N(organizations)          bounded by N(organizations)
+audit_log      bounded by N(audit_log)              —
+categories     bounded by N(categories)             bounded by N(categories)
 ```
 
-Pass 2 is a small fraction of total wall time on this shape, because back-patches are bounded by `N(rows in deferring table)`, never by the join cardinality.
+Pass 2 is always a single bulk `UPDATE` per back-edge, never row-at-a-time. Its cost is linear in the number of rows in the **deferring** table, not in the product of the two tables. In the typical SaaS shape—many users, fewer organizations, very many audit rows—pass 2 touches only the organizations table for the `owner_id` back-edge and only the users table for the `last_audit_id` back-edge. The 1M-row audit_log never appears in pass 2 because no back-edge defers onto it.
+
+That property is the whole reason this approach is viable on schemas with cycles and millions of rows: the back-patch work scales with the smaller side.
 
 ## Why we will not "just turn off constraints"
 
@@ -112,10 +109,10 @@ The whole point of schema-aware seeding is that the data passes every constraint
 
 ## Where this fits in satus
 
-The cycle handling described here is part of the default planner; there is no flag to enable. If you want to see what satus inferred for your schema, the dry-run mode prints the resolved insert order, the deferred columns, and the back-edges, with no rows actually written:
+The cycle handling described here is part of the default planner; there is no flag to enable. Generate seed data for your schema with:
 
 ```bash
-satus plan --schema ./schema.sql --profile saas-subscriptions
+satus generate --profile saas
 ```
 
 The [quickstart](/quickstart) shows the full setup. The [saas-subscriptions profile](/profiles#saas-subscriptions) is the one we built specifically to exercise cycles, so it is a good first run if you want to see the planner do real work.
