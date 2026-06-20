@@ -236,15 +236,15 @@ export function registerGenerate(program: Command): void {
 
 
         if (opts.dryRun) {
-          // Dry run: never instantiate a provider for the real upstream —
-          // we only need planRun()'s heuristic. Build whichever provider
-          // matches the active id so the dry-run estimate is at least
-          // shaped by the right pricing table.
+          // Phase 1 — cost estimate against the user-selected real provider's
+          // pricing. Shapes the answer to "what would this run cost if I took
+          // --dry-run off?" without spending anything.
+          const planProvider = buildProvider(providerId, apiKey ?? '', model)
           const plan = planRun(ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),
             profile,
-            provider: buildProvider(providerId, apiKey ?? '', model),
+            provider: planProvider,
             maxCostUsd: Number(opts.maxCost),
             dryRun: true,
           })
@@ -262,9 +262,54 @@ export function registerGenerate(program: Command): void {
               pc.yellow(`  ! exceeds --max-cost $${opts.maxCost}; raise the cap or lower --rows.`),
             )
           }
+
+          // Phase 2 — simulated execution + relational validation. The
+          // simulated provider is offline (no API key, no spend), but the
+          // runner code path is identical to a real run: same topo order,
+          // same FK injection, same broken-edge handling. Findings reflect
+          // what the database would have rejected.
+          console.log(pc.bold('\n  simulating + validating...'))
+          const simulated = await runGenerate(client, ordered, {
+            rowsPerTable,
+            batchSize: Number(opts.batchSize),
+            profile,
+            provider: createSimulatedProvider(),
+            // Cost budget is meaningless for the simulator; disable it so
+            // a too-small --max-cost can't abort an offline validation run.
+            maxCostUsd: Number.POSITIVE_INFINITY,
+            dryRun: true,
+            validate: true,
+            brokenEdges,
+          })
+
+          const groups = groupFindings(simulated.findings)
+          const errorCount = simulated.findings.filter((f) => f.severity === 'error').length
+          const warnCount = simulated.findings.length - errorCount
+
+          if (groups.length === 0) {
+            console.log(pc.green(`\n  ✓ no validation findings across ${ordered.length} tables`))
+          } else {
+            console.log(
+              pc.bold('\n  findings: ') +
+                (errorCount > 0 ? pc.red(`${errorCount} error`) : pc.dim('0 error')) +
+                pc.dim(' / ') +
+                (warnCount > 0 ? pc.yellow(`${warnCount} warn`) : pc.dim('0 warn')),
+            )
+            for (const g of groups) {
+              const tag = g.severity === 'error' ? pc.red('  error') : pc.yellow('  warn ')
+              const where = g.column ? `${g.table}.${g.column}` : g.table
+              const sample = g.sampleRows.length > 0
+                ? pc.dim(`  rows[${g.sampleRows.join(',')}${g.count > g.sampleRows.length ? '+' : ''}]`)
+                : ''
+              console.log(
+                `${tag} ${where.padEnd(36)} ${g.rule.padEnd(18)} x${g.count}${sample}\n         ${pc.dim(g.sampleMessage)}`,
+              )
+            }
+          }
+
           if (jsonMode) {
             const payload = {
-              status: 'dry_run' as const,
+              status: errorCount > 0 ? ('dry_run_invalid' as const) : ('dry_run' as const),
               provider: providerId,
               model,
               profile,
@@ -276,9 +321,17 @@ export function registerGenerate(program: Command): void {
               })),
               estimated_total_cost_usd: Number(total.toFixed(6)),
               max_cost_usd: Number(opts.maxCost),
+              validation: {
+                error_count: errorCount,
+                warn_count: warnCount,
+                findings: simulated.findings,
+              },
             }
             realStdoutWrite(JSON.stringify(payload) + '\n')
           }
+
+          // Surface validation failures as a non-zero exit so CI gates work.
+          if (errorCount > 0) process.exit(2)
           return
         }
 
