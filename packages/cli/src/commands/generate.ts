@@ -215,14 +215,15 @@ export function registerGenerate(program: Command): void {
 
 
         if (opts.dryRun) {
-          // Dry run: never instantiate a provider — we only need the
-          // heuristic from planRun(), which uses static OpenAI rates as
-          // a representative estimate.
+          // Dry run: never instantiate a provider for the real upstream —
+          // we only need planRun()'s heuristic. Build whichever provider
+          // matches the active id so the dry-run estimate is at least
+          // shaped by the right pricing table.
           const plan = planRun(ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),
             profile,
-            provider: createOpenAiProvider({ apiKey: apiKey ?? '', model }),
+            provider: buildProvider(providerId, apiKey ?? '', model),
             maxCostUsd: Number(opts.maxCost),
             dryRun: true,
           })
