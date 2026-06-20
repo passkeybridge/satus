@@ -23,6 +23,7 @@ import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
 import { newRunId, reportRun } from '../generate/telemetry.js'
 import { readCachedLicense } from '../license.js'
+import { createOpenAiProvider } from '../generate/providers/index.js'
 
 const FREE_MAX_ROWS = 25
 const FREE_MAX_TABLES = 5
@@ -150,12 +151,14 @@ export function registerGenerate(program: Command): void {
 
 
         if (opts.dryRun) {
+          // Dry run: never instantiate a provider — we only need the
+          // heuristic from planRun(), which uses static OpenAI rates as
+          // a representative estimate.
           const plan = planRun(ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),
             profile,
-            model,
-            apiKey: apiKey ?? '',
+            provider: createOpenAiProvider({ apiKey: apiKey ?? '', model }),
             maxCostUsd: Number(opts.maxCost),
             dryRun: true,
           })
@@ -175,6 +178,7 @@ export function registerGenerate(program: Command): void {
           }
           return
         }
+
 
         const runId = newRunId()
         const startedAt = Date.now()
@@ -200,16 +204,17 @@ export function registerGenerate(program: Command): void {
             console.log(pc.dim('  truncating target tables...'))
             await truncate(client, ordered)
           }
+          const provider = createOpenAiProvider({ apiKey: apiKey!, model })
           const report = await runGenerate(client, ordered, {
             rowsPerTable,
             batchSize: Number(opts.batchSize),
             profile,
-            model,
-            apiKey: apiKey!,
+            provider,
             maxCostUsd: Number(opts.maxCost),
             dryRun: false,
             brokenEdges,
           })
+
 
           await client.query('commit')
           const total = Object.values(report.inserted).reduce((a, b) => a + b, 0)
