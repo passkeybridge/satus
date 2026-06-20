@@ -27,6 +27,7 @@ import {
   verifyWebhook,
 } from '@/lib/stripe.server'
 import { supabaseAdmin } from '@/integrations/supabase/client.server'
+import { notifyWebhookFailure } from '@/lib/webhook-alerts.server'
 
 const PLAN_LABELS: Record<string, string> = {
   satus_pro_monthly: 'Pro · monthly',
@@ -334,15 +335,29 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
         if (rawEnv !== 'sandbox' && rawEnv !== 'live') {
           // 400 (not 200) so a misconfigured Stripe webhook URL surfaces
           // in Stripe's delivery dashboard instead of being silently ACK'd.
+          // Stripe will NOT retry a 400, so we also alert ops directly —
+          // dedup is per-day so a probing loop can't flood the inbox.
           console.error('[payments-webhook] invalid env query', rawEnv)
+          await notifyWebhookFailure({
+            eventId: null,
+            eventType: 'env-query-invalid',
+            environment: 'unknown',
+            error: new Error(
+              `Webhook called with invalid env query parameter: ${JSON.stringify(rawEnv)}. ` +
+                `Expected 'sandbox' or 'live'. Check the Stripe webhook endpoint URL.`,
+            ),
+          })
           return new Response('Missing or invalid env query parameter', { status: 400 })
         }
         const env: StripeEnv = rawEnv
 
-        let event: { type: string; data: { object: any } }
+        let event: { type: string; data: { object: any } } & { id?: string }
         try {
-          event = await verifyWebhook(request, env)
+          event = (await verifyWebhook(request, env)) as typeof event
         } catch (err) {
+          // Signature failures are often probe traffic. Log only — alerting
+          // on these would be a spam vector for anyone hitting the public
+          // /api/public/* path with a bogus body.
           console.error('[payments-webhook] signature verification failed', err)
           return new Response('Invalid signature', { status: 400 })
         }
@@ -367,6 +382,18 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
           return Response.json({ received: true })
         } catch (err) {
           console.error('[payments-webhook] handler error', event.type, err)
+          // Fire-and-await the alert so the DB dedup insert lands before
+          // we return 500 and Stripe queues an immediate retry. notify…
+          // never throws, so it can't bump us off the 500 path.
+          await notifyWebhookFailure({
+            eventId: event.id ?? null,
+            eventType: event.type,
+            environment: env,
+            error: err,
+          })
+          // 500 keeps Stripe's retry schedule alive; a 200 here would
+          // silently drop the event and the alert would be our only
+          // record that it ever happened.
           return new Response('Handler error', { status: 500 })
         }
       },
