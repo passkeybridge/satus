@@ -320,6 +320,30 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_alerts_sent: {
+        Row: {
+          created_at: string
+          environment: string | null
+          error_message: string | null
+          event_id: string
+          event_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          environment?: string | null
+          error_message?: string | null
+          event_id: string
+          event_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          environment?: string | null
+          error_message?: string | null
+          event_id?: string
+          event_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -349,6 +373,10 @@ export type Database = {
       prune_e2e_health_log: { Args: { retain_days?: number }; Returns: number }
       prune_rate_limit_counters: { Args: never; Returns: number }
       prune_satus_runs: { Args: { retain_days?: number }; Returns: number }
+      prune_webhook_alerts_sent: {
+        Args: { retain_days?: number }
+        Returns: number
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
