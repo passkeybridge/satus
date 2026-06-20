@@ -23,7 +23,60 @@ import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
 import { newRunId, reportRun } from '../generate/telemetry.js'
 import { readCachedLicense } from '../license.js'
-import { createOpenAiProvider } from '../generate/providers/index.js'
+import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
+import type { Provider } from '../generate/providers/index.js'
+
+type ProviderId = 'openai' | 'anthropic'
+
+const DEFAULT_MODELS: Record<ProviderId, string> = {
+  openai: 'gpt-4o-mini',
+  // Pinned 2026-06-20 from Anthropic's model lineup. Override with
+  // --model or the `model` field in satus.config.json.
+  anthropic: 'claude-haiku-4-5',
+}
+
+const PROVIDER_ENV: Record<ProviderId, string> = {
+  openai: 'OPENAI_API_KEY',
+  anthropic: 'ANTHROPIC_API_KEY',
+}
+
+/**
+ * Resolve the active provider id from (in order): explicit flag, config
+ * file, env-var auto-detect. Errors clearly when both keys are set with
+ * no explicit choice, so a user never wonders which provider just spent
+ * their budget.
+ */
+function resolveProviderId(
+  cliProvider: string | undefined,
+  cfgProvider: ProviderId | undefined,
+): ProviderId {
+  if (cliProvider) {
+    if (cliProvider !== 'openai' && cliProvider !== 'anthropic') {
+      throw new Error(`Unknown --provider: ${cliProvider}. Use openai | anthropic.`)
+    }
+    return cliProvider
+  }
+  if (cfgProvider) return cfgProvider
+
+  const hasOpenAi = Boolean(process.env.OPENAI_API_KEY)
+  const hasAnthropic = Boolean(process.env.ANTHROPIC_API_KEY)
+  if (hasOpenAi && hasAnthropic) {
+    throw new Error(
+      'Both OPENAI_API_KEY and ANTHROPIC_API_KEY are set. Pass `--provider openai|anthropic` ' +
+        'or set `provider` in satus.config.json so we know which one to use.',
+    )
+  }
+  if (hasAnthropic) return 'anthropic'
+  // Default to openai when neither is set so the existing
+  // "OPENAI_API_KEY is not set" error keeps firing (backward compat
+  // with v0.2.0's error message).
+  return 'openai'
+}
+
+function buildProvider(id: ProviderId, apiKey: string, model: string): Provider {
+  if (id === 'anthropic') return createAnthropicProvider({ apiKey, model })
+  return createOpenAiProvider({ apiKey, model })
+}
 
 const FREE_MAX_ROWS = 25
 const FREE_MAX_TABLES = 5
