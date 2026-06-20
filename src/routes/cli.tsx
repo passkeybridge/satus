@@ -252,9 +252,14 @@ function CliPage() {
               "Postgres schema to seed. Defaults to public when neither config nor flag is set.",
             ],
             [
+              "--provider <id>",
+              "auto-detect",
+              "LLM provider: openai or anthropic. Falls back to env-var auto-detect (errors if both keys are set with no explicit choice).",
+            ],
+            [
               "--model <id>",
-              "from config",
-              "OpenAI model id. Overrides the model recorded in satus.config.json.",
+              "provider default",
+              "Model id. Defaults to gpt-4o-mini for openai and claude-haiku-4-5 for anthropic. Cross-provider model names are not validated client-side.",
             ],
             [
               "--truncate",
@@ -265,6 +270,16 @@ function CliPage() {
               "--dry-run",
               "false",
               "Plan only. Print the insert order and the cost estimate; do not call the LLM and do not write to the database.",
+            ],
+            [
+              "-v, --verbose",
+              "false",
+              "Print one line per LLM batch: table, batch index, rows, input/output tokens, and USD spent.",
+            ],
+            [
+              "--json",
+              "false",
+              "Emit a single newline-terminated JSON object on stdout at completion (snake_case keys). All human output is redirected to stderr so stdout is safe for jq and CI.",
             ],
           ]}
         />
