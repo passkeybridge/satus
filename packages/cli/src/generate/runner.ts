@@ -226,6 +226,11 @@ export async function runGenerate(
     }
   }
 
-  return { inserted, spentUsd: budget.spentUsd }
+  return {
+    inserted,
+    spentUsd: budget.spentUsd,
+    inputTokens: totalInputTokens,
+    outputTokens: totalOutputTokens,
+  }
 }
 
