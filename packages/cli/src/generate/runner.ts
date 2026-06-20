@@ -211,6 +211,20 @@ export async function runGenerate(
     }
 
     if (opts.dryRun) {
+      // Validator runs against the same rows the writer would have sent
+      // to Postgres. Findings are accumulated on the report; the CLI
+      // decides exit code from there.
+      if (opts.validate) {
+        const tableFindings = validateTable(table, { rows: allRows, pkPool })
+        findings.push(...tableFindings)
+      }
+      // Without DB inserts there is no RETURNING to seed the PK pool, so
+      // children would have no FK targets. Synthesize PKs that match the
+      // table's actual PK column types and the simulator's deterministic
+      // counter, so the FK existence check in validate.ts sees the same
+      // values the runner injects into child rows.
+      const synthetic = synthesizePkRows(table, allRows.length)
+      if (synthetic.length > 0) pkPool.set(table.name, synthetic)
       inserted[table.name] = 0
       process.stdout.write(pc.yellow(' (dry-run)\n'))
       continue
