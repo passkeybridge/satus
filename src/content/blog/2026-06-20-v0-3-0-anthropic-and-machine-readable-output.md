@@ -15,13 +15,13 @@ draft: false
 v0.2.x assumed OpenAI. The HTTP call lived in `generate/llm.ts` and the runner imported `chatJson` directly. v0.3.0 deletes that file and introduces `src/generate/providers/`, with three small modules:
 
 ```text
-providers/types.ts      Provider interface + request/response shapes
-providers/openai.ts     existing chatJson, unchanged on the wire
+providers/types.ts      Provider interface + request/response shapes + CostBudget
+providers/openai.ts     existing OpenAI call, unchanged on the wire
 providers/anthropic.ts  Messages API, tool-use forcing
-providers/index.ts      resolve('openai' | 'anthropic', { apiKey, model })
+providers/index.ts      barrel: createOpenAiProvider / createAnthropicProvider
 ```
 
-The runner no longer knows which vendor is on the other end of the socket. It calls `provider.generate(req)` and reads back `{ data, usage: { inputTokens, outputTokens } }`. The OpenAI path is byte-identical to v0.2.x; the test suite that covered it before still covers it now.
+The runner no longer knows which vendor is on the other end of the socket. It calls `provider.generate(req)` and reads back `{ data, usage: { inputTokens, outputTokens, usd } }`. The OpenAI path is byte-identical to v0.2.x; the test suite that covered it before still covers it now.
 
 ## Structured output without `response_format`
 
@@ -43,51 +43,55 @@ Precedence is `--provider` > `provider` field in `satus.config.json` > env-var a
 ANTHROPIC_API_KEY set, OPENAI_API_KEY unset   -> anthropic
 OPENAI_API_KEY set, ANTHROPIC_API_KEY unset   -> openai
 both set, no flag, no config                  -> error, exit 1
-neither set                                   -> error, exit 1, names the
-                                                 provider you actually picked
+neither set                                   -> defaults to openai, then
+                                                 exits 1 with
+                                                 "OPENAI_API_KEY is not set."
 ```
 
-The "both set" case used to silently pick OpenAI in early development drafts. We pulled that. Silent provider selection is the kind of behavior that makes a $40 run land on the wrong invoice.
+The "both set" case used to silently pick OpenAI in early development drafts. We pulled that. Silent provider selection is the kind of behavior that makes an unbudgeted run land on the wrong invoice.
 
 ## `--json` and `-v`
 
 Two new flags. Default output is unchanged, so existing scripts keep working.
 
-`-v` / `--verbose` prints a one-line per-batch breakdown so you can see which tables are expensive before the bill arrives:
+`-v` / `--verbose` prints a one-line per-batch breakdown so you can see which tables are expensive before the bill arrives. The line shape is stable and parseable:
 
 ```text
-· users        batch=1 rows=200 in=412  out=2891  $0.0186
-· orders       batch=1 rows=200 in=688  out=4502  $0.0294
-· line_items   batch=1 rows=200 in=512  out=3711  $0.0235
+· <table>                       batch=<n> rows=<r> in=<tok> out=<tok> $0.XXXX
 ```
 
-`--json` emits a single newline-terminated object on stdout at completion and routes all human output to stderr. Keys are snake_case so they match the Postgres column names in `public.satus_runs` and the telemetry payload the CLI already sends. Three response shapes, distinguished by the `status` field:
+`--json` emits a single newline-terminated object on stdout at completion and routes all human output to stderr. Keys are snake_case so they match the Postgres column names in `public.satus_runs` and the telemetry payload the CLI already sends. Three response shapes, distinguished by the `status` field. Field schema (illustrative values omitted):
 
 ```text
-{ "status": "success",  "run_id": "...", "provider": "anthropic",
-  "model": "claude-haiku-4-5", "tables": [...], "total_rows": 1000,
-  "total_cost_usd": 0.0715, "input_tokens": 1612, "output_tokens": 11104,
-  "duration_ms": 8412 }
+success:
+  { run_id, status: "success", provider, model, profile, target_schema,
+    tables: [{ name, rows_generated }, ...],
+    total_rows, total_cost_usd, input_tokens, output_tokens, duration_ms }
 
-{ "status": "failed",   "run_id": "...", "error": "rate_limited",
-  "message": "...", "table": "orders", "batch": 3 }
+failed:
+  { run_id, status: "failed", provider, model, profile, target_schema,
+    duration_ms, error_message }
 
-{ "status": "dry_run",  "plan": [...], "estimated_rows": 1000 }
+dry_run:
+  { status: "dry_run", provider, model, profile, target_schema,
+    tables: [{ name, will_insert, estimated_cost_usd }, ...],
+    estimated_total_cost_usd, max_cost_usd }
 ```
 
-This is the foundation for the GitHub Action surface mentioned in the v0.1.0 roadmap. A workflow step can now run `satus generate --json | jq -e '.status == "success"'` and fail the build on a non-zero exit without scraping log output.
+A workflow step can now run `satus generate --json | jq -e '.status == "success"'` and fail the build on a non-zero exit without scraping log output. This is the foundation for the GitHub Action surface in the roadmap.
 
 ## Token counts in telemetry
 
-The success summary used to print `spent: $0.0715`. It now prints both:
+The success summary used to print only a dollar estimate. It now prints both:
 
 ```text
-tokens: 1612 in / 11104 out   spent: $0.0715
+✓ inserted <N> rows across <T> tables
+  tokens: <input> in / <output> out   spent: $X.XXXX
 ```
 
 The same two numbers land in `public.satus_runs` as new nullable columns (`input_tokens`, `output_tokens`, plus `provider`). The migration is additive, so v0.2.x clients posting telemetry without those fields still ingest without an error. The Zod validator on the ingest route marks all three `.optional()`.
 
-This matters because the dollar estimate is exactly that, an estimate against a built-in price table. Token counts are the thing the vendor actually bills. When the two diverge enough to matter, we want to see the divergence in our own data instead of finding out from a support ticket.
+This matters because the dollar figure is exactly that, an estimate against a built-in price table. Token counts are the thing the vendor actually bills. When the two diverge enough to matter, we want to see the divergence in our own data instead of finding out from a support ticket.
 
 ## Backward compatibility
 
