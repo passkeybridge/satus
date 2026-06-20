@@ -261,6 +261,7 @@ export async function runGenerate(
     spentUsd: budget.spentUsd,
     inputTokens: totalInputTokens,
     outputTokens: totalOutputTokens,
+    findings,
   }
 }
 
