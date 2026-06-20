@@ -209,9 +209,12 @@ export type Database = {
           error_message: string | null
           finished_at: string | null
           id: string
+          input_tokens: number | null
           license_key: string | null
           model: string | null
+          output_tokens: number | null
           profile: string | null
+          provider: string | null
           status: string
           tables: Json | null
           target_schema: string | null
@@ -226,9 +229,12 @@ export type Database = {
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          input_tokens?: number | null
           license_key?: string | null
           model?: string | null
+          output_tokens?: number | null
           profile?: string | null
+          provider?: string | null
           status?: string
           tables?: Json | null
           target_schema?: string | null
@@ -243,9 +249,12 @@ export type Database = {
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          input_tokens?: number | null
           license_key?: string | null
           model?: string | null
+          output_tokens?: number | null
           profile?: string | null
+          provider?: string | null
           status?: string
           tables?: Json | null
           target_schema?: string | null
