@@ -15,7 +15,7 @@ import pc from 'picocolors'
 import type { Client } from 'pg'
 import { buildRowSchema } from './schema.js'
 import type { Table } from './introspect.js'
-import { CostBudget, chatJson } from './llm.js'
+import { CostBudget, type Provider } from './providers/index.js'
 import { profilePrompt, type ProfileName } from './profiles.js'
 import { insertRows, updateBrokenEdge } from './writer.js'
 
@@ -24,13 +24,17 @@ export interface RunOptions {
   /** Hard cap on rows per LLM call. Keeps response sizes predictable. */
   batchSize: number
   profile: ProfileName
-  model: string
-  apiKey: string
+  /**
+   * Concrete provider (OpenAI / Anthropic / ...). Carries its own model
+   * id and credentials; the runner stays provider-agnostic.
+   */
+  provider: Provider
   maxCostUsd: number
   dryRun: boolean
   /** Soft-cycle back-edges to populate after every table is seeded. */
   brokenEdges?: Array<{ table: string; column: string; refTable: string; refColumn: string }>
 }
+
 
 
 export interface TablePlan {
@@ -109,13 +113,14 @@ export async function runGenerate(
         `Vary the values; do not repeat row 1 for row N. ` +
         `For status / enum-like text columns, choose values that read as plausible domain vocabulary.`
 
-      const { data, usage } = await chatJson<{ rows: Array<Record<string, unknown>> }>({
-        model: opts.model,
-        apiKey: opts.apiKey,
+      const { data, usage } = await opts.provider.generate<{
+        rows: Array<Record<string, unknown>>
+      }>({
         system,
         user,
         jsonSchema: rowSchema.jsonSchema,
       })
+
 
       budget.add(usage)
       if (budget.exceeded()) {
