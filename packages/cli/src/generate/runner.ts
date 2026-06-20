@@ -19,6 +19,16 @@ import { CostBudget, type Provider } from './providers/index.js'
 import { profilePrompt, type ProfileName } from './profiles.js'
 import { insertRows, updateBrokenEdge } from './writer.js'
 
+export interface BatchEvent {
+  table: string
+  /** 1-based batch index within the table. */
+  batch: number
+  rows: number
+  inputTokens: number
+  outputTokens: number
+  usd: number
+}
+
 export interface RunOptions {
   rowsPerTable: number
   /** Hard cap on rows per LLM call. Keeps response sizes predictable. */
@@ -33,6 +43,12 @@ export interface RunOptions {
   dryRun: boolean
   /** Soft-cycle back-edges to populate after every table is seeded. */
   brokenEdges?: Array<{ table: string; column: string; refTable: string; refColumn: string }>
+  /**
+   * Optional per-batch hook. Fires after every successful LLM call so the
+   * CLI can render a verbose breakdown without the runner deciding the
+   * presentation. Errors thrown here propagate and abort the run.
+   */
+  onBatch?: (event: BatchEvent) => void
 }
 
 
@@ -46,6 +62,9 @@ export interface TablePlan {
 export interface RunReport {
   inserted: Record<string, number>
   spentUsd: number
+  /** v0.3.0: aggregate token usage across every LLM call in the run. */
+  inputTokens: number
+  outputTokens: number
 }
 
 /**
