@@ -257,6 +257,23 @@ export function registerGenerate(program: Command): void {
               pc.yellow(`  ! exceeds --max-cost $${opts.maxCost}; raise the cap or lower --rows.`),
             )
           }
+          if (jsonMode) {
+            const payload = {
+              status: 'dry_run' as const,
+              provider: providerId,
+              model,
+              profile,
+              target_schema: schemaName,
+              tables: plan.map((p) => ({
+                name: p.table,
+                will_insert: p.willInsert,
+                estimated_cost_usd: Number(p.estimatedCostUsd.toFixed(6)),
+              })),
+              estimated_total_cost_usd: Number(total.toFixed(6)),
+              max_cost_usd: Number(opts.maxCost),
+            }
+            realStdoutWrite(JSON.stringify(payload) + '\n')
+          }
           return
         }
 
