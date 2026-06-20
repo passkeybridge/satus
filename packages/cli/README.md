@@ -10,7 +10,7 @@
 
 ## Status
 
-`v0.2.0` — released 2026-06-04. Stable: schema introspection (single round-trip CTE), foreign-key DAG with cycle breaking on nullable back-edges, profile-driven generation, single-transaction writes, and BYO-key OpenAI integration. Roadmap and release notes live at [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).
+`v0.3.0` — released 2026-06-20. Adds first-class Anthropic support alongside OpenAI, formalizes the provider abstraction, prints per-batch token and cost breakdowns via `--verbose`, and emits machine-readable run summaries via `--json` so CI can parse them. Telemetry now records the provider and token counts. Previous release notes: [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).
 
 ## Install
 
@@ -35,7 +35,7 @@ satus generate --profile saas --dry-run   # plan only, no LLM call, no writes
 | Command | Description |
 |---|---|
 | `satus init` | Scaffold `satus.config.json` in the current directory. Flags: `--force`. |
-| `satus generate` | Introspect schema and write seed rows. Flags: `--profile`, `--rows`, `--max-cost`, `--batch-size`, `--dsn`, `--schema`, `--model`, `--truncate`, `--dry-run`. |
+| `satus generate` | Introspect schema and write seed rows. Flags: `--profile`, `--rows`, `--max-cost`, `--batch-size`, `--dsn`, `--schema`, `--provider`, `--model`, `--truncate`, `--dry-run`, `-v / --verbose`, `--json`. |
 | `satus activate <key>` | Activate a Pro or Team license key. |
 | `satus whoami` | Print the currently activated license (from local cache). |
 | `satus --help` | Full command reference. |
@@ -60,18 +60,52 @@ License keys are verified against `https://satus.sh/api/public/license/verify` a
 
 ## Bring your own LLM key
 
-`satus` calls OpenAI for structured content generation. You provide the key:
+`satus` calls an LLM provider for structured content generation. You bring the key; the request goes from your machine directly to the provider. satus.sh is never in the data path.
 
-```bash
-export OPENAI_API_KEY=sk-...
-satus generate --profile saas
+### Supported providers
+
+| Provider | Env var | Default model | Get a key |
+|---|---|---|---|
+| OpenAI | `OPENAI_API_KEY` | `gpt-4o-mini` | <https://platform.openai.com/api-keys> |
+| Anthropic | `ANTHROPIC_API_KEY` | `claude-haiku-4-5` | <https://console.anthropic.com/settings/keys> |
+
+### Selecting a provider
+
+Precedence (highest first):
+
+1. `--provider openai|anthropic` flag on `satus generate`.
+2. `provider` field in `satus.config.json`.
+3. **Auto-detect** from which env var is set.
+
+If both `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` are exported and you pass no flag and no config, the run aborts with a clear message — auto-detect deliberately refuses to guess so a misplaced key never spends on the wrong invoice.
+
+Model resolution is the same shape: `--model` flag wins, otherwise the config field, otherwise the provider's default model. Cross-provider model names are not validated client-side; the upstream 4xx surfaces verbatim if you pass `gpt-4o-mini` with `--provider anthropic`.
+
+### Cost reporting
+
+Every run prints `tokens: N in / M out   spent: $X.XXXX` on success. The estimate uses a small built-in price table per provider; `--max-cost` (default `$1.00`) is enforced live and aborts the run before commit if you'd overshoot.
+
+For per-call detail, pass `-v` / `--verbose` — every batch logs a line:
+
+```
+· users                        batch=1 rows=25 in=842 out=1310 $0.0011
 ```
 
-Cost is estimated up-front and capped by `--max-cost` (default `$1.00` per run).
+For CI, pass `--json` to get a single newline-terminated JSON object on stdout (snake_case keys, matching the telemetry payload) while all human output is redirected to stderr:
+
+```json
+{"run_id":"...","status":"success","provider":"openai","model":"gpt-4o-mini","profile":"saas","target_schema":"public","tables":[{"name":"users","rows_generated":25}],"total_rows":25,"total_cost_usd":0.001100,"input_tokens":842,"output_tokens":1310,"duration_ms":3142}
+```
+
+Anthropic pricing rates in the built-in table are intentionally conservative until verified against Anthropic's public pricing page on the day of a release; `--max-cost` therefore errs on the safe side for Anthropic runs. OpenAI rates are pinned and dated in `packages/cli/src/generate/providers/openai.ts`.
+
+### Custom endpoints
+
+`OPENAI_BASE_URL` and `ANTHROPIC_BASE_URL` are honored if you need to point at an OpenAI- or Anthropic-compatible proxy (Groq, Together, a local gateway, a corporate egress).
 
 ## Privacy
 
-`satus` never sends your schema, your data, or your column names to satus.sh. The only network call to satus.sh is the license verify, which sends your license key and nothing else. LLM calls go directly from your machine to your provider with your key.
+`satus` never sends your schema, your data, or your column names to satus.sh. The only network call to satus.sh is the license verify, which sends your license key and nothing else. LLM calls go directly from your machine to your provider with your key. Anonymous run telemetry (provider, model, profile, table count, row count, duration, token totals — no table or column names, no row data) is posted to satus.sh on completion; failures swallow silently and never break a run.
 
 ## Development
 
