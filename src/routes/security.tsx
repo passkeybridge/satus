@@ -236,9 +236,9 @@ function SecurityPage() {
           <ul className="ml-5 list-disc space-y-1">
             <li>
               <strong>LLM API key.</strong> Bring-your-own. The key is read
-              from <code>OPENAI_API_KEY</code> at runtime, sent directly from
-              your machine to your chosen provider, and never proxied through
-              satus.sh.
+              from <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code>{" "}
+              at runtime, sent directly from your machine to the provider you
+              selected, and never proxied through satus.sh.
             </li>
             <li>
               <strong>Database URL.</strong> Read from <code>DATABASE_URL</code>{" "}
