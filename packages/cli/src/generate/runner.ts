@@ -145,6 +145,17 @@ export async function runGenerate(
 
 
       budget.add(usage)
+      totalInputTokens += usage.inputTokens
+      totalOutputTokens += usage.outputTokens
+      batchIndex += 1
+      opts.onBatch?.({
+        table: table.name,
+        batch: batchIndex,
+        rows: thisBatch,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        usd: usage.usd,
+      })
       if (budget.exceeded()) {
         throw new Error(
           `Cost budget exceeded mid-table ($${budget.spentUsd.toFixed(4)} > $${opts.maxCostUsd}). Aborting at ${table.name}.`,
