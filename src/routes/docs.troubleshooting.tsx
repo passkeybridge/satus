@@ -66,20 +66,20 @@ const FAQS: Faq[] = [
 
   // -------- LLM provider --------
   {
-    q: "E_LLM_AUTH: OPENAI_API_KEY missing, malformed, or rejected",
-    a: "Either the variable isn't set, doesn't start with `sk-`, or OpenAI rejected it (revoked, billing problem, wrong organisation). Check `echo $OPENAI_API_KEY` returns a value, and verify the key in the OpenAI dashboard. satus never proxies your key—the call goes from your machine directly to OpenAI.",
+    q: "E_LLM_AUTH: provider key missing, malformed, or rejected",
+    a: "Either the variable for the selected provider isn't set (OPENAI_API_KEY or ANTHROPIC_API_KEY), the key has the wrong shape, or the provider rejected it (revoked, billing problem, wrong organisation). Check `echo $OPENAI_API_KEY` (or `$ANTHROPIC_API_KEY`) returns a value, and verify the key in the provider's dashboard. satus never proxies your key—the call goes from your machine directly to the provider.",
   },
   {
     q: "E_LLM_RATE_LIMIT: provider rate-limited the run",
-    a: "satus retries with exponential backoff up to 5 attempts before giving up. If you hit a hard tier ceiling, drop --batch-size below the default of 50 (try 20), wait a minute, or upgrade your OpenAI tier. We never resell tokens—the bill is on your provider's dashboard.",
+    a: "satus retries with exponential backoff up to 5 attempts before giving up. If you hit a hard tier ceiling, drop --batch-size below the default of 25 (try 10), wait a minute, switch to a different provider with --provider, or upgrade your account tier. We never resell tokens—the bill is on your provider's dashboard.",
   },
   {
     q: "The run cost more than I expected.",
-    a: "Use --max-cost <usd> to cap the spend; by default the planner refuses to proceed if the estimated cost exceeds $1.00. Always preview with `satus generate --profile <name> --dry` first—the planner prints `✓ estimated cost · $X.XX` before any LLM calls actually fire.",
+    a: "Use --max-cost <usd> to cap the spend; by default the planner refuses to proceed if the estimated cost exceeds $1.00. Always preview with `satus generate --profile <name> --dry-run` first—the planner prints `estimated cost · $X.XX` before any LLM calls actually fire. For per-batch detail, add `-v` / `--verbose`; for machine-readable summaries pipe `--json` into jq.",
   },
   {
     q: "Can I use Anthropic or Gemini instead of OpenAI?",
-    a: "Not yet. OpenAI is the only supported provider at launch. Anthropic (ANTHROPIC_API_KEY) and Google (GOOGLE_API_KEY) are planned for 0.2; until then, the CLI will only read OPENAI_API_KEY.",
+    a: "Anthropic, yes — as of v0.3.0. Set ANTHROPIC_API_KEY and the CLI picks it up; the default model is claude-haiku-4-5. If both OPENAI_API_KEY and ANTHROPIC_API_KEY are exported, pass --provider openai|anthropic (or set the provider field in satus.config.json) so we know which one to use. Gemini is not supported yet; see the changelog for the active roadmap.",
   },
 
   // -------- Runtime & rollback --------

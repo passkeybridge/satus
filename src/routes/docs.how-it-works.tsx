@@ -304,13 +304,19 @@ function HowItWorksPage() {
             </li>
             <li>
               <strong>satus does not resell LLM tokens.</strong> You bring
-              your own <code>OPENAI_API_KEY</code>; the request goes directly
-              from your machine to your provider. Cost shows up on{" "}
-              <em>your</em> dashboard, never ours.
+              your own provider key — <code>OPENAI_API_KEY</code> or{" "}
+              <code>ANTHROPIC_API_KEY</code>. The request goes directly from
+              your machine to the provider you selected (auto-detected from
+              env, or pinned with <code>--provider</code>). Cost shows up on{" "}
+              <em>your</em> dashboard, never ours. Internally, every provider
+              is a thin adapter behind a single <code>Provider</code> interface
+              ({" "}<code>generate&lt;T&gt;(req): Promise&lt;&#123; data, usage &#125;&gt;</code>),
+              so the runner stays provider-agnostic and adding a third
+              provider is a single new file.
             </li>
           </ul>
           <p className="mt-8 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-            Concept guide for satus 0.1.x. If anything here drifts from the{" "}
+            Concept guide for satus 0.3.x. If anything here drifts from the{" "}
             <a
               href="/cli"
               className="underline decoration-[var(--signal)] underline-offset-4"
