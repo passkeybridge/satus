@@ -18,6 +18,8 @@ import type { Table } from './introspect.js'
 import { CostBudget, type Provider } from './providers/index.js'
 import { profilePrompt, type ProfileName } from './profiles.js'
 import { insertRows, updateBrokenEdge } from './writer.js'
+import { validateTable, type Finding } from './validate.js'
+import { synthesizePkRows } from './simulate.js'
 
 export interface BatchEvent {
   table: string
@@ -35,12 +37,19 @@ export interface RunOptions {
   batchSize: number
   profile: ProfileName
   /**
-   * Concrete provider (OpenAI / Anthropic / ...). Carries its own model
-   * id and credentials; the runner stays provider-agnostic.
+   * Concrete provider (OpenAI / Anthropic / simulated). Carries its own
+   * model id and credentials; the runner stays provider-agnostic.
    */
   provider: Provider
   maxCostUsd: number
   dryRun: boolean
+  /**
+   * Run the relational validator after each table is generated. Meaningful
+   * only when dryRun is true and provider is the simulated provider; the
+   * runner still calls it under dryRun + real provider, in which case it
+   * validates the model's output instead of the simulator's.
+   */
+  validate?: boolean
   /** Soft-cycle back-edges to populate after every table is seeded. */
   brokenEdges?: Array<{ table: string; column: string; refTable: string; refColumn: string }>
   /**
@@ -65,6 +74,11 @@ export interface RunReport {
   /** v0.3.0: aggregate token usage across every LLM call in the run. */
   inputTokens: number
   outputTokens: number
+  /**
+   * Populated when RunOptions.validate is true. Empty array means a clean
+   * dry-run; non-empty means the validator surfaced at least one issue.
+   */
+  findings: Finding[]
 }
 
 /**
@@ -103,8 +117,10 @@ export async function runGenerate(
   const inserted: Record<string, number> = {}
   let totalInputTokens = 0
   let totalOutputTokens = 0
+  const findings: Finding[] = []
   // PK values per table, keyed by table name. Used to satisfy FKs from
-  // children later in the run.
+  // children later in the run. In dry-run mode this is populated with
+  // synthesized PKs so downstream tables still get plausible FK targets.
   const pkPool: Map<string, Array<Record<string, unknown>>> = new Map()
 
   for (const table of tables) {
@@ -195,6 +211,20 @@ export async function runGenerate(
     }
 
     if (opts.dryRun) {
+      // Validator runs against the same rows the writer would have sent
+      // to Postgres. Findings are accumulated on the report; the CLI
+      // decides exit code from there.
+      if (opts.validate) {
+        const tableFindings = validateTable(table, { rows: allRows, pkPool })
+        findings.push(...tableFindings)
+      }
+      // Without DB inserts there is no RETURNING to seed the PK pool, so
+      // children would have no FK targets. Synthesize PKs that match the
+      // table's actual PK column types and the simulator's deterministic
+      // counter, so the FK existence check in validate.ts sees the same
+      // values the runner injects into child rows.
+      const synthetic = synthesizePkRows(table, allRows.length)
+      if (synthetic.length > 0) pkPool.set(table.name, synthetic)
       inserted[table.name] = 0
       process.stdout.write(pc.yellow(' (dry-run)\n'))
       continue
@@ -231,6 +261,7 @@ export async function runGenerate(
     spentUsd: budget.spentUsd,
     inputTokens: totalInputTokens,
     outputTokens: totalOutputTokens,
+    findings,
   }
 }
 
