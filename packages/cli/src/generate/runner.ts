@@ -18,6 +18,8 @@ import type { Table } from './introspect.js'
 import { CostBudget, type Provider } from './providers/index.js'
 import { profilePrompt, type ProfileName } from './profiles.js'
 import { insertRows, updateBrokenEdge } from './writer.js'
+import { validateTable, type Finding } from './validate.js'
+import { synthesizePkRows } from './simulate.js'
 
 export interface BatchEvent {
   table: string
@@ -35,12 +37,19 @@ export interface RunOptions {
   batchSize: number
   profile: ProfileName
   /**
-   * Concrete provider (OpenAI / Anthropic / ...). Carries its own model
-   * id and credentials; the runner stays provider-agnostic.
+   * Concrete provider (OpenAI / Anthropic / simulated). Carries its own
+   * model id and credentials; the runner stays provider-agnostic.
    */
   provider: Provider
   maxCostUsd: number
   dryRun: boolean
+  /**
+   * Run the relational validator after each table is generated. Meaningful
+   * only when dryRun is true and provider is the simulated provider; the
+   * runner still calls it under dryRun + real provider, in which case it
+   * validates the model's output instead of the simulator's.
+   */
+  validate?: boolean
   /** Soft-cycle back-edges to populate after every table is seeded. */
   brokenEdges?: Array<{ table: string; column: string; refTable: string; refColumn: string }>
   /**
@@ -65,6 +74,11 @@ export interface RunReport {
   /** v0.3.0: aggregate token usage across every LLM call in the run. */
   inputTokens: number
   outputTokens: number
+  /**
+   * Populated when RunOptions.validate is true. Empty array means a clean
+   * dry-run; non-empty means the validator surfaced at least one issue.
+   */
+  findings: Finding[]
 }
 
 /**
