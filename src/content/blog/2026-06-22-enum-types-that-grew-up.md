@@ -92,7 +92,7 @@ The numbers are not a guess; they come from the [ecommerce profile](/blog/ecomme
 
 ## The shorter version
 
-A Postgres enum is small, ordered, oid-backed, and easy to introspect. It is also a one-way ratchet: values are easy to add, expensive to remove, easy to rename, impossible to ignore once they are in the type. The interesting question for a seeder is not "is this value legal" — it is "is this distribution one the application has ever actually seen". satus answers the first with the catalog and the second with a profile, and prints both in the plan so you can argue with the second before the LLM bills you for it.
+A Postgres enum is small, ordered, oid-backed, and easy to introspect. It is also a one-way ratchet: values are easy to add, expensive to remove, easy to rename, impossible to ignore once they are in the type. The interesting question for a seeder is not "is this value legal"; it is "is this distribution one the application has ever actually seen". satus answers the first with the catalog and the second with a profile, and prints both in the plan so you can argue with the second before the LLM bills you for it.
 
 If your own enums have grown past the shape you remember, `satus plan` is a fast way to see what is actually in `pg_enum` versus what the application still writes. The [/quickstart](/quickstart) covers pointing it at your database; the [/profiles](/profiles) page lists which built-in profiles already know about the common enum-heavy domains.
 
