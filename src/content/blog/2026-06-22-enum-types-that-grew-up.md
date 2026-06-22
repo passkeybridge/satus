@@ -42,7 +42,7 @@ For a seeder this matters because "sample uniformly from `enum_range(NULL::statu
 
 `satus` reads the enum labels from `pg_enum` and, when a profile applies, attaches a weight to each. The default rule, for an unrecognised enum, is to bias toward the first few labels in `enumsortorder` on the assumption that the original author put the common cases first. The rule is wrong often enough that we treat it as a fallback, not a model.
 
-When a profile applies — for instance the [saas-subscriptions profile](/blog/saas-subscriptions-profile) for a column called `subscription.status` with labels that look like Stripe's — we use a hand-tuned distribution: most rows in `'active'`, a long tail in `'past_due'` and `'canceled'`, a small sliver in `'incomplete_expired'`, near zero in `'paused'` unless the user opts in. The distributions live in the profile, not in the engine, because they are facts about a product domain, not about Postgres.
+When a profile applies, for instance a subscription-billing profile for a column called `subscription.status` with labels that look like Stripe's, we use a hand-tuned distribution: most rows in `'active'`, a long tail in `'past_due'` and `'canceled'`, a small sliver in `'incomplete_expired'`, near zero in `'paused'` unless the user opts in. The distributions live in the profile, not in the engine, because they are facts about a product domain, not about Postgres. The built-in set is listed on [/profiles](/profiles).
 
 For columns satus cannot recognise, the CLI prints the enum labels in the plan output and asks for a weight vector, with the fallback distribution as the default. The interactive prompt looks like this:
 
