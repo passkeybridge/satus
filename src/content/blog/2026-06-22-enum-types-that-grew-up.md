@@ -8,7 +8,7 @@ tags: [postgres, enums, schema, seeding]
 draft: false
 ---
 
-Every enum starts with three values. `'draft'`, `'published'`, `'archived'`, written in the first migration, and for about a quarter the schema looks tidy. Then product asks for a "scheduled" state, then legal asks for "withdrawn", then somebody adds `'pending_review'` next to `'in_review'` instead of reusing it, and three years later the enum has fourteen values, two of which nobody is allowed to write anymore and one of which is a typo that shipped. For a tool like [satus](/) that has to generate rows the schema will accept on the first try, an enum is the easiest constraint in the catalog to honour and the hardest one to honour *realistically*. This post is about both halves: what Postgres actually lets you do to an enum after it ships, and what a seeder should sample once it knows.
+Every enum starts with three values. `'draft'`, `'published'`, `'archived'`, written in the first migration, and for about a quarter the schema looks tidy. Then product asks for a `'scheduled'` state, then legal asks for `'withdrawn'`, then somebody adds `'pending_review'` next to `'in_review'` instead of reusing it, and three years later the enum has fourteen values, two of which nobody is allowed to write anymore and one of which is a typo that shipped. For a tool like [satus](/) that has to generate rows the schema will accept on the first try, an enum is the easiest constraint in the catalog to honour and the hardest one to honour *realistically*. This post is about both halves: what Postgres actually lets you do to an enum after it ships, and what a seeder should sample once it knows.
 
 ## What an enum is, in the catalog
 
