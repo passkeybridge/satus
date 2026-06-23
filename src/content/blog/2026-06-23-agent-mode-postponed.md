@@ -67,7 +67,7 @@ The other half of the wait is unglamorous. Versioned prompts in the repo, an A/B
 Concretely:
 
 - v0.4 (mid-July): telemetry hooks for failure-mode collection, opt-in, no row data.
-- v0.5 (late August target): `satus agent`, BYO-key for OpenAI, Anthropic, and Gemini, interactive REPL, approval gates, transcripts, non-interactive policy file.
+- v0.5 (late September target): `satus agent`, BYO-key for OpenAI, Anthropic, and Gemini, interactive REPL, approval gates, transcripts, non-interactive policy file.
 - v0.6 (open): hosted-key tier at the previously discussed +$10/mo, which is what makes agent mode usable for people who do not want to manage a third-party API key.
 
 What we are not committing to in v0.5: a chat UI on the marketing site, planner/executor splits, RAG over user docs, auto-apply without approval, or a GitHub Action variant. Those are real ideas. They are not the v1 of this feature.
