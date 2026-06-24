@@ -122,7 +122,7 @@ function QuickstartPage() {
           <Blank />
           <Cmt>{`# verify`}</Cmt>
           <Shell>{`satus --version`}</Shell>
-          <Out>{`satus 0.3.1`}</Out>
+          <Out>{`satus 0.3.2`}</Out>
         </Terminal>
       </Section>
 

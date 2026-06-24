@@ -11,7 +11,7 @@
  */
 
 // Latest published version of @passkeybridge/satus on the npm registry.
-export const SATUS_VERSION = "0.3.1";
+export const SATUS_VERSION = "0.3.2";
 
 // Display form used in build tags and status pills.
 export const SATUS_VERSION_TAG = `v${SATUS_VERSION}`;
