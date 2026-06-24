@@ -1,7 +1,7 @@
 ---
 slug: seeding-into-a-multi-tenant-schema
 title: "Seeding into a multi-tenant schema without leaking tenants"
-description: Multi-tenant Postgres schemas leak in seed data through shared lookup tables, FK chains that drop tenant_id, and RLS bypassed by a superuser connection. Here is the discipline satus follows.
+description: Multi-tenant schemas leak in seed data through shared lookup tables, FK chains that drop tenant_id, and RLS bypassed by a superuser connection. Here is the discipline satus follows.
 date: 2026-06-24
 author: satus.sh
 tags: [postgres, multi-tenant, rls, seeding, security]
