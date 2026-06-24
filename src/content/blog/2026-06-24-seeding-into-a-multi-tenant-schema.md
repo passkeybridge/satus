@@ -1,7 +1,7 @@
 ---
 slug: seeding-into-a-multi-tenant-schema
 title: "Seeding into a multi-tenant schema without leaking tenants"
-description: Tenant isolation in seed data fails through shared lookup tables, FK chains that drop tenant_id, and RLS bypassed by a superuser connection. Here is the discipline satus follows, and what the schema needs to make it enforceable.
+description: Multi-tenant Postgres schemas leak in seed data through shared lookup tables, FK chains that drop tenant_id, and RLS bypassed by a superuser connection. Here is the discipline satus follows.
 date: 2026-06-24
 author: satus.sh
 tags: [postgres, multi-tenant, rls, seeding, security]
@@ -55,7 +55,7 @@ The example above is the most common case. A lookup table (`categories`, `tags`,
 
 **The lookup is meant to be global.** Currencies, ISO country codes, payment-method types: these exist once for the whole installation. The fix is to say so in the schema. A `is_global boolean NOT NULL DEFAULT true` column, or a separate `global_categories` table, makes the intent legible. `satus` then knows the row pool for `category_id` is shared, and any tenant may reference any row.
 
-**The lookup is meant to be per-tenant.** Order statuses customised per workspace, custom fields, user-defined categories: these are tenant-scoped in spirit and untagged in DDL. The fix is to add the column the schema is missing:
+**The lookup is meant to be per-tenant.** Order statuses customized per workspace, custom fields, user-defined categories: these are tenant-scoped in spirit and untagged in DDL. The fix is to add the column the schema is missing:
 
 ```sql
 ALTER TABLE categories
@@ -119,7 +119,7 @@ CREATE POLICY tenant_isolation ON products
   WITH CHECK (tenant_id = current_setting('app.tenant_id')::uuid);
 ```
 
-This works for the application, which connects as a role that has RLS enforced and sets `app.tenant_id` per request. It does not work for a seeder that connects as the schema owner. RLS does not apply to table owners or to superusers by default; the policy is silently bypassed and the seeder can write any `tenant_id` into any row. `pg_dump`, `pg_restore`, and ad-hoc psql sessions running as the owner all have the same exemption. The behaviour is documented in [Row Security Policies](https://www.postgresql.org/docs/current/ddl-rowsecurity.html): "Superusers and roles with the BYPASSRLS attribute always bypass the row security system… Table owners normally bypass row security as well, though a table owner can choose to be subject to row security with ALTER TABLE … FORCE ROW LEVEL SECURITY."
+This works for the application, which connects as a role that has RLS enforced and sets `app.tenant_id` per request. It does not work for a seeder that connects as the schema owner. RLS does not apply to table owners or to superusers by default; the policy is silently bypassed and the seeder can write any `tenant_id` into any row. `pg_dump`, `pg_restore`, and ad-hoc psql sessions running as the owner all have the same exemption. The behavior is documented in [Row Security Policies](https://www.postgresql.org/docs/current/ddl-rowsecurity.html): "Superusers and roles with the BYPASSRLS attribute always bypass the row security system… Table owners normally bypass row security as well, though a table owner can choose to be subject to row security with ALTER TABLE … FORCE ROW LEVEL SECURITY."
 
 There are three honest ways to seed an RLS-protected schema without leaking tenants. They have different cost profiles, and the table is the short version.
 
@@ -160,7 +160,7 @@ If you want to see the rules in action, point [`satus generate --dry-run`](/blog
 ## References
 
 - PostgreSQL documentation, [Row Security Policies](https://www.postgresql.org/docs/current/ddl-rowsecurity.html).
-- PostgreSQL documentation, [CREATE TABLE — foreign keys](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-FK).
+- PostgreSQL documentation, [CREATE TABLE, foreign keys](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-FK).
 - PostgreSQL documentation, [`SET` and `current_setting`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-SET).
 - PostgreSQL documentation, [`pg_catalog.pg_policy`](https://www.postgresql.org/docs/current/catalog-pg-policy.html).
 - Prior on this blog: [Partitioned tables meet RLS, and nobody wins](/blog/partitioned-tables-meet-rls), [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild), [A $0 dry-run that catches FK and constraint bugs before the LLM call](/blog/dry-run-validation).
