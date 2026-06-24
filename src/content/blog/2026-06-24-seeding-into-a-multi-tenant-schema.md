@@ -125,11 +125,11 @@ There are three honest ways to seed an RLS-protected schema without leaking tena
 
 | Approach | Tenant isolation | Cost | When it fits |
 | --- | --- | --- | --- |
-| Connect as a non-owner role with RLS enforced; `SET LOCAL app.tenant_id` per batch | Enforced by the database for every write | One transaction per tenant; one extra GRANT block | Default. The discipline `satus` follows when an RLS policy is detected. |
+| Connect as a non-owner role with RLS enforced; `SET LOCAL app.tenant_id` per batch | Enforced by the database for every write | One transaction per tenant; one extra GRANT block | Default. The pattern we recommend whenever an RLS policy is present. |
 | `ALTER TABLE … FORCE ROW LEVEL SECURITY` and connect as the owner | Enforced even for the owner | One DDL per table; affects every other tool too | When the same owner role is used for both application and maintenance |
 | Connect as superuser, derive `tenant_id` from the FK chain in user code | Enforced only by the seeder | Zero schema change; full trust in the generator | Quick local fixtures only; not for shared staging |
 
-`satus` defaults to the first row. When it sees an RLS policy that references `current_setting('app.tenant_id')` (or any per-session GUC named in the project profile), it opens one transaction per tenant, issues `SET LOCAL app.tenant_id = '<uuid>'`, and writes that tenant's rows inside that transaction. If the connection string belongs to a role that bypasses RLS, the planner prints a warning before the first write and exits non-zero in `--strict` mode. The pattern of one-transaction-per-tenant is also what the application does at runtime; the closer the seed path is to the request path, the fewer surprises move from one to the other.
+The first row is the one to reach for. Connect as a role that has neither `BYPASSRLS` nor table ownership, open one transaction per tenant, issue `SET LOCAL app.tenant_id = '<uuid>'` (or whatever per-session GUC the policy reads), and write that tenant's rows inside that transaction. The pattern of one-transaction-per-tenant is also what the application does at runtime; the closer the seed path is to the request path, the fewer surprises move from one to the other.
 
 The longer treatment of why RLS on a partitioned parent does not propagate to children, and why that matters for seed jobs, is in [Partitioned tables meet RLS, and nobody wins](/blog/partitioned-tables-meet-rls).
 
