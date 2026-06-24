@@ -105,7 +105,7 @@ ALTER TABLE order_lines
     REFERENCES orders(tenant_id, id);
 ```
 
-After this change, the catalog itself rejects a cross-tenant order line, every generator sees it, and the rule survives application refactors. Until then, `satus` follows the convention because the catalog is silent.
+After this change, the catalog itself rejects a cross-tenant order line, every generator (including `satus`) sees it through `pg_constraint`, and the rule survives application refactors. Until then, the seeder has to enforce the convention out-of-band because the catalog is silent.
 
 ## Leak #3: RLS that the seeder bypasses
 
