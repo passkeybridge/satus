@@ -68,7 +68,7 @@ ALTER TABLE products
     REFERENCES categories(tenant_id, id);
 ```
 
-The composite FK is the load-bearing change. Once `categories` has its own `tenant_id` and `products.category_id` is part of a composite FK that also includes `tenant_id`, the database itself rejects cross-tenant references. A generator no longer has to be clever, and an attacker who finds a SQL injection that mutates `category_id` cannot use it to traverse out of their tenant either. PostgreSQL's documentation of composite foreign keys is in the [CREATE TABLE reference](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-FK).
+The composite FK is the load-bearing change. Once `categories` has its own `tenant_id` and `products.category_id` is part of a composite FK that also includes `tenant_id`, the database itself rejects cross-tenant references. A generator no longer has to be clever, and an attacker who finds a SQL injection that mutates `category_id` cannot use it to traverse out of their tenant either. PostgreSQL's treatment of multi-column foreign keys is in [Foreign Keys](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK).
 
 The cost is one extra column on every lookup table and one composite unique index per parent. The benefit is that "tenant" becomes a property of the FK graph, not a convention enforced in application code.
 
