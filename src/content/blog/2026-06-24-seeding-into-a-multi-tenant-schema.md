@@ -133,21 +133,21 @@ The first row is the one to reach for. Connect as a role that has neither `BYPAS
 
 The longer treatment of why RLS on a partitioned parent does not propagate to children, and why that matters for seed jobs, is in [Partitioned tables meet RLS, and nobody wins](/blog/partitioned-tables-meet-rls).
 
-## What satus checks, and what it cannot
+## The checklist for a multi-tenant seed run
 
-The discipline above maps onto five things `satus` does at planning time, before any rows are generated:
+The discipline above maps onto five questions to answer before a single row is generated. They apply to any seeder; today, `satus` answers them through a combination of catalog reads (composite FKs and topo order, already shipped via [the planner](/blog/cyclic-fks-in-the-wild)) and the profile config that names the tenant key. The questions are the contract; the implementation will harden over future releases.
 
-1. Identify the tenant axis. Look for a column whose name matches the project's tenant key (`tenant_id`, `org_id`, `workspace_id`; configurable) and whose type matches across tables. Tables with the column are tenant-scoped; tables without it are lookups.
-2. Flag every lookup table whose primary key is the target of an FK from a tenant-scoped table. Print the lookup's name and the count of inbound FKs. The user confirms whether each lookup is global or per-tenant before generation.
-3. For every FK between two tenant-scoped tables, derive the child's tenant value from the parent rather than sampling independently. If the FK is single-column, do the derivation and print a recommendation to convert the FK to composite. If the FK is composite and includes the tenant axis, the derivation is enforced by the database and `satus` does no extra work.
-4. If any target table has an RLS policy, inspect the policy expression for a per-session GUC. If one is found, generate per-tenant transactions that set it. If the connection role bypasses RLS, warn loudly.
-5. Refuse to mix tenants inside a single transaction. Every batch carries one `tenant_id`, every transaction carries one batch, every commit is auditable as "this transaction wrote rows for tenant X and only tenant X".
+1. **What is the tenant axis?** The column name (`tenant_id`, `org_id`, `workspace_id`) and the type that identifies a tenant across the schema. Pick one, write it down, and check that every table that should be tenant-scoped has it.
+2. **Which tables are lookups, and which of those are global vs per-tenant?** Lookups have no tenant column today. For each one, decide whether it is meant to be shared across the installation or scoped per tenant, then either add an `is_global` flag or add a `tenant_id` and convert the inbound FKs to composite.
+3. **Does every FK between two tenant-scoped tables carry the tenant axis?** A single-column FK between tenant-scoped tables is the second leak by construction. Make it composite or accept that the seeder is enforcing tenancy in user code.
+4. **Does any target table have an RLS policy, and which per-session GUC does it read?** If the answer is yes, the seed run needs one transaction per tenant with `SET LOCAL` of that GUC, run as a role that has neither `BYPASSRLS` nor table ownership.
+5. **Is every transaction single-tenant?** Every batch carries one `tenant_id`, every transaction carries one batch, every commit is auditable as "this transaction wrote rows for tenant X and only tenant X". This is a property of how the seed run is structured, not of the schema; the seeder has to opt in.
 
-What `satus` cannot do, and the honest reason why:
+What no seeder can do, and the honest reason why:
 
-- Decide whether a lookup is global or per-tenant. The schema is silent on intent; the user has to answer once and the answer is cached in the profile.
+- Decide whether a lookup is global or per-tenant. The schema is silent on intent; a human has to answer once.
 - Detect tenant leaks that have nothing to do with foreign keys. A `jsonb` column with a tenant ID embedded in it ([as described in JSONB that is secretly relational](/blog/jsonb-that-is-secretly-relational)) is opaque to any tool that reads the catalog and not the data.
-- Defend against the seeder being run by a superuser against an RLS-protected schema with no warning visible. The warning is printed; reading it is on the operator.
+- Defend against the seeder being run by a superuser against an RLS-protected schema with no warning visible. The warning has to be acted on; reading it is on the operator.
 
 ## The shorter version
 
