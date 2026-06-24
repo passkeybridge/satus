@@ -68,7 +68,7 @@ ALTER TABLE products
     REFERENCES categories(tenant_id, id);
 ```
 
-The composite FK is the load-bearing change. Once `categories` has its own `tenant_id` and `products.category_id` is part of a composite FK that also includes `tenant_id`, the database itself rejects cross-tenant references. A generator no longer has to be clever, and an attacker who finds a SQL injection that mutates `category_id` cannot use it to traverse out of their tenant either. PostgreSQL's documentation of composite foreign keys is in the [CREATE TABLE reference](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-FK).
+The composite FK is the load-bearing change. Once `categories` has its own `tenant_id` and `products.category_id` is part of a composite FK that also includes `tenant_id`, the database itself rejects cross-tenant references. A generator no longer has to be clever, and an attacker who finds a SQL injection that mutates `category_id` cannot use it to traverse out of their tenant either. PostgreSQL's treatment of multi-column foreign keys is in [Foreign Keys](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK).
 
 The cost is one extra column on every lookup table and one composite unique index per parent. The benefit is that "tenant" becomes a property of the FK graph, not a convention enforced in application code.
 
@@ -93,7 +93,7 @@ CREATE TABLE order_lines (
 
 `orders` and `order_lines` are both tenant-scoped. The FK from `order_lines.order_id` to `orders.id` is single-column. A generator that picks a `tenant_id` independently for each table, then picks an `order_id` from the pool of all orders, will sometimes pick an order that belongs to tenant B while the line itself is tagged tenant A. The row inserts fine. The constraint is satisfied. The data is wrong.
 
-`satus` handles this by walking the catalog twice. First pass: identify every column whose name and type match the project's tenant key, and mark them as a *tenant axis*. Second pass: for every FK that points at a table on the tenant axis, derive the child's `tenant_id` from the parent's `tenant_id` rather than sampling it independently. The mechanics are the same topological sort the planner already runs (described in [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild)), with one extra rule: a column on the tenant axis is computed from its parent, not sampled.
+Any seeder that wants to avoid this has to walk the catalog twice. First pass: identify every column whose name and type match the project's tenant key, and mark them as a *tenant axis*. Second pass: for every FK that points at a table on the tenant axis, derive the child's `tenant_id` from the parent's `tenant_id` rather than sampling it independently. The mechanics are the same topological sort the planner already runs (described in [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild)), with one extra rule layered on top: a column on the tenant axis is computed from its parent, not sampled.
 
 The schema-side fix is the same as in leak #1: make the FK composite.
 
@@ -105,7 +105,7 @@ ALTER TABLE order_lines
     REFERENCES orders(tenant_id, id);
 ```
 
-After this change, the catalog itself rejects a cross-tenant order line, every generator sees it, and the rule survives application refactors. Until then, `satus` follows the convention because the catalog is silent.
+After this change, the catalog itself rejects a cross-tenant order line, every generator (including `satus`) sees it through `pg_constraint`, and the rule survives application refactors. Until then, the seeder has to enforce the convention out-of-band because the catalog is silent.
 
 ## Leak #3: RLS that the seeder bypasses
 
@@ -125,29 +125,29 @@ There are three honest ways to seed an RLS-protected schema without leaking tena
 
 | Approach | Tenant isolation | Cost | When it fits |
 | --- | --- | --- | --- |
-| Connect as a non-owner role with RLS enforced; `SET LOCAL app.tenant_id` per batch | Enforced by the database for every write | One transaction per tenant; one extra GRANT block | Default. The discipline `satus` follows when an RLS policy is detected. |
+| Connect as a non-owner role with RLS enforced; `SET LOCAL app.tenant_id` per batch | Enforced by the database for every write | One transaction per tenant; one extra GRANT block | Default. The pattern we recommend whenever an RLS policy is present. |
 | `ALTER TABLE … FORCE ROW LEVEL SECURITY` and connect as the owner | Enforced even for the owner | One DDL per table; affects every other tool too | When the same owner role is used for both application and maintenance |
 | Connect as superuser, derive `tenant_id` from the FK chain in user code | Enforced only by the seeder | Zero schema change; full trust in the generator | Quick local fixtures only; not for shared staging |
 
-`satus` defaults to the first row. When it sees an RLS policy that references `current_setting('app.tenant_id')` (or any per-session GUC named in the project profile), it opens one transaction per tenant, issues `SET LOCAL app.tenant_id = '<uuid>'`, and writes that tenant's rows inside that transaction. If the connection string belongs to a role that bypasses RLS, the planner prints a warning before the first write and exits non-zero in `--strict` mode. The pattern of one-transaction-per-tenant is also what the application does at runtime; the closer the seed path is to the request path, the fewer surprises move from one to the other.
+The first row is the one to reach for. Connect as a role that has neither `BYPASSRLS` nor table ownership, open one transaction per tenant, issue `SET LOCAL app.tenant_id = '<uuid>'` (or whatever per-session GUC the policy reads), and write that tenant's rows inside that transaction. The pattern of one-transaction-per-tenant is also what the application does at runtime; the closer the seed path is to the request path, the fewer surprises move from one to the other.
 
 The longer treatment of why RLS on a partitioned parent does not propagate to children, and why that matters for seed jobs, is in [Partitioned tables meet RLS, and nobody wins](/blog/partitioned-tables-meet-rls).
 
-## What satus checks, and what it cannot
+## The checklist for a multi-tenant seed run
 
-The discipline above maps onto five things `satus` does at planning time, before any rows are generated:
+The discipline above maps onto five questions to answer before a single row is generated. They apply to any seeder; today, `satus` answers them through a combination of catalog reads (composite FKs and topo order, already shipped via [the planner](/blog/cyclic-fks-in-the-wild)) and the profile config that names the tenant key. The questions are the contract; the implementation will harden over future releases.
 
-1. Identify the tenant axis. Look for a column whose name matches the project's tenant key (`tenant_id`, `org_id`, `workspace_id`; configurable) and whose type matches across tables. Tables with the column are tenant-scoped; tables without it are lookups.
-2. Flag every lookup table whose primary key is the target of an FK from a tenant-scoped table. Print the lookup's name and the count of inbound FKs. The user confirms whether each lookup is global or per-tenant before generation.
-3. For every FK between two tenant-scoped tables, derive the child's tenant value from the parent rather than sampling independently. If the FK is single-column, do the derivation and print a recommendation to convert the FK to composite. If the FK is composite and includes the tenant axis, the derivation is enforced by the database and `satus` does no extra work.
-4. If any target table has an RLS policy, inspect the policy expression for a per-session GUC. If one is found, generate per-tenant transactions that set it. If the connection role bypasses RLS, warn loudly.
-5. Refuse to mix tenants inside a single transaction. Every batch carries one `tenant_id`, every transaction carries one batch, every commit is auditable as "this transaction wrote rows for tenant X and only tenant X".
+1. **What is the tenant axis?** The column name (`tenant_id`, `org_id`, `workspace_id`) and the type that identifies a tenant across the schema. Pick one, write it down, and check that every table that should be tenant-scoped has it.
+2. **Which tables are lookups, and which of those are global vs per-tenant?** Lookups have no tenant column today. For each one, decide whether it is meant to be shared across the installation or scoped per tenant, then either add an `is_global` flag or add a `tenant_id` and convert the inbound FKs to composite.
+3. **Does every FK between two tenant-scoped tables carry the tenant axis?** A single-column FK between tenant-scoped tables is the second leak by construction. Make it composite or accept that the seeder is enforcing tenancy in user code.
+4. **Does any target table have an RLS policy, and which per-session GUC does it read?** If the answer is yes, the seed run needs one transaction per tenant with `SET LOCAL` of that GUC, run as a role that has neither `BYPASSRLS` nor table ownership.
+5. **Is every transaction single-tenant?** Every batch carries one `tenant_id`, every transaction carries one batch, every commit is auditable as "this transaction wrote rows for tenant X and only tenant X". This is a property of how the seed run is structured, not of the schema; the seeder has to opt in.
 
-What `satus` cannot do, and the honest reason why:
+What no seeder can do, and the honest reason why:
 
-- Decide whether a lookup is global or per-tenant. The schema is silent on intent; the user has to answer once and the answer is cached in the profile.
+- Decide whether a lookup is global or per-tenant. The schema is silent on intent; a human has to answer once.
 - Detect tenant leaks that have nothing to do with foreign keys. A `jsonb` column with a tenant ID embedded in it ([as described in JSONB that is secretly relational](/blog/jsonb-that-is-secretly-relational)) is opaque to any tool that reads the catalog and not the data.
-- Defend against the seeder being run by a superuser against an RLS-protected schema with no warning visible. The warning is printed; reading it is on the operator.
+- Defend against the seeder being run by a superuser against an RLS-protected schema with no warning visible. The warning has to be acted on; reading it is on the operator.
 
 ## The shorter version
 
@@ -160,7 +160,7 @@ If you want to see the rules in action, point [`satus generate --dry-run`](/blog
 ## References
 
 - PostgreSQL documentation, [Row Security Policies](https://www.postgresql.org/docs/current/ddl-rowsecurity.html).
-- PostgreSQL documentation, [CREATE TABLE, foreign keys](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-FK).
+- PostgreSQL documentation, [Foreign Keys](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK).
 - PostgreSQL documentation, [`SET` and `current_setting`](https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADMIN-SET).
 - PostgreSQL documentation, [`pg_catalog.pg_policy`](https://www.postgresql.org/docs/current/catalog-pg-policy.html).
 - Prior on this blog: [Partitioned tables meet RLS, and nobody wins](/blog/partitioned-tables-meet-rls), [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild), [A $0 dry-run that catches FK and constraint bugs before the LLM call](/blog/dry-run-validation).
