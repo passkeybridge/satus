@@ -212,20 +212,43 @@ async function runE2E(triggeredBy: string) {
   return { status, duration_ms, checks }
 }
 
+// Strip internal error strings and detail payloads from public responses.
+// Full detail is still persisted to e2e_health_log for internal debugging.
+function publicSafe(result: { status: 'pass' | 'fail'; duration_ms: number; checks: CheckResult[] }) {
+  return {
+    status: result.status,
+    duration_ms: result.duration_ms,
+    checks: result.checks.map((c) => ({
+      name: c.name,
+      ok: c.ok,
+      duration_ms: c.duration_ms,
+      ...(c.ok ? {} : { error: 'internal_error' }),
+    })),
+  }
+}
+
+// Restrict the `by` query parameter to a short, alphanumeric-ish label before
+// it is stored in e2e_health_log.triggered_by (unbounded text column).
+function sanitizeBy(raw: string | null): string {
+  if (!raw) return 'manual'
+  const cleaned = raw.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 64)
+  return cleaned.length > 0 ? cleaned : 'manual'
+}
+
 export const Route = createFileRoute('/api/public/hooks/e2e-health')({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url)
-        const result = await runE2E(url.searchParams.get('by') ?? 'manual')
-        return new Response(JSON.stringify(result, null, 2), {
+        const result = await runE2E(sanitizeBy(url.searchParams.get('by')))
+        return new Response(JSON.stringify(publicSafe(result), null, 2), {
           status: result.status === 'pass' ? 200 : 500,
           headers: { 'Content-Type': 'application/json' },
         })
       },
       POST: async () => {
         const result = await runE2E('cron')
-        return new Response(JSON.stringify(result), {
+        return new Response(JSON.stringify(publicSafe(result)), {
           status: result.status === 'pass' ? 200 : 500,
           headers: { 'Content-Type': 'application/json' },
         })
