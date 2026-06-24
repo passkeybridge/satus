@@ -459,8 +459,9 @@ function SampleOutput() {
     >
       <Prose>
         <p>
-          Below: the same patient referenced as a foreign key on an appointment, scheduled with a
-          provider whose specialty and working hours both check out. No detail contradicts another.
+          Below: one patient, referenced by foreign key on an appointment, booked with a provider
+          whose specialty fits the visit and whose working hours cover the slot. Every field lines
+          up with every other.
         </p>
       </Prose>
 
