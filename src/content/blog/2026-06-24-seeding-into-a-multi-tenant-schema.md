@@ -93,7 +93,7 @@ CREATE TABLE order_lines (
 
 `orders` and `order_lines` are both tenant-scoped. The FK from `order_lines.order_id` to `orders.id` is single-column. A generator that picks a `tenant_id` independently for each table, then picks an `order_id` from the pool of all orders, will sometimes pick an order that belongs to tenant B while the line itself is tagged tenant A. The row inserts fine. The constraint is satisfied. The data is wrong.
 
-`satus` handles this by walking the catalog twice. First pass: identify every column whose name and type match the project's tenant key, and mark them as a *tenant axis*. Second pass: for every FK that points at a table on the tenant axis, derive the child's `tenant_id` from the parent's `tenant_id` rather than sampling it independently. The mechanics are the same topological sort the planner already runs (described in [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild)), with one extra rule: a column on the tenant axis is computed from its parent, not sampled.
+Any seeder that wants to avoid this has to walk the catalog twice. First pass: identify every column whose name and type match the project's tenant key, and mark them as a *tenant axis*. Second pass: for every FK that points at a table on the tenant axis, derive the child's `tenant_id` from the parent's `tenant_id` rather than sampling it independently. The mechanics are the same topological sort the planner already runs (described in [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild)), with one extra rule layered on top: a column on the tenant axis is computed from its parent, not sampled.
 
 The schema-side fix is the same as in leak #1: make the FK composite.
 
