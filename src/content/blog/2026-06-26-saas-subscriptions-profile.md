@@ -94,9 +94,9 @@ JOIN plans p ON p.id = s.plan_id
 WHERE s.status IN ('trialing', 'active', 'past_due');
 ```
 
-Three decisions are visible in that view and are worth naming. We include `trialing` in MRR by default, which is the looser convention; the stricter convention excludes it and produces a smaller, lagged number. We include `past_due` because cancelling a subscription on the first failed payment overstates churn; this is the same convention the SaaS finance literature follows. We exclude `unpaid` and `canceled` because access has stopped. The profile ships both views (`mrr_strict` and `mrr_loose`) and emits a planner-time note about which one the fixture is exercising.
+Three decisions are visible in that view and are worth naming. We recommend including `trialing` in MRR by default, which is the looser convention; the stricter convention excludes it and produces a smaller, lagged number. We recommend including `past_due` because cancelling a subscription on the first failed payment overstates churn; this is the same convention the SaaS finance literature follows. We exclude `unpaid` and `canceled` because access has stopped. The spec defines both views (`mrr_strict` and `mrr_loose`); v0.4 will emit them on opt-in, today you copy whichever you want into a migration.
 
-We deliberately do not encode a benchmark for "good" MRR growth, a "typical" net revenue retention, or any other industry number. Public benchmarks vary by stage, segment, and methodology, and citing one as a default would mislead more often than it would help. The profile generates a fixture; the interpretation is yours.
+We deliberately do not recommend a benchmark for "good" MRR growth, a "typical" net revenue retention, or any other industry number. Public benchmarks vary by stage, segment, and methodology, and citing one as a default would mislead more often than it would help. The profile steers the fixture; the interpretation is yours.
 
 ## Churn, which is at least three different metrics
 
