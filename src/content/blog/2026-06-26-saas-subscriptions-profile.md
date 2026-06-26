@@ -203,7 +203,9 @@ satus generate --profile saas --schema public --dry-run
 
 A SaaS-subscriptions profile is mostly a state machine, an arithmetic identity, and a retry schedule. The state machine is `trialing → active → past_due → unpaid/canceled` with the legal back-edges and no others. The arithmetic identity is `invoice.total = plan.base + sum(usage × unit_price)`, enforced by a generated column where the schema allows. The retry schedule is the dunning curve, sampled per failed invoice, terminating in either recovery or cancellation. Encode those three correctly and the rest of the profile (Poisson usage, Zipf-ish account sizes, log-normal trial lengths) is parameter-fitting. Encode them as uniform random and the planner, the dashboards, and the dunning job will all behave qualitatively differently in production than they did in test.
 
-If you are seeding a SaaS-shaped schema and the default profile is wrong for your stage, override the bits that matter (the status mix, the dunning curve, the usage rate) and leave the rest. The [/profiles](/profiles#saas-subscriptions) page lists the three built-ins, the [/quickstart](/quickstart) shows how to point the CLI at your schema, and the [/recipes](/recipes) page has a worked example of a profile override.
+In v0.3 those three are LLM-guided and validator-checked; in v0.4 the state-machine enforcer, the dunning sampler, the Poisson usage generator, and the canonical MRR/churn views move into the CLI as deterministic modules. This post is the contract that build will honour.
+
+If you are seeding a SaaS-shaped schema and the recommended defaults are wrong for your stage, override the bits that matter (the status mix, the dunning curve, the usage rate) and leave the rest. The [/profiles](/profiles#saas-subscriptions) page lists the three built-ins, the [/quickstart](/quickstart) shows how to point the CLI at your schema, and the [/recipes](/recipes) page has a worked example of a profile override.
 
 ## References
 
