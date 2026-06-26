@@ -175,7 +175,7 @@ Twelve columns is the typical SaaS subscription table's `trial_started_at`, `tri
 
 We get asked for each of these regularly. The reasons matter more than the list.
 
-- **Pricing.** We do not generate plan prices, ladder breakpoints, or unit prices. Pricing is the most product-specific decision in a SaaS schema and the one least useful to default. The profile expects you to populate the `plans` table yourself (a one-line `--plans-from plans.csv` flag at the CLI), and it generates everything downstream from your real prices.
+- **Pricing.** We do not generate plan prices, ladder breakpoints, or unit prices. Pricing is the most product-specific decision in a SaaS schema and the one least useful to default. The profile expects you to populate the `plans` table yourself (a one-time `psql -f plans.sql` against the target database before `satus generate` runs), and it generates everything downstream from your real prices.
 - **Tax.** We will populate a `tax_cents` column with a plausible value relative to the subtotal, but we do not compute jurisdiction-correct tax. A fixture that gets US sales tax structurally right is one bad rounding rule away from a fixture that gets it confidently wrong; the right place to test tax is against a real tax service in a staging environment.
 - **Card data.** We never generate card numbers, even test ones. If a column is named like a card number we fill it with the all-zeros placeholder and warn at plan time. Test card numbers are a payment-processor concern, not a seeder concern.
 - **Cohort retention curves.** We generate the events from which a cohort report can be built and we do not ship a cohort table; that is a reporting concern, not a schema concern.
