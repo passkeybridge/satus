@@ -34,11 +34,11 @@ The Stripe API documents eight subscription statuses on the canonical `Subscript
 
 The shares are a default that we know will be wrong for any specific product. They sit in the range that a generic mid-funnel SaaS in steady state could plausibly produce, and they are explicitly overridable. The point of shipping a default is not that 78% `active` is right for your company; it is that 12.5% per status (a flat uniform) is wrong for every company.
 
-The legal transitions are the more important half. The profile refuses to write a row whose status history violates the graph above. `canceled` is terminal; we will not flip it back to `active` even if a user override asks for it, because no production billing system does that without creating a new subscription row. `unpaid` is reachable only from `past_due`. `trialing` is reachable only as an initial state. These rules are encoded in the profile's state-machine module, not in the user's schema, and the next section is the SQL we recommend so the database enforces the same rules.
+The legal transitions are the more important half. `canceled` is terminal; no production billing system flips a canceled row back to `active` without creating a new subscription row. `unpaid` is reachable only from `past_due`. `trialing` is reachable only as an initial state. Today the profile communicates these rules to the LLM in prose and the validator catches the gross violations (unknown statuses, type mismatches, FK breaks); the v0.4 state-machine module will enforce the full transition graph at plan time and reject any sampled history that violates it. Either way, the section below is the SQL we recommend so the database enforces the same rules independently of the seeder.
 
-## Constraints we recommend, and sometimes generate
+## Constraints we recommend (you write these, today)
 
-The profile is more useful when the schema has the constraints below, because they catch the cases the profile alone cannot.
+The profile is more useful when the schema has the constraints below, because they catch the cases the LLM and the validator alone cannot. These are recommendations for your migrations; satus does not alter your schema.
 
 ```sql
 -- 1. Status is a small closed set. Use an enum or a CHECK; both work.
