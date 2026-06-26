@@ -1,16 +1,18 @@
 ---
 slug: saas-subscriptions-profile
 title: "Inside the saas-subscriptions profile: MRR, churn, and the dunning death spiral"
-description: Subscription lifecycles, plan changes, failed payments, and the states no one documents. What the satus saas-subscriptions profile encodes and what it leaves to you.
+description: Subscription lifecycles, plan changes, failed payments, and the states no one documents. What the satus saas-subscriptions profile recommends, and what it leaves to you.
 date: 2026-06-26
 author: satus.sh
 tags: [profile, saas, billing, postgres, seeding]
 draft: false
 ---
 
-A SaaS billing schema looks like four tables and is, in practice, a small distributed system with a clock, a state machine, and a ledger. Subscriptions move through a fixed set of statuses on a fixed set of triggers. Invoices are arithmetic over a plan price and a usage stream, not free-form numbers. Failed payments are a retry schedule that ends in either recovery or cancellation, never in silence. A uniformly random fixture satisfies the schema and reproduces none of these dynamics, which is why dashboards built on uniform data look healthy until a real customer's card declines. The `saas-subscriptions` profile in [satus](/) is the choices we made about which of those dynamics to encode and which to push back on the user. This post is the inventory.
+A SaaS billing schema looks like four tables and is, in practice, a small distributed system with a clock, a state machine, and a ledger. Subscriptions move through a fixed set of statuses on a fixed set of triggers. Invoices are arithmetic over a plan price and a usage stream, not free-form numbers. Failed payments are a retry schedule that ends in either recovery or cancellation, never in silence. A uniformly random fixture satisfies the schema and reproduces none of these dynamics, which is why dashboards built on uniform data look healthy until a real customer's card declines. The `saas-subscriptions` profile in [satus](/) is our spec for those dynamics: the rules we want the LLM to follow when it fills your rows, and the schema-side guard rails we recommend so the database catches what the model misses. This post is the inventory.
 
-The shape of this post mirrors the [medical-booking deep-dive](/blog/medical-booking-profile) and the [e-commerce deep-dive](/blog/ecommerce-profile): the distributions baked in, the constraints we lean on, and the things we deliberately decline to ship. It assumes you have read [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild), because `orgs ↔ users` is the canonical small cycle and this profile is the one we built to exercise it, and [NULL vs NOT NULL is not the question](/blog/null-vs-not-null-is-not-the-question), because subscription rows carry more state-flag timestamps than any other table in a typical SaaS schema.
+A note on what "the profile" is, today and on the roadmap. In v0.3 the profile is a single high-signal prompt block ([packages/cli/src/generate/profiles.ts](https://github.com/passkeybridge/satus/blob/main/packages/cli/src/generate/profiles.ts)) that steers the LLM toward the distributions, status mix, and language described below; satus then runs the offline validator on what comes back. The status-machine enforcement, the canonical MRR/churn views, the dunning sampler, and the Poisson usage generator described in this post are the profile's specification, not yet shipped modules. They are the next milestone for `saas-subscriptions` and the reason this post reads like a spec; treat it as the contract the v0.4 profile will honour and as a checklist you can apply today if you wire the recommended constraints into your own schema. Sections below say explicitly where the line sits.
+
+The shape of this post mirrors the [medical-booking deep-dive](/blog/medical-booking-profile) and the [e-commerce deep-dive](/blog/ecommerce-profile): the distributions we steer toward, the constraints we lean on, and the things we deliberately decline to ship. It assumes you have read [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild), because `orgs ↔ users` is the canonical small cycle and this profile is the one we built to exercise it, and [NULL vs NOT NULL is not the question](/blog/null-vs-not-null-is-not-the-question), because subscription rows carry more state-flag timestamps than any other table in a typical SaaS schema.
 
 ## Why a uniform fixture is the wrong fixture
 
@@ -32,11 +34,11 @@ The Stripe API documents eight subscription statuses on the canonical `Subscript
 
 The shares are a default that we know will be wrong for any specific product. They sit in the range that a generic mid-funnel SaaS in steady state could plausibly produce, and they are explicitly overridable. The point of shipping a default is not that 78% `active` is right for your company; it is that 12.5% per status (a flat uniform) is wrong for every company.
 
-The legal transitions are the more important half. The profile refuses to write a row whose status history violates the graph above. `canceled` is terminal; we will not flip it back to `active` even if a user override asks for it, because no production billing system does that without creating a new subscription row. `unpaid` is reachable only from `past_due`. `trialing` is reachable only as an initial state. These rules are encoded in the profile's state-machine module, not in the user's schema, and the next section is the SQL we recommend so the database enforces the same rules.
+The legal transitions are the more important half. `canceled` is terminal; no production billing system flips a canceled row back to `active` without creating a new subscription row. `unpaid` is reachable only from `past_due`. `trialing` is reachable only as an initial state. Today the profile communicates these rules to the LLM in prose and the validator catches the gross violations (unknown statuses, type mismatches, FK breaks); the v0.4 state-machine module will enforce the full transition graph at plan time and reject any sampled history that violates it. Either way, the section below is the SQL we recommend so the database enforces the same rules independently of the seeder.
 
-## Constraints we recommend, and sometimes generate
+## Constraints we recommend (you write these, today)
 
-The profile is more useful when the schema has the constraints below, because they catch the cases the profile alone cannot.
+The profile is more useful when the schema has the constraints below, because they catch the cases the LLM and the validator alone cannot. These are recommendations for your migrations; satus does not alter your schema.
 
 ```sql
 -- 1. Status is a small closed set. Use an enum or a CHECK; both work.
@@ -67,13 +69,13 @@ ALTER TABLE subscriptions
   CHECK (current_period_end > current_period_start);
 ```
 
-Two of these matter more than the others. The partial unique index on `memberships` is the canonical Postgres pattern for "at most one row in this set matches this predicate"; it is enforced by the index itself, with no trigger and no race window ([PostgreSQL documentation: Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)). The generated column on `invoices` is enforced by the database every write, which means the fixture and the application cannot disagree about the total ([PostgreSQL documentation: Generated Columns](https://www.postgresql.org/docs/current/ddl-generated-columns.html), shipped since PostgreSQL 12). The other three are good hygiene and we will warn when they are missing.
+Two of these matter more than the others. The partial unique index on `memberships` is the canonical Postgres pattern for "at most one row in this set matches this predicate"; it is enforced by the index itself, with no trigger and no race window ([PostgreSQL documentation: Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)). The generated column on `invoices` is enforced by the database every write, which means the fixture and the application cannot disagree about the total ([PostgreSQL documentation: Generated Columns](https://www.postgresql.org/docs/current/ddl-generated-columns.html), shipped since PostgreSQL 12). The other three are good hygiene; satus's validator will flag rows that violate any of them once you add them.
 
 For status, an enum and a `CHECK` are both reasonable, with different ergonomics for adding a new value later. We covered the trade-off in [Enum types that grew up](/blog/enum-types-that-grew-up); the short version is that since PostgreSQL 12 `ALTER TYPE ... ADD VALUE` no longer requires a separate transaction, and the historical reason for preferring `CHECK` has largely been retired.
 
 ## MRR, which is a definition more than a measurement
 
-Monthly recurring revenue is the sum of normalised subscription values that are currently in a recurring-billing state. The profile computes the conventional definition and exposes it as a view, not a column, so it stays in sync with whatever the underlying rows say:
+Monthly recurring revenue is the sum of normalised subscription values that are currently in a recurring-billing state. The profile's recommended shape exposes it as a view, not a column, so it stays in sync with whatever the underlying rows say. The view below is the spec we propose for your schema (and the one the v0.4 reporting helpers will emit on request); copy it into a migration if you want it today:
 
 ```sql
 CREATE VIEW mrr_components AS
@@ -92,9 +94,9 @@ JOIN plans p ON p.id = s.plan_id
 WHERE s.status IN ('trialing', 'active', 'past_due');
 ```
 
-Three decisions are visible in that view and are worth naming. We include `trialing` in MRR by default, which is the looser convention; the stricter convention excludes it and produces a smaller, lagged number. We include `past_due` because cancelling a subscription on the first failed payment overstates churn; this is the same convention the SaaS finance literature follows. We exclude `unpaid` and `canceled` because access has stopped. The profile ships both views (`mrr_strict` and `mrr_loose`) and emits a planner-time note about which one the fixture is exercising.
+Three decisions are visible in that view and are worth naming. We recommend including `trialing` in MRR by default, which is the looser convention; the stricter convention excludes it and produces a smaller, lagged number. We recommend including `past_due` because cancelling a subscription on the first failed payment overstates churn; this is the same convention the SaaS finance literature follows. We exclude `unpaid` and `canceled` because access has stopped. The spec defines both views (`mrr_strict` and `mrr_loose`); v0.4 will emit them on opt-in, today you copy whichever you want into a migration.
 
-We deliberately do not encode a benchmark for "good" MRR growth, a "typical" net revenue retention, or any other industry number. Public benchmarks vary by stage, segment, and methodology, and citing one as a default would mislead more often than it would help. The profile generates a fixture; the interpretation is yours.
+We deliberately do not recommend a benchmark for "good" MRR growth, a "typical" net revenue retention, or any other industry number. Public benchmarks vary by stage, segment, and methodology, and citing one as a default would mislead more often than it would help. The profile steers the fixture; the interpretation is yours.
 
 ## Churn, which is at least three different metrics
 
@@ -106,9 +108,9 @@ The word "churn" is overloaded. The three metrics that show up in real dashboard
 | Gross revenue churn | MRR lost from cancels + downgrades | MRR at start of period | Worst-case revenue erosion, before expansion |
 | Net revenue churn | (MRR lost) − (MRR gained from expansion) | MRR at start of period | True revenue movement, can go negative |
 
-The profile generates the events that all three metrics derive from (cancellations, plan changes, quantity changes, downgrades) and ships a `churn_events` view that joins them in the canonical shape. It does not ship a "churn rate" column on `orgs`, because that number is a window function over the events, not a property of the row.
+The spec says: generate the events that all three metrics derive from (cancellations, plan changes, quantity changes, downgrades) and join them in a `churn_events` view. Do not put a "churn rate" column on `orgs`, because that number is a window function over the events, not a property of the row. Today the LLM is prompted to produce those event rows; the named view and the joiner module are part of the v0.4 build.
 
-A plausible distribution of cancel reasons, illustrative only, drawn from the profile's defaults:
+A plausible distribution of cancel reasons, illustrative only, drawn from the profile's recommended defaults:
 
 ```text
 cancel reason mix, default profile (illustrative shape, not a measurement)
@@ -121,13 +123,13 @@ involuntary_fraud_block   █              2%
 other / unknown           ████           8%
 ```
 
-The "involuntary" rows are the dunning bucket. In most SaaS reports we have seen, involuntary churn is one of the largest single drivers of attrition and almost the only one a billing engineer can fix without a product change. The next section is how the profile models it.
+The "involuntary" rows are the dunning bucket. In most SaaS reports we have seen, involuntary churn is one of the largest single drivers of attrition and almost the only one a billing engineer can fix without a product change. The next section is how the profile specifies it.
 
 ## The dunning death spiral
 
 Dunning is the polite name for "what happens after the card declines." A real billing system tries the payment again, then again, then again, on a schedule, and if every retry fails the subscription transitions out of `past_due` into a terminal state. Stripe's default policy retries failed invoices for up to a configurable window before marking the subscription `canceled` or `unpaid`, and exposes the retry schedule as a tunable policy ([Stripe: Smart retries and failed payments](https://docs.stripe.com/billing/revenue-recovery/smart-retries)). Other billing platforms ship similar policies under different names; the shape is industry-standard.
 
-The profile encodes the shape, not any one vendor's exact schedule, and emits one `invoice` row per attempt with the status appropriate to the attempt outcome:
+The profile specifies the shape, not any one vendor's exact schedule: one `invoice` row per attempt with the status appropriate to the outcome, on a curve like the one below. Today the LLM is prompted to produce attempts in this shape and the validator confirms the rows are well-formed; the deterministic per-invoice sampler (`dunning-sampler`) is part of the v0.4 module list, and will replace the LLM's freehand sampling for this slice.
 
 ```text
 default dunning attempt schedule, sampled per failed invoice
@@ -140,13 +142,13 @@ attempt 6   day 21
 terminal    day 28          (canceled or unpaid, per org policy)
 ```
 
-The terminal transition is the death spiral, and it is shaped like an exponential decay over the customer base: a sizeable fraction of failed payments recover on attempt 2 or 3, a smaller fraction recover later, and an irreducible tail never recovers and transitions out. The profile samples a recovery probability per attempt with the recovery curve highest early and flattening fast, so the resulting fixture has a mix of recovered and abandoned subscriptions that exercises both code paths.
+The terminal transition is the death spiral, and it is shaped like an exponential decay over the customer base: a sizeable fraction of failed payments recover on attempt 2 or 3, a smaller fraction recover later, and an irreducible tail never recovers and transitions out. The spec calls for sampling a recovery probability per attempt with the curve highest early and flattening fast, so the resulting fixture has a mix of recovered and abandoned subscriptions that exercises both code paths.
 
-What this gives you in practice is a fixture in which the dunning job has actual work to do: real `past_due` rows with real attempt histories, real terminal transitions on the correct day, real invoice rows whose `attempt_count` field is more than 1, and a reconciliation between `mrr_loose` at the start of the period and `mrr_loose` at the end that closes when you account for new subscriptions, cancellations, plan changes, and the dunning tail.
+What this gives you in practice, once you have the recommended constraints in place and the v0.4 sampler enabled (or the LLM is on a good day), is a fixture in which the dunning job has actual work to do: real `past_due` rows with real attempt histories, real terminal transitions on the correct day, real invoice rows whose `attempt_count` field is more than 1, and a reconciliation between `mrr_loose` at the start of the period and `mrr_loose` at the end that closes when you account for new subscriptions, cancellations, plan changes, and the dunning tail.
 
 ## Usage events, on a Poisson curve
 
-Usage-based billing is the part of a SaaS schema that uniform fixtures hurt the most. Real usage is bursty: most accounts emit few events most of the time, a small minority emit many, and within a single account usage clusters by hour-of-day in the customer's local time. We sample arrival times for `usage_events` from a Poisson process per account, with the rate parameter drawn from a log-normal across accounts and modulated by an hour-of-day curve borrowed from the appointments profile.
+Usage-based billing is the part of a SaaS schema that uniform fixtures hurt the most. Real usage is bursty: most accounts emit few events most of the time, a small minority emit many, and within a single account usage clusters by hour-of-day in the customer's local time. The spec calls for sampling arrival times for `usage_events` from a Poisson process per account, with the rate drawn from a log-normal across accounts and modulated by an hour-of-day curve borrowed from the appointments profile. Today the prompt asks the LLM to honour this shape and the validator checks the rows fit the schema; the deterministic `poisson-usage` sampler is on the v0.4 list and will take this over from the model.
 
 The arithmetic the fixture has to honour is then:
 
@@ -157,7 +159,7 @@ invoices.amount_cents
     over (usage_events.occurred_at in [period_start, period_end))
 ```
 
-The profile enforces this at write time. If you have followed the recommendation above and made `invoices.total_cents` a generated column, the database enforces a stricter version of the same statement on every write, the application cannot drift from it, and the finance dashboard you build on top reports numbers that close.
+If you have followed the recommendation above and made `invoices.total_cents` a generated column, the database enforces a stricter version of the same statement on every write, the application cannot drift from it, and the finance dashboard you build on top reports numbers that close. Until the v0.4 reconciler ships, the generated column is the single most important guard rail for this profile.
 
 ## State-flag columns, briefly
 
@@ -201,7 +203,9 @@ satus generate --profile saas --schema public --dry-run
 
 A SaaS-subscriptions profile is mostly a state machine, an arithmetic identity, and a retry schedule. The state machine is `trialing → active → past_due → unpaid/canceled` with the legal back-edges and no others. The arithmetic identity is `invoice.total = plan.base + sum(usage × unit_price)`, enforced by a generated column where the schema allows. The retry schedule is the dunning curve, sampled per failed invoice, terminating in either recovery or cancellation. Encode those three correctly and the rest of the profile (Poisson usage, Zipf-ish account sizes, log-normal trial lengths) is parameter-fitting. Encode them as uniform random and the planner, the dashboards, and the dunning job will all behave qualitatively differently in production than they did in test.
 
-If you are seeding a SaaS-shaped schema and the default profile is wrong for your stage, override the bits that matter (the status mix, the dunning curve, the usage rate) and leave the rest. The [/profiles](/profiles#saas-subscriptions) page lists the three built-ins, the [/quickstart](/quickstart) shows how to point the CLI at your schema, and the [/recipes](/recipes) page has a worked example of a profile override.
+In v0.3 those three are LLM-guided and validator-checked; in v0.4 the state-machine enforcer, the dunning sampler, the Poisson usage generator, and the canonical MRR/churn views move into the CLI as deterministic modules. This post is the contract that build will honour.
+
+If you are seeding a SaaS-shaped schema and the recommended defaults are wrong for your stage, override the bits that matter (the status mix, the dunning curve, the usage rate) and leave the rest. The [/profiles](/profiles#saas-subscriptions) page lists the three built-ins, the [/quickstart](/quickstart) shows how to point the CLI at your schema, and the [/recipes](/recipes) page has a worked example of a profile override.
 
 ## References
 
