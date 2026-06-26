@@ -148,7 +148,7 @@ What this gives you in practice, once you have the recommended constraints in pl
 
 ## Usage events, on a Poisson curve
 
-Usage-based billing is the part of a SaaS schema that uniform fixtures hurt the most. Real usage is bursty: most accounts emit few events most of the time, a small minority emit many, and within a single account usage clusters by hour-of-day in the customer's local time. We sample arrival times for `usage_events` from a Poisson process per account, with the rate parameter drawn from a log-normal across accounts and modulated by an hour-of-day curve borrowed from the appointments profile.
+Usage-based billing is the part of a SaaS schema that uniform fixtures hurt the most. Real usage is bursty: most accounts emit few events most of the time, a small minority emit many, and within a single account usage clusters by hour-of-day in the customer's local time. The spec calls for sampling arrival times for `usage_events` from a Poisson process per account, with the rate drawn from a log-normal across accounts and modulated by an hour-of-day curve borrowed from the appointments profile. Today the prompt asks the LLM to honour this shape and the validator checks the rows fit the schema; the deterministic `poisson-usage` sampler is on the v0.4 list and will take this over from the model.
 
 The arithmetic the fixture has to honour is then:
 
@@ -159,7 +159,7 @@ invoices.amount_cents
     over (usage_events.occurred_at in [period_start, period_end))
 ```
 
-The profile enforces this at write time. If you have followed the recommendation above and made `invoices.total_cents` a generated column, the database enforces a stricter version of the same statement on every write, the application cannot drift from it, and the finance dashboard you build on top reports numbers that close.
+If you have followed the recommendation above and made `invoices.total_cents` a generated column, the database enforces a stricter version of the same statement on every write, the application cannot drift from it, and the finance dashboard you build on top reports numbers that close. Until the v0.4 reconciler ships, the generated column is the single most important guard rail for this profile.
 
 ## State-flag columns, briefly
 
