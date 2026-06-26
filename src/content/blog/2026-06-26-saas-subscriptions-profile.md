@@ -69,13 +69,13 @@ ALTER TABLE subscriptions
   CHECK (current_period_end > current_period_start);
 ```
 
-Two of these matter more than the others. The partial unique index on `memberships` is the canonical Postgres pattern for "at most one row in this set matches this predicate"; it is enforced by the index itself, with no trigger and no race window ([PostgreSQL documentation: Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)). The generated column on `invoices` is enforced by the database every write, which means the fixture and the application cannot disagree about the total ([PostgreSQL documentation: Generated Columns](https://www.postgresql.org/docs/current/ddl-generated-columns.html), shipped since PostgreSQL 12). The other three are good hygiene and we will warn when they are missing.
+Two of these matter more than the others. The partial unique index on `memberships` is the canonical Postgres pattern for "at most one row in this set matches this predicate"; it is enforced by the index itself, with no trigger and no race window ([PostgreSQL documentation: Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)). The generated column on `invoices` is enforced by the database every write, which means the fixture and the application cannot disagree about the total ([PostgreSQL documentation: Generated Columns](https://www.postgresql.org/docs/current/ddl-generated-columns.html), shipped since PostgreSQL 12). The other three are good hygiene; satus's validator will flag rows that violate any of them once you add them.
 
 For status, an enum and a `CHECK` are both reasonable, with different ergonomics for adding a new value later. We covered the trade-off in [Enum types that grew up](/blog/enum-types-that-grew-up); the short version is that since PostgreSQL 12 `ALTER TYPE ... ADD VALUE` no longer requires a separate transaction, and the historical reason for preferring `CHECK` has largely been retired.
 
 ## MRR, which is a definition more than a measurement
 
-Monthly recurring revenue is the sum of normalised subscription values that are currently in a recurring-billing state. The profile computes the conventional definition and exposes it as a view, not a column, so it stays in sync with whatever the underlying rows say:
+Monthly recurring revenue is the sum of normalised subscription values that are currently in a recurring-billing state. The profile's recommended shape exposes it as a view, not a column, so it stays in sync with whatever the underlying rows say. The view below is the spec we propose for your schema (and the one the v0.4 reporting helpers will emit on request); copy it into a migration if you want it today:
 
 ```sql
 CREATE VIEW mrr_components AS
