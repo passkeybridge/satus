@@ -108,9 +108,9 @@ The word "churn" is overloaded. The three metrics that show up in real dashboard
 | Gross revenue churn | MRR lost from cancels + downgrades | MRR at start of period | Worst-case revenue erosion, before expansion |
 | Net revenue churn | (MRR lost) − (MRR gained from expansion) | MRR at start of period | True revenue movement, can go negative |
 
-The profile generates the events that all three metrics derive from (cancellations, plan changes, quantity changes, downgrades) and ships a `churn_events` view that joins them in the canonical shape. It does not ship a "churn rate" column on `orgs`, because that number is a window function over the events, not a property of the row.
+The spec says: generate the events that all three metrics derive from (cancellations, plan changes, quantity changes, downgrades) and join them in a `churn_events` view. Do not put a "churn rate" column on `orgs`, because that number is a window function over the events, not a property of the row. Today the LLM is prompted to produce those event rows; the named view and the joiner module are part of the v0.4 build.
 
-A plausible distribution of cancel reasons, illustrative only, drawn from the profile's defaults:
+A plausible distribution of cancel reasons, illustrative only, drawn from the profile's recommended defaults:
 
 ```text
 cancel reason mix, default profile (illustrative shape, not a measurement)
