@@ -123,13 +123,13 @@ involuntary_fraud_block   █              2%
 other / unknown           ████           8%
 ```
 
-The "involuntary" rows are the dunning bucket. In most SaaS reports we have seen, involuntary churn is one of the largest single drivers of attrition and almost the only one a billing engineer can fix without a product change. The next section is how the profile models it.
+The "involuntary" rows are the dunning bucket. In most SaaS reports we have seen, involuntary churn is one of the largest single drivers of attrition and almost the only one a billing engineer can fix without a product change. The next section is how the profile specifies it.
 
 ## The dunning death spiral
 
 Dunning is the polite name for "what happens after the card declines." A real billing system tries the payment again, then again, then again, on a schedule, and if every retry fails the subscription transitions out of `past_due` into a terminal state. Stripe's default policy retries failed invoices for up to a configurable window before marking the subscription `canceled` or `unpaid`, and exposes the retry schedule as a tunable policy ([Stripe: Smart retries and failed payments](https://docs.stripe.com/billing/revenue-recovery/smart-retries)). Other billing platforms ship similar policies under different names; the shape is industry-standard.
 
-The profile encodes the shape, not any one vendor's exact schedule, and emits one `invoice` row per attempt with the status appropriate to the attempt outcome:
+The profile specifies the shape, not any one vendor's exact schedule: one `invoice` row per attempt with the status appropriate to the outcome, on a curve like the one below. Today the LLM is prompted to produce attempts in this shape and the validator confirms the rows are well-formed; the deterministic per-invoice sampler (`dunning-sampler`) is part of the v0.4 module list, and will replace the LLM's freehand sampling for this slice.
 
 ```text
 default dunning attempt schedule, sampled per failed invoice
@@ -142,9 +142,9 @@ attempt 6   day 21
 terminal    day 28          (canceled or unpaid, per org policy)
 ```
 
-The terminal transition is the death spiral, and it is shaped like an exponential decay over the customer base: a sizeable fraction of failed payments recover on attempt 2 or 3, a smaller fraction recover later, and an irreducible tail never recovers and transitions out. The profile samples a recovery probability per attempt with the recovery curve highest early and flattening fast, so the resulting fixture has a mix of recovered and abandoned subscriptions that exercises both code paths.
+The terminal transition is the death spiral, and it is shaped like an exponential decay over the customer base: a sizeable fraction of failed payments recover on attempt 2 or 3, a smaller fraction recover later, and an irreducible tail never recovers and transitions out. The spec calls for sampling a recovery probability per attempt with the curve highest early and flattening fast, so the resulting fixture has a mix of recovered and abandoned subscriptions that exercises both code paths.
 
-What this gives you in practice is a fixture in which the dunning job has actual work to do: real `past_due` rows with real attempt histories, real terminal transitions on the correct day, real invoice rows whose `attempt_count` field is more than 1, and a reconciliation between `mrr_loose` at the start of the period and `mrr_loose` at the end that closes when you account for new subscriptions, cancellations, plan changes, and the dunning tail.
+What this gives you in practice, once you have the recommended constraints in place and the v0.4 sampler enabled (or the LLM is on a good day), is a fixture in which the dunning job has actual work to do: real `past_due` rows with real attempt histories, real terminal transitions on the correct day, real invoice rows whose `attempt_count` field is more than 1, and a reconciliation between `mrr_loose` at the start of the period and `mrr_loose` at the end that closes when you account for new subscriptions, cancellations, plan changes, and the dunning tail.
 
 ## Usage events, on a Poisson curve
 
