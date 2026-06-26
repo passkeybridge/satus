@@ -186,18 +186,16 @@ A user who needs any of these can override the relevant column or supply the rel
 
 ## How to inspect what you are getting
 
-Two commands cover most questions.
+One command covers most questions.
 
 ```bash
-# Dump the resolved profile (defaults + your overrides) as JSON.
-satus profile show saas-subscriptions --resolved
-
-# Plan a run without writing rows; prints the distribution
-# satus will sample from for every column it touches.
-satus generate --profile saas --schema ./schema.sql --dry-run
+# Plan a run without writing rows; walks the schema, simulates the rows
+# the live planner would produce, and validates them against every
+# NOT NULL, type, range, length, and FK constraint.
+satus generate --profile saas --schema public --dry-run
 ```
 
-`satus generate --dry-run` walks the schema, simulates the rows the live planner would produce, and validates them against every NOT NULL, type, range, length, and foreign-key constraint without spending a token on the LLM. The transcript and what it catches is the subject of [an offline dry-run that catches FK and constraint bugs before spending on an LLM](/blog/dry-run-validation).
+`satus generate --dry-run` runs the full plan offline without spending a token on the LLM. The transcript and what it catches is the subject of [an offline dry-run that catches FK and constraint bugs before spending on an LLM](/blog/dry-run-validation).
 
 ## The shorter version
 
