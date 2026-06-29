@@ -118,6 +118,6 @@ Three "no"s on the bottom two rows, or one "yes" on the top four, is your signal
 - pagila, `film.special_features`—[`pagila-schema.sql`](https://github.com/devrimgunduz/pagila/blob/master/pagila-schema.sql)
 - listmonk, `lists.tags` and `campaigns.tags`—[`schema.sql`](https://github.com/knadh/listmonk/blob/v3.0.0/schema.sql)
 - Postgres arrays, language reference—[Postgres 17 §8.15](https://www.postgresql.org/docs/17/arrays.html)
-- GIN indexes on arrays—[Postgres 17 §70.2](https://www.postgresql.org/docs/17/gin-builtin-opclasses.html)
+- GIN indexes on arrays—[Postgres 17 §70](https://www.postgresql.org/docs/17/gin.html)
 - satus column-type mapping (today)—[`packages/cli/src/generate/schema.ts`](https://github.com/passkeybridge/satus/blob/main/packages/cli/src/generate/schema.ts)
 - Companion post on the JSONB version of the same anti-pattern—[JSONB columns that are secretly relational](/blog/jsonb-that-is-secretly-relational)
