@@ -42,7 +42,7 @@ CREATE TABLE comment_thread (
 );
 ```
 
-There is no constraint that says so. Delete a profile and the array silently keeps a dangling reference. Add a profile and there is no way to ask "which threads include this profile" without `WHERE participants @> ARRAY[$1]::uuid[]` and a GIN index — which works, but does not give you a foreign key, does not give you `ON DELETE CASCADE`, and does not let `EXPLAIN` show you a clean join plan. We covered the JSONB equivalent of this in [JSONB columns that are secretly relational](/blog/jsonb-that-is-secretly-relational); the array version has exactly the same problem with slightly better ergonomics.
+There is no constraint that says so. Delete a profile and the array silently keeps a dangling reference. Add a profile and there is no way to ask "which threads include this profile" without `WHERE participants @> ARRAY[$1]::uuid[]` and a GIN index—which works, but does not give you a foreign key, does not give you `ON DELETE CASCADE`, and does not let `EXPLAIN` show you a clean join plan. We covered the JSONB equivalent of this in [JSONB columns that are secretly relational](/blog/jsonb-that-is-secretly-relational); the array version has exactly the same problem with slightly better ergonomics.
 
 If the elements name rows in another table, write the junction. The two extra tables pay for themselves the first time someone asks "list every thread that includes profile X" or, worse, "delete profile X cleanly."
 
@@ -70,11 +70,11 @@ If you suspect within a year you will want any per-element metadata, do not star
 
 The moment you want `GROUP BY element`, you are calling `unnest(arr)` on every row in the table. With a junction table, `feature_flags(user_id, flag)` gives you a real B-tree index on `flag`, real cardinality statistics, real partial indexes per flag, and a query plan the planner can actually optimize. GIN on the array can answer membership questions; it cannot turn the array into a column the planner reasons about as a relation.
 
-The asymmetric workload — write rarely, read in many ways — is exactly what relational decomposition was invented for. Arrays serve the opposite workload: read whole, write whole, never aggregated.
+The asymmetric workload—write rarely, read in many ways—is exactly what relational decomposition was invented for. Arrays serve the opposite workload: read whole, write whole, never aggregated.
 
 ### Smell 4: you need uniqueness, ordering, or referential integrity inside the set
 
-Postgres arrays do not enforce element uniqueness. `tags text[] = ARRAY['x', 'x']` is a valid value. If your application contract says "each tag appears at most once," the database does not know that, and you will at some point ship a bug that puts a duplicate in. The standard workaround — `CHECK (cardinality(tags) = cardinality(ARRAY(SELECT DISTINCT unnest(tags))))` — works and is the kind of constraint nobody remembers to write at table-creation time.
+Postgres arrays do not enforce element uniqueness. `tags text[] = ARRAY['x', 'x']` is a valid value. If your application contract says "each tag appears at most once," the database does not know that, and you will at some point ship a bug that puts a duplicate in. The standard workaround—`CHECK (cardinality(tags) = cardinality(ARRAY(SELECT DISTINCT unnest(tags))))`—works and is the kind of constraint nobody remembers to write at table-creation time.
 
 Junction tables enforce uniqueness for free via the composite primary key. They enforce referential integrity for free via the foreign keys. They enforce ordering, if you need it, via an explicit `position int NOT NULL` column with a unique constraint per parent. Every one of those guarantees you have to bolt onto an array column with a `CHECK` that is brittle, slow, or both.
 
@@ -86,7 +86,7 @@ The single most common array column we see is some variant of `tags text[]` or `
 - **Are tags queried across rows by tag value?** "Show me all campaigns tagged `q3-launch`" against an array column works via GIN, but "give me the top 20 tags by campaign count" is a full-table `unnest` aggregation. If that is a real product requirement, the junction wins on day one.
 - **Are tags shared with another system?** If the same tag taxonomy lives in your CRM, your analytics pipeline, and a half-finished tagging UI, the array column will drift from each of them. The junction is the synchronization point.
 
-If all three answers are no — operator types in free-form strings, never aggregated, never shared — the array is fine. We are not recommending you migrate listmonk. We are recommending you ask the three questions before you copy the pattern into a schema where the answers are different.
+If all three answers are no—operator types in free-form strings, never aggregated, never shared—the array is fine. We are not recommending you migrate listmonk. We are recommending you ask the three questions before you copy the pattern into a schema where the answers are different.
 
 ## What this means for seed data
 
@@ -115,9 +115,9 @@ Three "no"s on the bottom two rows, or one "yes" on the top four, is your signal
 
 ## References
 
-- pagila, `film.special_features` — [`pagila-schema.sql`](https://github.com/devrimgunduz/pagila/blob/master/pagila-schema.sql)
-- listmonk, `lists.tags` and `campaigns.tags` — [`schema.sql`](https://github.com/knadh/listmonk/blob/v3.0.0/schema.sql)
-- Postgres arrays, language reference — [Postgres 17 §8.15](https://www.postgresql.org/docs/17/arrays.html)
-- GIN indexes on arrays — [Postgres 17 §70.2](https://www.postgresql.org/docs/17/gin-builtin-opclasses.html)
-- satus column-type mapping (today) — [`packages/cli/src/generate/schema.ts`](https://github.com/passkeybridge/satus/blob/main/packages/cli/src/generate/schema.ts)
-- Companion post on the JSONB version of the same anti-pattern — [JSONB columns that are secretly relational](/blog/jsonb-that-is-secretly-relational)
+- pagila, `film.special_features`—[`pagila-schema.sql`](https://github.com/devrimgunduz/pagila/blob/master/pagila-schema.sql)
+- listmonk, `lists.tags` and `campaigns.tags`—[`schema.sql`](https://github.com/knadh/listmonk/blob/v3.0.0/schema.sql)
+- Postgres arrays, language reference—[Postgres 17 §8.15](https://www.postgresql.org/docs/17/arrays.html)
+- GIN indexes on arrays—[Postgres 17 §70.2](https://www.postgresql.org/docs/17/gin-builtin-opclasses.html)
+- satus column-type mapping (today)—[`packages/cli/src/generate/schema.ts`](https://github.com/passkeybridge/satus/blob/main/packages/cli/src/generate/schema.ts)
+- Companion post on the JSONB version of the same anti-pattern—[JSONB columns that are secretly relational](/blog/jsonb-that-is-secretly-relational)
