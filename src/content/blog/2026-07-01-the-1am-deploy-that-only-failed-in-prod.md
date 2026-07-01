@@ -49,10 +49,10 @@ The `rows=` estimate being off by ~58× is the whole bug. Once the estimate is w
 Three separate properties of the fixture worked together to hide the problem:
 
 1. **Uniform distributions.** Real tenant data is almost never uniform. One tenant is usually an order of magnitude larger than the median. Uniformly-distributed seed data makes selectivity estimates look accurate on dev because they *are* accurate on dev.
-2. **Small absolute row counts.** At 1,000 rows, every plan is fast. Sequential scan, index scan, nested loop, hash join — the wall-clock differences are noise.
+2. **Small absolute row counts.** At 1,000 rows, every plan is fast. Sequential scan, index scan, nested loop, hash join—the wall-clock differences are noise.
 3. **No cross-column correlation.** In prod, `tenant_id` and `status` were correlated: the largest tenant also had the highest active-row ratio. In dev they were independent by construction, which is exactly the assumption the planner already makes without extended statistics. The dev data confirmed the planner's default assumption instead of stress-testing it.
 
-None of these are bugs in the fixture. They are the default behavior of every "generate N rows of random data" script we have ever seen, including the ones satus generated in v0.1. The realism gap is not about volume alone — it is about *shape*.
+None of these are bugs in the fixture. They are the default behavior of every "generate N rows of random data" script we have ever seen, including the ones satus generated in v0.1. The realism gap is not about volume alone—it is about *shape*.
 
 ## What the fix looked like
 
@@ -61,7 +61,7 @@ Two changes shipped the same week:
 - `CREATE STATISTICS events_tenant_status (dependencies, ndistinct) ON tenant_id, status FROM events;` followed by `ANALYZE events;`. Extended statistics let the planner see the correlation and produced a hash-join plan on the same query in ~1.4s. The [CREATE STATISTICS docs](https://www.postgresql.org/docs/current/sql-createstatistics.html) describe the two flavors that matter here.
 - A staging environment restored from a *current* prod snapshot, not a six-month-old one. This is the change that actually catches the next incident.
 
-The satus-side change was the one that took the rest of the week to design honestly. A profile that generates a heavy-tailed tenant distribution and a correlated `status` field is not hard to write; the hard part is picking distributions that generalize across schemas without becoming a lie of a different shape. The `saas-subscriptions` profile, [written up here](/blog/saas-subscriptions-profile), is the first one to encode heavy-tailed tenant sizes as guidance. It is a specification, not enforcement — the LLM plans against it and the [`--dry-run` validator](/blog/dry-run-validation) checks structural conformance, but neither one can guarantee your dev database will trip the same planner branch as prod. What they can do is stop your dev database from *confirming* a wrong assumption.
+The satus-side change was the one that took the rest of the week to design honestly. A profile that generates a heavy-tailed tenant distribution and a correlated `status` field is not hard to write; the hard part is picking distributions that generalize across schemas without becoming a lie of a different shape. The `saas-subscriptions` profile, [written up here](/blog/saas-subscriptions-profile), is the first one to encode heavy-tailed tenant sizes as guidance. It is a specification, not enforcement—the LLM plans against it and the [`--dry-run` validator](/blog/dry-run-validation) checks structural conformance, but neither one can guarantee your dev database will trip the same planner branch as prod. What they can do is stop your dev database from *confirming* a wrong assumption.
 
 ## The one-line takeaway
 
