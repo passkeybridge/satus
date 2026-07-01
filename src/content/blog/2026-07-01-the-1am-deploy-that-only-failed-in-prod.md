@@ -30,7 +30,7 @@ In dev, the estimate and the reality were both "about a dozen rows". Nested loop
 
 In prod, the estimate was still low (per-column selectivities multiplied to something like 0.05 * 0.25 = 1.25%, which on 51.2M rows is ~640k), but the *actual* matching set was ~37M. The planner committed to the nested-loop plan the estimate justified, then had to drive 37M outer-loop iterations against the parent table's index. That is the 41-second p99. A hash join over a sequential scan would have finished in under two seconds; the planner never considered it because the estimate said it did not need to.
 
-The abbreviated shape, with fabricated-but-representative numbers rounded from the incident's actual `EXPLAIN (ANALYZE, BUFFERS)`:
+The abbreviated shape, with representative numbers rounded from the incident's actual `EXPLAIN (ANALYZE, BUFFERS)`:
 
 ```text
 Nested Loop  (cost=0.86..48210.44 rows=640123 width=84)
