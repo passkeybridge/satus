@@ -22,8 +22,8 @@ We are being careful not to overstate this signal. We do not yet have telemetry 
 
 The release is deliberately narrow. Everything below is scoped, not shipped:
 
-- `packages/action/` — a composite GitHub Action published to the Marketplace as `passkeybridge/satus-action@v1`. Composite means no Docker image, no container startup cost, no root filesystem writes; it is three shell steps that install Node, run `npx @passkeybridge/satus@<pinned-version> generate`, and upload the run manifest as a workflow artifact.
-- `action.yml` — inputs for `database-url` (required, always passed as a secret), `rows`, `profile`, `provider`, `model`, `max-cost`, `dry-run`, `working-directory`, and `satus-version` (defaults to the latest 0.3.x). Outputs the `run-id`, `tables-seeded`, `rows-inserted`, `tokens-in`, `tokens-out`, and `spent-usd` fields so downstream steps can gate on cost.
+- `packages/action/`—a composite GitHub Action published to the Marketplace as `passkeybridge/satus-action@v1`. Composite means no Docker image, no container startup cost, no root filesystem writes; it is three shell steps that install Node, run `npx @passkeybridge/satus@<pinned-version> generate`, and upload the run manifest as a workflow artifact.
+- `action.yml`—inputs for `database-url` (required, always passed as a secret), `rows`, `profile`, `provider`, `model`, `max-cost`, `dry-run`, `working-directory`, and `satus-version` (defaults to the latest 0.3.x). Outputs the `run-id`, `tables-seeded`, `rows-inserted`, `tokens-in`, `tokens-out`, and `spent-usd` fields so downstream steps can gate on cost.
 - One integration test in `.github/workflows/action-selftest.yml` that stands up an ephemeral Postgres service container, runs the Action against the `pagila` fixture from our [corpus audit](/blog/introducing-the-log), and asserts a clean `--dry-run` followed by a non-empty insert.
 - Docs at `/docs/github-action` on the marketing site, with a full example workflow and the security notes below.
 - A `CHANGELOG.md` entry and a matching post at `/blog/v0-3-3-release-notes` on the day of the npm publish.
@@ -94,9 +94,9 @@ If you have a preview-database workflow that satus should behave well inside and
 
 ## References
 
-- [Agent mode, postponed to v0.5](/blog/agent-mode-postponed) — original roadmap; version numbers now shift by one minor as described above
-- [v0.3.0 release notes](/blog/v0-3-0-anthropic-and-machine-readable-output) — provider auto-detect and env-var conventions the Action inherits
-- [Introducing the log](/blog/introducing-the-log) — corpus audit fixtures used in the Action self-test
+- [Agent mode, postponed to v0.5](/blog/agent-mode-postponed)—original roadmap; version numbers now shift by one minor as described above
+- [v0.3.0 release notes](/blog/v0-3-0-anthropic-and-machine-readable-output)—provider auto-detect and env-var conventions the Action inherits
+- [Introducing the log](/blog/introducing-the-log)—corpus audit fixtures used in the Action self-test
 - [GitHub Actions · Creating a composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)
 - [GitHub Actions · Security guides for actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
 - [satus on GitHub](https://github.com/passkeybridge/satus)
