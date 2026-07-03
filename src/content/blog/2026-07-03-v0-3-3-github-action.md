@@ -88,7 +88,7 @@ Telemetry-hook collection (SHA-256 fingerprints of normalized DDL, validator cla
 
 ## Timeline and honesty
 
-Target for v0.3.3 on npm: mid-July 2026. If it slips, this post gets a dated update; it does not get quietly rewritten. When the release lands, `/blog/v0-3-3-release-notes` will link back here, and the changelog on this page will read `Superseded by v0.3.3 release notes` with a link.
+Target for v0.3.3 on npm: **2026-07-10 to 2026-07-11**. That is the week after next, not next week; the intervening week is reserved for the telemetry-hook work that lands in the same release. If it slips, this post gets a dated update; it does not get quietly rewritten. When the release lands, `/blog/v0-3-3-release-notes` will link back here, and the changelog on this page will read `Superseded by v0.3.3 release notes` with a link.
 
 If you have a preview-database workflow that satus should behave well inside and does not today, the [GitHub issue tracker](https://github.com/passkeybridge/satus) is the right place. We read everything there.
 
