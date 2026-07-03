@@ -1,7 +1,7 @@
 ---
 slug: v0-3-3-github-action
 title: "Roadmap: v0.3.3 ships the GitHub Action, and v0.5 becomes v0.4"
-description: What the next satus release will and will not do, why the GitHub Action is a 0.3.x patch rather than a 0.4 line item, and how the version numbers shift as a result.
+description: What the next satus release will and will not do, why the GitHub Action is a 0.3.x patch and not a 0.4 line item, and how the version numbers shift.
 date: 2026-07-03
 author: satus.sh
 tags: [roadmap, ci, github, release]
