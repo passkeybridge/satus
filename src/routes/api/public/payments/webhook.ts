@@ -234,19 +234,29 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
 
 
 async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
-  // Read email + plan BEFORE we mutate the row so we can notify the customer.
+  // Read email + plan + prior cancel_at_period_end BEFORE we mutate the row.
+  // The prior flag tells us WHY this delete fired:
+  //   - true  -> customer previously scheduled cancel; period now elapsed
+  //              naturally -> "expired" copy.
+  //   - false -> subscription was killed immediately (owner in dashboard,
+  //              admin action, terminal dunning) -> "canceled" copy.
+  // Sub.cancellation_details.reason exists in newer API versions but is
+  // unreliable across historical events; the row we already own is the
+  // single source of truth we trust.
   const { data: existing } = await supabaseAdmin
     .from('licenses')
-    .select('email, plan')
+    .select('email, plan, license_key, cancel_at_period_end')
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
     .maybeSingle()
+
+  const nowIso = new Date().toISOString()
 
   const { error: revokeErr } = await supabaseAdmin
     .from('licenses')
     .update({
       status: 'canceled',
-      revoked_at: new Date().toISOString(),
+      revoked_at: nowIso,
     })
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
@@ -255,17 +265,36 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     throw new Error(`license revoke failed: ${revokeErr.message}`)
   }
 
-  if (existing?.email) {
+  if (!existing?.email) return
+
+  const scheduledCancel = existing.cancel_at_period_end === true
+  const licenseKey = (existing.license_key as string | null) ?? null
+
+  if (scheduledCancel) {
     await enqueueTransactionalEmail({
       templateName: 'subscription-expired',
       recipientEmail: existing.email as string,
       idempotencyKey: `expired-${subscription.id}`,
       templateData: {
         planLabel: planLabel(existing.plan as string | null),
+        manageUrl: licenseKey ? manageUrl(licenseKey) : undefined,
+      },
+    })
+  } else {
+    // Immediate cancel: access ends today, not at a future period_end.
+    await enqueueTransactionalEmail({
+      templateName: 'subscription-canceled',
+      recipientEmail: existing.email as string,
+      idempotencyKey: `cancel-immediate-${subscription.id}`,
+      templateData: {
+        planLabel: planLabel(existing.plan as string | null),
+        accessEndsOn: nowIso.slice(0, 10),
+        manageUrl: licenseKey ? manageUrl(licenseKey) : undefined,
       },
     })
   }
 }
+
 
 /**
  * Resolve the subscription id behind a refunded charge. Stripe puts it on
