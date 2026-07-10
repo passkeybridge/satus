@@ -35,13 +35,17 @@ interface LicenseDeliveryProps {
   planLabel?: string
   /** ISO timestamp of next renewal, formatted as YYYY-MM-DD. */
   renewsOn?: string
+  /** Deep link that opens a Stripe billing portal session for this key. */
+  manageUrl?: string
 }
 
 const LicenseDeliveryEmail = ({
   licenseKey = 'satus_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
   planLabel = 'Pro · monthly',
   renewsOn,
+  manageUrl,
 }: LicenseDeliveryProps) => (
+
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your {SITE_NAME} license key.</Preview>
