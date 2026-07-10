@@ -26,11 +26,15 @@ const SITE_NAME = 'satus.sh'
 
 interface SubscriptionExpiredProps {
   planLabel?: string
+  /** Deep link that opens a Stripe billing portal session for this key. */
+  manageUrl?: string
 }
 
 const SubscriptionExpiredEmail = ({
   planLabel = 'Pro · monthly',
+  manageUrl,
 }: SubscriptionExpiredProps) => (
+
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your {SITE_NAME} subscription has ended.</Preview>
@@ -81,12 +85,29 @@ const SubscriptionExpiredEmail = ({
           <Link href="https://satus.sh/pricing" style={linkStyle}>
             satus.sh/pricing
           </Link>
-          . If you believe this is an error, reply to this email or write to{' '}
+          .
+        </Text>
+        {manageUrl && (
+          <>
+            <Text style={paragraph}>
+              To view past invoices or manage payment details on the previous
+              subscription, open the Stripe billing portal:
+            </Text>
+            <Section style={{ margin: '4px 0 16px' }}>
+              <Link href={manageUrl} style={linkStyle}>
+                → manage subscription
+              </Link>
+            </Section>
+          </>
+        )}
+        <Text style={paragraph}>
+          If you believe this is an error, reply to this email or write to{' '}
           <Link href="mailto:support@satus.sh" style={linkStyle}>
             support@satus.sh
           </Link>
           .
         </Text>
+
 
         <Hr style={hr} />
 
@@ -109,8 +130,13 @@ export const template = {
   component: SubscriptionExpiredEmail,
   subject: 'Your satus.sh subscription has ended',
   displayName: 'Subscription expired',
-  previewData: { planLabel: 'Pro · monthly' },
+  previewData: {
+    planLabel: 'Pro · monthly',
+    manageUrl:
+      'https://satus.sh/api/public/billing/portal?key=satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
+  },
 } satisfies TemplateEntry
+
 
 /* ----- styles (kept in sync with license-delivery.tsx) ----- */
 
