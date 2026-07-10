@@ -72,7 +72,7 @@ Distributions in isolation are the easy half. The hard half is that shapes in a 
 - Popularity correlates with category. In ecommerce, the top decile of SKUs is not evenly spread across categories; in SaaS, the top decile of tenants is not evenly spread across plans.
 - Count per parent correlates with popularity. Heavy accounts have more of everything: more users, more sessions, more invoices, more support tickets. A fixture that samples these independently produces a distribution of "how much does the top tenant use us" that is much narrower than reality.
 
-We write the correlations down as a small block at the top of the profile, and the runner enforces them by conditioning later samples on earlier ones. The [ecommerce profile](/blog/ecommerce-profile) has four such conditioners; the [medical-booking profile](/blog/medical-booking-profile) has three; the [SaaS-subscriptions profile](/blog/saas-subscriptions-profile) has five. Every one of them was added because a user reported a fixture that was individually correct and jointly wrong.
+We write the correlations down as a small block at the top of the profile, and the runner enforces them by conditioning later samples on earlier ones. The three shipped profiles, [ecommerce](/blog/ecommerce-profile), [medical-booking](/blog/medical-booking-profile), and [SaaS-subscriptions](/blog/saas-subscriptions-profile), each carry a handful of these conditioners. Every one of them was added because a user reported a fixture that was individually correct and jointly wrong.
 
 ## Step 4: name what you refuse to encode
 
