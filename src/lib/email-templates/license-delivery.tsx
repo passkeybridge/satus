@@ -114,13 +114,24 @@ const LicenseDeliveryEmail = ({
           manage billing
         </Heading>
         <Text style={paragraph}>
-          To change payment method, download invoices, switch plan, or
-          cancel, reply to this email or write to{' '}
+          To change your payment method, download invoices, switch plan, or
+          cancel, open the secure Stripe billing portal for this subscription:
+        </Text>
+        {manageUrl && (
+          <Section style={{ margin: '4px 0 16px' }}>
+            <Link href={manageUrl} style={linkStyle}>
+              → manage subscription
+            </Link>
+          </Section>
+        )}
+        <Text style={paragraph}>
+          Or reply to this email or write to{' '}
           <Link href="mailto:support@satus.sh" style={linkStyle}>
             support@satus.sh
           </Link>
-          . We route you to the Stripe billing portal for this subscription.
+          .
         </Text>
+
 
         <Hr style={hr} />
 
