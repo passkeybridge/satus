@@ -29,12 +29,16 @@ interface SubscriptionCanceledProps {
   planLabel?: string
   /** ISO date (YYYY-MM-DD) when paid access ends. */
   accessEndsOn?: string
+  /** Deep link that opens a Stripe billing portal session for this key. */
+  manageUrl?: string
 }
 
 const SubscriptionCanceledEmail = ({
   planLabel = 'Pro · monthly',
   accessEndsOn,
+  manageUrl,
 }: SubscriptionCanceledProps) => (
+
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your {SITE_NAME} subscription has been canceled.</Preview>
