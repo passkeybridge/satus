@@ -130,8 +130,13 @@ export const template = {
   component: SubscriptionExpiredEmail,
   subject: 'Your satus.sh subscription has ended',
   displayName: 'Subscription expired',
-  previewData: { planLabel: 'Pro · monthly' },
+  previewData: {
+    planLabel: 'Pro · monthly',
+    manageUrl:
+      'https://satus.sh/api/public/billing/portal?key=satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
+  },
 } satisfies TemplateEntry
+
 
 /* ----- styles (kept in sync with license-delivery.tsx) ----- */
 
