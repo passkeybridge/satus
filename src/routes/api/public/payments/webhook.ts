@@ -166,9 +166,11 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
       licenseKey,
       planLabel: planLabel(plan),
       renewsOn: isoDateOnly(periodEnd),
+      manageUrl: manageUrl(licenseKey),
     },
   })
 }
+
 
 async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
   const item = subscription.items?.data?.[0]
