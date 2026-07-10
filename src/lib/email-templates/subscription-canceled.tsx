@@ -83,17 +83,28 @@ const SubscriptionCanceledEmail = ({
         </Section>
 
         <Heading as="h2" style={h2}>
-          changed your mind?
+          manage subscription
         </Heading>
         <Text style={paragraph}>
-          You can reactivate any time before {accessEndsOn ?? 'the end of the period'}
-          {' '}without losing your current license key. Reply to this email or write
-          to{' '}
+          You can reactivate, change plan, or update payment details in the
+          Stripe billing portal for this subscription
+          {accessEndsOn ? ` before ${accessEndsOn}` : ''}:
+        </Text>
+        {manageUrl && (
+          <Section style={{ margin: '4px 0 16px' }}>
+            <Link href={manageUrl} style={linkStyle}>
+              → manage subscription
+            </Link>
+          </Section>
+        )}
+        <Text style={paragraph}>
+          Or reply to this email or write to{' '}
           <Link href="mailto:support@satus.sh" style={linkStyle}>
             support@satus.sh
           </Link>
           .
         </Text>
+
 
         <Hr style={hr} />
 
