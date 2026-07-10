@@ -158,8 +158,11 @@ export const template = {
     licenseKey: 'satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
     planLabel: 'Pro · monthly',
     renewsOn: '2026-06-26',
+    manageUrl:
+      'https://satus.sh/api/public/billing/portal?key=satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
   },
 } satisfies TemplateEntry
+
 
 /* ----- styles: web-safe stack only, mail clients strip @font-face ----- */
 
