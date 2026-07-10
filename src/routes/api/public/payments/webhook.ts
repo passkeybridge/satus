@@ -188,7 +188,7 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
   // on every one.
   const { data: existing } = await supabaseAdmin
     .from('licenses')
-    .select('email, cancel_at_period_end')
+    .select('email, cancel_at_period_end, license_key')
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
     .maybeSingle()
@@ -224,10 +224,14 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
       templateData: {
         planLabel: planLabel(plan),
         accessEndsOn: isoDateOnly(periodEnd),
+        manageUrl: existing.license_key
+          ? manageUrl(existing.license_key as string)
+          : undefined,
       },
     })
   }
 }
+
 
 async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
   // Read email + plan BEFORE we mutate the row so we can notify the customer.
