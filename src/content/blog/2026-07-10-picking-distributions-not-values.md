@@ -42,7 +42,7 @@ A "shape" is a distribution family that recurs across schemas, not a specific co
 | Rare-event rate | no-shows, chargebacks, refunds, churn | too rare to appear at fixture size |
 | Geographic mix | country, currency, locale | US-only, or perfectly even |
 
-Nine families, three of which (popularity, count per parent, rare-event rate) do most of the damage when they are wrong. If a new vertical has a shape that does not fit into this list, the first question is not "what distribution should we add", it is "are we sure this is a shape, or is it a value pool wearing a shape's clothes". We have added exactly one new family since v0.1, and we removed it again in v0.3 because it turned out to be a special case of "count per parent".
+Nine families, three of which (popularity, count per parent, rare-event rate) do most of the damage when they are wrong. If a new vertical has a shape that does not fit into this list, the first question is not "what distribution should we add", it is "are we sure this is a shape, or is it a value pool wearing a shape's clothes". More often than not, a proposed new shape collapses into one of the nine above once you write out how you would sample from it.
 
 ## Step 2: pick a distribution family per shape
 
