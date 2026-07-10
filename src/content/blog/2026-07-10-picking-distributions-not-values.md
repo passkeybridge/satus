@@ -42,7 +42,7 @@ A "shape" is a distribution family that recurs across schemas, not a specific co
 | Rare-event rate | no-shows, chargebacks, refunds, churn | too rare to appear at fixture size |
 | Geographic mix | country, currency, locale | US-only, or perfectly even |
 
-Nine families, three of which (popularity, count per parent, rare-event rate) do most of the damage when they are wrong. If a new vertical has a shape that does not fit into this list, the first question is not "what distribution should we add", it is "are we sure this is a shape, or is it a value pool wearing a shape's clothes". We have added exactly one new family since v0.1, and we removed it again in v0.3 because it turned out to be a special case of "count per parent".
+Nine families, three of which (popularity, count per parent, rare-event rate) do most of the damage when they are wrong. If a new vertical has a shape that does not fit into this list, the first question is not "what distribution should we add", it is "are we sure this is a shape, or is it a value pool wearing a shape's clothes". More often than not, a proposed new shape collapses into one of the nine above once you write out how you would sample from it.
 
 ## Step 2: pick a distribution family per shape
 
@@ -72,7 +72,7 @@ Distributions in isolation are the easy half. The hard half is that shapes in a 
 - Popularity correlates with category. In ecommerce, the top decile of SKUs is not evenly spread across categories; in SaaS, the top decile of tenants is not evenly spread across plans.
 - Count per parent correlates with popularity. Heavy accounts have more of everything: more users, more sessions, more invoices, more support tickets. A fixture that samples these independently produces a distribution of "how much does the top tenant use us" that is much narrower than reality.
 
-We write the correlations down as a small block at the top of the profile, and the runner enforces them by conditioning later samples on earlier ones. The [ecommerce profile](/blog/ecommerce-profile) has four such conditioners; the [medical-booking profile](/blog/medical-booking-profile) has three; the [SaaS-subscriptions profile](/blog/saas-subscriptions-profile) has five. Every one of them was added because a user reported a fixture that was individually correct and jointly wrong.
+We write the correlations down as a small block at the top of the profile, and the runner enforces them by conditioning later samples on earlier ones. The three shipped profiles, [ecommerce](/blog/ecommerce-profile), [medical-booking](/blog/medical-booking-profile), and [SaaS-subscriptions](/blog/saas-subscriptions-profile), each carry a handful of these conditioners. Every one of them was added because a user reported a fixture that was individually correct and jointly wrong.
 
 ## Step 4: name what you refuse to encode
 
