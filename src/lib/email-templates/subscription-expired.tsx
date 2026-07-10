@@ -85,12 +85,29 @@ const SubscriptionExpiredEmail = ({
           <Link href="https://satus.sh/pricing" style={linkStyle}>
             satus.sh/pricing
           </Link>
-          . If you believe this is an error, reply to this email or write to{' '}
+          .
+        </Text>
+        {manageUrl && (
+          <>
+            <Text style={paragraph}>
+              To view past invoices or manage payment details on the previous
+              subscription, open the Stripe billing portal:
+            </Text>
+            <Section style={{ margin: '4px 0 16px' }}>
+              <Link href={manageUrl} style={linkStyle}>
+                → manage subscription
+              </Link>
+            </Section>
+          </>
+        )}
+        <Text style={paragraph}>
+          If you believe this is an error, reply to this email or write to{' '}
           <Link href="mailto:support@satus.sh" style={linkStyle}>
             support@satus.sh
           </Link>
           .
         </Text>
+
 
         <Hr style={hr} />
 
