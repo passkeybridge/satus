@@ -26,11 +26,15 @@ const SITE_NAME = 'satus.sh'
 
 interface SubscriptionExpiredProps {
   planLabel?: string
+  /** Deep link that opens a Stripe billing portal session for this key. */
+  manageUrl?: string
 }
 
 const SubscriptionExpiredEmail = ({
   planLabel = 'Pro · monthly',
+  manageUrl,
 }: SubscriptionExpiredProps) => (
+
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your {SITE_NAME} subscription has ended.</Preview>
