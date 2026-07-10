@@ -40,6 +40,7 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
 import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
 import { Route as ApiPublicCliRunRouteImport } from './routes/api/public/cli/run'
+import { Route as ApiPublicBillingPortalRouteImport } from './routes/api/public/billing/portal'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -200,6 +201,11 @@ const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
   path: '/api/public/cli/run',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBillingPortalRoute = ApiPublicBillingPortalRouteImport.update({
+  id: '/api/public/billing/portal',
+  path: '/api/public/billing/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/billing/portal'
     | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/billing/portal'
     | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/billing/portal'
     | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   DocsIndexRoute: typeof DocsIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicBillingPortalRoute: typeof ApiPublicBillingPortalRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
   ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
   ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
@@ -656,6 +669,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCliRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/billing/portal': {
+      id: '/api/public/billing/portal'
+      path: '/api/public/billing/portal'
+      fullPath: '/api/public/billing/portal'
+      preLoaderRoute: typeof ApiPublicBillingPortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -684,6 +704,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsIndexRoute: DocsIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicBillingPortalRoute: ApiPublicBillingPortalRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,
   ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,
   ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
@@ -695,13 +716,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

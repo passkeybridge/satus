@@ -57,6 +57,12 @@ function isoDateOnly(ts: number | string | null | undefined): string | null {
   return d.toISOString().slice(0, 10)
 }
 
+/** Deep link that opens a fresh Stripe Billing Portal session for this key. */
+function manageUrl(licenseKey: string): string {
+  return `https://satus.sh/api/public/billing/portal?key=${encodeURIComponent(licenseKey)}`
+}
+
+
 /**
  * Enqueue a transactional email via the internal send route. Same auth
  * pattern as license-delivery: service-role bearer, idempotency keyed off
