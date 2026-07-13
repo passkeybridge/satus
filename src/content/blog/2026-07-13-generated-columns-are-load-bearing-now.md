@@ -19,14 +19,16 @@ Postgres computes the value of a generated column from an immutable expression o
 | Property | `STORED` (PG12+) | `VIRTUAL` (PG18+) |
 | --- | --- | --- |
 | Value materialised on disk | Yes | No, computed on read |
-| Can be indexed directly | Yes | Yes (expression is re-evaluated per row scanned) |
-| Can be part of a `UNIQUE`, `CHECK`, or `FOREIGN KEY` | Yes | Not directly; must go through an index on the expression |
+| Can be indexed | Yes | No; PG18.0 rejects with `indexes on virtual generated columns are not supported` |
+| `UNIQUE` or `PRIMARY KEY` on the column | Yes | No; same rejection path as index |
+| `FOREIGN KEY` constraint on the column | Yes | No; PG18.0 rejects with `foreign key constraints on virtual generated columns are not supported` |
+| `CHECK` constraint on the column | Yes | Yes; the executor evaluates the CHECK against the read-time value |
 | Expression can use a user-defined function or type | Yes | No; built-ins only, including transitively via operators and casts |
 | Written to `pg_attribute.attgenerated` | `'s'` | `'v'` |
 | Backfilled by an `ALTER TABLE ADD COLUMN` rewrite | Yes | No; there is nothing to store |
-| Consequence for `satus` sampling | Compute and check against downstream indexes/FKs the same as any other column | Compute on the client side to reason about downstream indexes; nothing is stored to compare against |
+| Consequence for `satus` sampling | Compute and check against downstream indexes and FKs the same as any other column | Compute the value client-side to reason about downstream CHECKs; the column itself cannot be indexed or referenced |
 
-The restrictions above are all documented in the [PostgreSQL 18 DDL reference](https://www.postgresql.org/docs/18/ddl-generated-columns.html); we do not extrapolate. The one that catches people is the middle row: a `FOREIGN KEY` from a virtual generated column is not directly supported, so a schema that wants "join on the computed value" will either keep the column `STORED`, or add an index on the expression and let the FK point at a regular column that shadows it. Either resolution is a schema decision, not a seeder decision, and it is worth naming here because reading a schema that used to be `STORED` and is now `VIRTUAL` under a `pg_dump` from PG18 will look different in the catalog.
+The user-defined-type and built-in-only restrictions are in the [PostgreSQL 18 DDL reference](https://www.postgresql.org/docs/18/ddl-generated-columns.html). The rejection messages for indexes, unique constraints, primary keys, and foreign keys on virtual generated columns are enforced by the Postgres source (`src/backend/commands/indexcmds.c` and `src/backend/commands/tablecmds.c`) in the initial PG18 release. That means a schema that wants "join on the computed value" needs either a `STORED` generated column, or an expression index and a shadow column that a `FOREIGN KEY` can point at; the two options are schema decisions, not seeder decisions. The point of naming them here is that a schema which was `GENERATED ALWAYS AS (…) STORED` under PG12–17 and re-declared without the keyword under PG18 will look different in the catalog and will fail differently at DDL time.
 
 ## Why "load-bearing now"
 
