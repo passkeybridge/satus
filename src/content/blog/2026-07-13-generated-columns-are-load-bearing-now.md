@@ -62,7 +62,7 @@ ORDER BY a.attnum;
 Two properties fall out of this that a tool needs to respect:
 
 - **`INSERT` never mentions the column.** [`INSERT`](https://www.postgresql.org/docs/current/sql-insert.html) rejects any non-`DEFAULT` value in the column list for a generated column. The seeder therefore either omits the column entirely from the `INSERT` (preferred, since it also survives future changes to the column list) or writes `DEFAULT`. `COPY` obeys the same rule.
-- **The expression may only reference the current row.** The [restriction list](https://www.postgresql.org/docs/current/ddl-generated-columns.html) is unambiguous: no subqueries, no other tables, no other generated columns, no system columns except `tableoid`, immutable functions only, and, for virtual columns, built-in functions and types only. That means the value can always be computed by the client from the values the client already generated for the underlying columns, without a round-trip. `satus` does exactly that so it can reason about downstream indexes and foreign keys.
+- **The expression may only reference the current row.** The [restriction list](https://www.postgresql.org/docs/current/ddl-generated-columns.html) is unambiguous: no subqueries, no other tables, no other generated columns, no system columns except `tableoid`, immutable functions only, and, for virtual columns, built-in functions and types only. That means the value can always be computed by the client from the values the client already generated for the underlying columns, without a round-trip. `satus` does exactly that so it can reason about any downstream constraint the generated value participates in.
 
 ## The three places a naive seeder gets it wrong
 
