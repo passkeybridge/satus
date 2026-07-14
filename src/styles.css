@@ -181,21 +181,9 @@
   animation: satus-fade-in 200ms ease both;
 }
 
-/* Hero install-box ambient signal: a single signal-red hairline traces the
- * full perimeter of the box at uniform speed, then holds for 5s before the
- * next lap. Uses SVG `pathLength="1000"` so dash math is size-independent,
- * and animates `stroke-dashoffset` linearly so speed is constant across all
- * four sides and corners. Purely decorative — cancelled under reduced-motion. */
-@keyframes satus-perimeter-trace {
-  0%    { stroke-dashoffset: 0; }
-  44%   { stroke-dashoffset: -1000; }
-  100%  { stroke-dashoffset: -1000; }
-}
-.satus-perimeter {
-  stroke-dasharray: 80 920;
-  stroke-dashoffset: 0;
-  animation: satus-perimeter-trace 9s linear infinite;
-}
+/* Hero install-box: terminal caret blink at the end of the install command.
+ * Purely decorative — cancelled under prefers-reduced-motion below. */
+
 
 
 /* Terminal caret blink at the end of the install command. */
