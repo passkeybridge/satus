@@ -27,6 +27,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
 import { Route as DocsHowItWorksRouteImport } from './routes/docs.how-it-works'
+import { Route as DocsGithubActionRouteImport } from './routes/docs.github-action'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
@@ -132,6 +133,11 @@ const DocsHowItWorksRoute = DocsHowItWorksRouteImport.update({
   path: '/docs/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsGithubActionRoute = DocsGithubActionRouteImport.update({
+  id: '/docs/github-action',
+  path: '/docs/github-action',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   id: '/checkout/success',
   path: '/checkout/success',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/github-action': typeof DocsGithubActionRoute
   '/docs/how-it-works': typeof DocsHowItWorksRoute
   '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/github-action': typeof DocsGithubActionRoute
   '/docs/how-it-works': typeof DocsHowItWorksRoute
   '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/github-action': typeof DocsGithubActionRoute
   '/docs/how-it-works': typeof DocsHowItWorksRoute
   '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -329,6 +338,7 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/github-action'
     | '/docs/how-it-works'
     | '/docs/troubleshooting'
     | '/email/unsubscribe'
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/github-action'
     | '/docs/how-it-works'
     | '/docs/troubleshooting'
     | '/email/unsubscribe'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/github-action'
     | '/docs/how-it-works'
     | '/docs/troubleshooting'
     | '/email/unsubscribe'
@@ -432,6 +444,7 @@ export interface RootRouteChildren {
   BlogRssDotxmlRoute: typeof BlogRssDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  DocsGithubActionRoute: typeof DocsGithubActionRoute
   DocsHowItWorksRoute: typeof DocsHowItWorksRoute
   DocsTroubleshootingRoute: typeof DocsTroubleshootingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -578,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsHowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/github-action': {
+      id: '/docs/github-action'
+      path: '/docs/github-action'
+      fullPath: '/docs/github-action'
+      preLoaderRoute: typeof DocsGithubActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/success': {
       id: '/checkout/success'
       path: '/checkout/success'
@@ -696,6 +716,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRssDotxmlRoute: BlogRssDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
+  DocsGithubActionRoute: DocsGithubActionRoute,
   DocsHowItWorksRoute: DocsHowItWorksRoute,
   DocsTroubleshootingRoute: DocsTroubleshootingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
@@ -716,13 +737,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

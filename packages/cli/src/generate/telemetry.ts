@@ -28,6 +28,22 @@ export interface RunTelemetry {
   duration_ms?: number
   error_message?: string
   environment?: 'dev' | 'live'
+  /**
+   * v0.3.3 (opt-in via `telemetry.share_failure_fingerprints`). Stable
+   * SHA-256 of the normalised schema shape. Never contains actual
+   * identifiers or row data. See generate/fingerprint.ts.
+   */
+  schema_fingerprint?: string
+  /**
+   * v0.3.3. Name of the validator rule that fired first, e.g.
+   * "fk_missing_parent" or "unique_duplicate". Bounded to <= 64 chars.
+   */
+  validator_class?: string
+  /**
+   * v0.3.3. Subcommand + flag names only (never values). Bounded to
+   * 16 short strings. Example: ["generate", "--dry-run", "--rows"].
+   */
+  invocation_sequence?: string[]
 }
 
 function baseUrl(): string {

@@ -22,6 +22,7 @@ import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
 import { newRunId, reportRun } from '../generate/telemetry.js'
+import { fingerprint } from '../generate/fingerprint.js'
 import { readCachedLicense } from '../license.js'
 import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
 import type { Provider } from '../generate/providers/index.js'
@@ -82,6 +83,30 @@ function buildProvider(id: ProviderId, apiKey: string, model: string): Provider 
 
 const FREE_MAX_ROWS = 25
 const FREE_MAX_TABLES = 5
+
+/**
+ * v0.3.3 telemetry: derive the invocation shape from process.argv without
+ * ever including flag values. Bounded to 16 entries so a pathological
+ * argv can't blow the payload cap.
+ */
+function invocationSequence(): string[] {
+  const seq: string[] = []
+  for (const arg of process.argv.slice(2)) {
+    if (arg.startsWith('--')) {
+      // Strip `--flag=value` -> `--flag`.
+      const eq = arg.indexOf('=')
+      seq.push(eq === -1 ? arg : arg.slice(0, eq))
+    } else if (arg.startsWith('-') && arg.length === 2) {
+      seq.push(arg)
+    } else if (seq.length === 0) {
+      // Positional subcommand (e.g. "generate"). Everything after the first
+      // positional is a flag value and gets dropped.
+      seq.push(arg)
+    }
+    if (seq.length >= 16) break
+  }
+  return seq
+}
 
 export function registerGenerate(program: Command): void {
   program
@@ -186,6 +211,14 @@ export function registerGenerate(program: Command): void {
           console.error(pc.red(`No tables found in schema "${schemaName}".`))
           process.exit(1)
         }
+
+        // v0.3.3: opt-in schema fingerprint. Computed here so it's
+        // available for both the dry-run failure path and the real-run
+        // telemetry. Off by default; never contains identifiers or rows.
+        const shareFp = cfg?.telemetry?.share_failure_fingerprints === true
+        const schemaFingerprint = shareFp ? fingerprint(schema) : undefined
+        const invocation = shareFp ? invocationSequence() : undefined
+
 
         const sort = topoSort(schema.tables)
         if (sort.cycle) {
@@ -331,7 +364,26 @@ export function registerGenerate(program: Command): void {
           }
 
           // Surface validation failures as a non-zero exit so CI gates work.
-          if (errorCount > 0) process.exit(2)
+          if (errorCount > 0) {
+            // v0.3.3: fingerprint + validator_class telemetry (opt-in).
+            // Fire-and-forget; dry-run itself never depends on the network.
+            if (shareFp) {
+              const firstError = simulated.findings.find((f) => f.severity === 'error')
+              await reportRun(newRunId(), {
+                profile,
+                provider: providerId,
+                model,
+                target_schema: schemaName,
+                environment: (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live',
+                status: 'failed',
+                error_message: 'dry_run_validation_failed',
+                schema_fingerprint: schemaFingerprint,
+                validator_class: firstError?.rule?.slice(0, 64),
+                invocation_sequence: invocation,
+              })
+            }
+            process.exit(2)
+          }
           return
         }
 
@@ -345,6 +397,9 @@ export function registerGenerate(program: Command): void {
           model,
           target_schema: schemaName,
           environment: env,
+          // v0.3.3 opt-in fields (undefined when the knob is off).
+          schema_fingerprint: schemaFingerprint,
+          invocation_sequence: invocation,
         }
         await reportRun(runId, { ...baseTelemetry, status: 'running' })
 

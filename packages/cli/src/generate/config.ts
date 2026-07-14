@@ -38,6 +38,18 @@ export const ConfigSchema = z.object({
   model: z.string().optional(),
   /** Tables to skip entirely (e.g. audit logs, system tables you manage). */
   exclude: z.array(z.string()).default([]),
+  /**
+   * v0.3.3 telemetry knobs. All fields are opt-in.
+   * `share_failure_fingerprints` sends a SHA-256 of the normalised schema
+   * shape and the first-error validator class alongside the run record so
+   * the maintainers can build an anonymised eval fixture set for the
+   * v0.4.0 agent. Never sends identifiers or row data. Off by default.
+   */
+  telemetry: z
+    .object({
+      share_failure_fingerprints: z.boolean().default(false),
+    })
+    .default({ share_failure_fingerprints: false }),
 })
 
 export type SatusConfig = z.infer<typeof ConfigSchema>

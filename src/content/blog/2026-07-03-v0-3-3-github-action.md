@@ -8,6 +8,8 @@ tags: [roadmap, ci, github, release]
 draft: false
 ---
 
+**Update 2026-07-15: superseded by the [v0.3.3 release notes](/blog/v0-3-3-release-notes).** The Action shipped as designed; this post stays as the pre-release design record.
+
 This is a roadmap post, not a release announcement. The GitHub Action described below has not shipped yet. The current published CLI is `@passkeybridge/satus@0.3.2`. When v0.3.3 lands on npm, a proper changelog post replaces this one at a different slug; this post stays as the design record.
 
 The short version: the next satus release is **v0.3.3**, and it ships an official GitHub Action that runs `satus generate` inside a PR-preview workflow. It is deliberately a 0.3.x patch, not a 0.4 line item, because it wraps the existing CLI rather than changing what the CLI does. As a consequence, the release we previously labeled **v0.5 (agent mode)** in [Agent mode, postponed to v0.5](/blog/agent-mode-postponed) is renumbered to **v0.4.0**. Same feature, same 90-day evidence window, one fewer digit.
