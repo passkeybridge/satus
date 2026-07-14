@@ -5,7 +5,7 @@ description: satus 0.3.3 ships passkeybridge/satus-action@v1, a composite Action
 date: 2026-07-15
 author: satus.sh
 tags: [release, ci, github, telemetry]
-draft: true
+draft: false
 ---
 
 `@passkeybridge/satus@0.3.3` is on npm, and `passkeybridge/satus-action@v1` is on the GitHub Marketplace. Two changes, both scoped: a composite Action that lets you drop `satus generate` into a PR-preview workflow with about ten lines of YAML, and an opt-in telemetry field that records an anonymised fingerprint of the schemas the CLI failed on. Neither changes what the CLI does when you run it locally. If v0.3.2 works for you today, v0.3.3 works the same way.
