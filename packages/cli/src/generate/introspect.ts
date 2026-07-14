@@ -154,8 +154,8 @@ const INTROSPECT_SQL = `
     -- column pair; bool_or preserves DEFERRABLE if any copy has it.
     select
       table_name, column_name, ref_schema, ref_table, ref_column,
-      bool_or(deferrable)         as deferrable,
-      bool_or(initially_deferred) as initially_deferred
+      bool_or(is_deferrable)         as is_deferrable,
+      bool_or(is_initially_deferred) as is_initially_deferred
     from v_fks_raw
     group by table_name, column_name, ref_schema, ref_table, ref_column
   ),
