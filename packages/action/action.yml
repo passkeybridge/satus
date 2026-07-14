@@ -95,14 +95,23 @@ runs:
         fi
 
         mkdir -p .satus
+        # Prefer a `satus` binary already on PATH (used by the selftest
+        # workflow, which installs the in-repo CLI before invoking the
+        # action). Fall back to the pinned npm release for real consumers.
+        if command -v satus >/dev/null 2>&1; then
+          RUNNER=(satus)
+        else
+          RUNNER=(npx --yes "@passkeybridge/satus@${{ inputs.satus-version }}")
+        fi
         # --json emits one JSON object on stdout; human output goes to stderr.
         # Tee stdout into the artifact file and preserve the CLI's exit code
         # so a failed run correctly fails the step.
         set +e
-        npx --yes "@passkeybridge/satus@${{ inputs.satus-version }}" generate "${FLAGS[@]}" \
+        "${RUNNER[@]}" generate "${FLAGS[@]}" \
           | tee .satus/last-run.json
         EXIT=${PIPESTATUS[0]}
         set -e
+
 
         # Parse outputs from the JSON payload. `jq` is preinstalled on
         # ubuntu-latest runners; if it isn't, degrade gracefully.
