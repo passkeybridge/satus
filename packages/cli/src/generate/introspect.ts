@@ -259,8 +259,8 @@ export async function introspect(
       refSchema: r.ref_schema,
       refTable: r.ref_table,
       refColumn: r.ref_column,
-      deferrable: r.deferrable === true,
-      initiallyDeferred: r.initially_deferred === true,
+      deferrable: r.is_deferrable === true,
+      initiallyDeferred: r.is_initially_deferred === true,
     })
   }
 
