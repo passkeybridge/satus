@@ -181,6 +181,28 @@
   animation: satus-fade-in 200ms ease both;
 }
 
+/* Hero install-box ambient signal: a single signal-red hairline traveling
+ * along the top edge every 6s, and a slower/softer mirror along the bottom.
+ * Purely decorative — motion is cancelled by the reduced-motion block below. */
+@keyframes satus-signal-sweep {
+  0%   { transform: translateX(-100%); }
+  20%  { transform: translateX(-100%); }
+  80%  { transform: translateX(1100%); }
+  100% { transform: translateX(1100%); }
+}
+.satus-signal {
+  animation: satus-signal-sweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Terminal caret blink at the end of the install command. */
+@keyframes satus-caret-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.satus-caret {
+  animation: satus-caret-blink 1.1s steps(1, end) infinite;
+}
+
 /* A11y: respect reduced-motion preference. Cancel the entrance fade and
  * underline transition so vestibular-sensitive users see static UI. */
 @media (prefers-reduced-motion: reduce) {
