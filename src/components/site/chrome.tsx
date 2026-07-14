@@ -308,6 +308,7 @@ export function Footer() {
           links={[
             ["overview", "/"],
             ["how it works", "/docs/how-it-works"],
+            ["github action", "/docs/github-action"],
             ["profiles", "/profiles"],
             ["compare", "/compare"],
             ["pricing", "/pricing"],
