@@ -53,6 +53,12 @@ const RunSchema = z.object({
   error_message: z.string().max(2_000).optional(),
   cli_version: z.string().min(1).max(32).optional(),
   environment: z.enum(['dev', 'live']).default('dev'),
+  // v0.3.3 opt-in telemetry (all optional; older CLIs never send these).
+  // Fingerprint is a 64-char lowercase hex SHA-256; anything else is
+  // rejected before it lands in the DB.
+  schema_fingerprint: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  validator_class: z.string().min(1).max(64).optional(),
+  invocation_sequence: z.array(z.string().min(1).max(32)).max(16).optional(),
 })
 
 export const Route = createFileRoute('/api/public/cli/run')({

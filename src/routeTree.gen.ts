@@ -27,6 +27,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
 import { Route as DocsHowItWorksRouteImport } from './routes/docs.how-it-works'
+import { Route as DocsGithubActionRouteImport } from './routes/docs.github-action'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
@@ -40,6 +41,7 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
 import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
 import { Route as ApiPublicCliRunRouteImport } from './routes/api/public/cli/run'
+import { Route as ApiPublicBillingPortalRouteImport } from './routes/api/public/billing/portal'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -131,6 +133,11 @@ const DocsHowItWorksRoute = DocsHowItWorksRouteImport.update({
   path: '/docs/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsGithubActionRoute = DocsGithubActionRouteImport.update({
+  id: '/docs/github-action',
+  path: '/docs/github-action',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   id: '/checkout/success',
   path: '/checkout/success',
@@ -200,6 +207,11 @@ const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
   path: '/api/public/cli/run',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBillingPortalRoute = ApiPublicBillingPortalRouteImport.update({
+  id: '/api/public/billing/portal',
+  path: '/api/public/billing/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -218,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/github-action': typeof DocsGithubActionRoute
   '/docs/how-it-works': typeof DocsHowItWorksRoute
   '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -226,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
@@ -251,6 +265,7 @@ export interface FileRoutesByTo {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/github-action': typeof DocsGithubActionRoute
   '/docs/how-it-works': typeof DocsHowItWorksRoute
   '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -259,6 +274,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
@@ -285,6 +301,7 @@ export interface FileRoutesById {
   '/blog/rss.xml': typeof BlogRssDotxmlRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/docs/github-action': typeof DocsGithubActionRoute
   '/docs/how-it-works': typeof DocsHowItWorksRoute
   '/docs/troubleshooting': typeof DocsTroubleshootingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -293,6 +310,7 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
@@ -320,6 +338,7 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/github-action'
     | '/docs/how-it-works'
     | '/docs/troubleshooting'
     | '/email/unsubscribe'
@@ -328,6 +347,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/billing/portal'
     | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
@@ -353,6 +373,7 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/github-action'
     | '/docs/how-it-works'
     | '/docs/troubleshooting'
     | '/email/unsubscribe'
@@ -361,6 +382,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/billing/portal'
     | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
@@ -386,6 +408,7 @@ export interface FileRouteTypes {
     | '/blog/rss.xml'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/docs/github-action'
     | '/docs/how-it-works'
     | '/docs/troubleshooting'
     | '/email/unsubscribe'
@@ -394,6 +417,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/api/public/waitlist'
     | '/lovable/email/suppression'
+    | '/api/public/billing/portal'
     | '/api/public/cli/run'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
@@ -420,6 +444,7 @@ export interface RootRouteChildren {
   BlogRssDotxmlRoute: typeof BlogRssDotxmlRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  DocsGithubActionRoute: typeof DocsGithubActionRoute
   DocsHowItWorksRoute: typeof DocsHowItWorksRoute
   DocsTroubleshootingRoute: typeof DocsTroubleshootingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -428,6 +453,7 @@ export interface RootRouteChildren {
   DocsIndexRoute: typeof DocsIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicBillingPortalRoute: typeof ApiPublicBillingPortalRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
   ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
   ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
@@ -565,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsHowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/github-action': {
+      id: '/docs/github-action'
+      path: '/docs/github-action'
+      fullPath: '/docs/github-action'
+      preLoaderRoute: typeof DocsGithubActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout/success': {
       id: '/checkout/success'
       path: '/checkout/success'
@@ -656,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCliRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/billing/portal': {
+      id: '/api/public/billing/portal'
+      path: '/api/public/billing/portal'
+      fullPath: '/api/public/billing/portal'
+      preLoaderRoute: typeof ApiPublicBillingPortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -676,6 +716,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRssDotxmlRoute: BlogRssDotxmlRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
+  DocsGithubActionRoute: DocsGithubActionRoute,
   DocsHowItWorksRoute: DocsHowItWorksRoute,
   DocsTroubleshootingRoute: DocsTroubleshootingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
@@ -684,6 +725,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsIndexRoute: DocsIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicBillingPortalRoute: ApiPublicBillingPortalRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,
   ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,
   ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
@@ -695,3 +737,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

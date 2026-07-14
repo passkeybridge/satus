@@ -36,6 +36,7 @@ Exit codes: `0` success, `10` schema unreachable, `11` target schema not empty, 
 - [Overview](/): What satus is, how the pipeline works, and what it deliberately will not do.
 - [Quickstart](/quickstart): Install the CLI and generate your first seed file in under five minutes.
 - [Docs](/docs): Full reference for configuration, profiles, and run modes.
+- [GitHub Action](/docs/github-action): passkeybridge/satus-action@v1 — composite action for PR-preview databases.
 - [CLI reference](/cli): Every flag, subcommand, and exit code.
 - [Profiles](/profiles): The three built-in domain profiles and what each one generates.
 - [Recipes](/recipes): Common patterns: PR preview environments, CI fixtures, screenshot data.

@@ -4,6 +4,26 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [0.3.3] — 2026-07-15
+
+### Added
+
+- **GitHub Action.** `passkeybridge/satus-action@v1` — composite action that wraps `satus generate` for PR-preview databases. Ships in `packages/action/`; documented at <https://satus.sh/docs/github-action>. No CLI semantic changes; the action is a thin `npx --yes @passkeybridge/satus@<version> generate --json` wrapper plus a workflow-artifact upload of the JSON manifest.
+- **Opt-in failure fingerprints.** New `telemetry.share_failure_fingerprints` field in `satus.config.json` (default `false`). When enabled, `satus generate` reports a SHA-256 of the normalised schema shape (`schema_fingerprint`), the first-error validator rule (`validator_class`), and the subcommand + flag names of the invocation (`invocation_sequence`, never flag values). Feeds the eval fixture set for v0.4.0 (`satus agent`). See `packages/cli/src/generate/fingerprint.ts`.
+- **`satus init`** prompts for the new telemetry knob with plain-English wording; the default answer is `no`.
+
+### Changed
+
+- `satus_runs` telemetry table gains three optional columns (`schema_fingerprint`, `validator_class`, `invocation_sequence`). All nullable, covered by the existing service-role policy and the 90-day pruning cron.
+- The `/api/public/cli/run` ingest zod schema accepts the new fields with bounded shapes (64-char hex, ≤ 64-char rule name, ≤ 16-entry array of ≤ 32-char strings).
+
+### Backward compatibility
+
+- v0.2.x / v0.3.0–0.3.2 CLIs continue to ingest — every new field is optional at every layer.
+- No CLI flag was removed or renamed. No existing telemetry field changed shape.
+- Existing `satus.config.json` files keep working unchanged; the new `telemetry` object defaults to `{ share_failure_fingerprints: false }`.
+
+
 ## [0.3.0] — 2026-06-20
 
 ### Added

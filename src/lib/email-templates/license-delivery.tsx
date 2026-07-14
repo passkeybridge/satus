@@ -35,13 +35,17 @@ interface LicenseDeliveryProps {
   planLabel?: string
   /** ISO timestamp of next renewal, formatted as YYYY-MM-DD. */
   renewsOn?: string
+  /** Deep link that opens a Stripe billing portal session for this key. */
+  manageUrl?: string
 }
 
 const LicenseDeliveryEmail = ({
   licenseKey = 'satus_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
   planLabel = 'Pro · monthly',
   renewsOn,
+  manageUrl,
 }: LicenseDeliveryProps) => (
+
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your {SITE_NAME} license key.</Preview>
@@ -110,13 +114,24 @@ const LicenseDeliveryEmail = ({
           manage billing
         </Heading>
         <Text style={paragraph}>
-          To change payment method, download invoices, switch plan, or
-          cancel, reply to this email or write to{' '}
+          To change your payment method, download invoices, switch plan, or
+          cancel, open the secure Stripe billing portal for this subscription:
+        </Text>
+        {manageUrl && (
+          <Section style={{ margin: '4px 0 16px' }}>
+            <Link href={manageUrl} style={linkStyle}>
+              → manage subscription
+            </Link>
+          </Section>
+        )}
+        <Text style={paragraph}>
+          Or reply to this email or write to{' '}
           <Link href="mailto:support@satus.sh" style={linkStyle}>
             support@satus.sh
           </Link>
-          . We route you to the Stripe billing portal for this subscription.
+          .
         </Text>
+
 
         <Hr style={hr} />
 
@@ -143,8 +158,11 @@ export const template = {
     licenseKey: 'satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
     planLabel: 'Pro · monthly',
     renewsOn: '2026-06-26',
+    manageUrl:
+      'https://satus.sh/api/public/billing/portal?key=satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
   },
 } satisfies TemplateEntry
+
 
 /* ----- styles: web-safe stack only, mail clients strip @font-face ----- */
 

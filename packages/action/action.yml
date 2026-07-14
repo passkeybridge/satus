@@ -1,0 +1,127 @@
+name: 'satus'
+description: 'Generate realistic Postgres seed data that respects your foreign keys and constraints.'
+author: 'PasskeyBridge LLC'
+branding:
+  icon: 'database'
+  color: 'red'
+
+inputs:
+  database-url:
+    description: 'Postgres connection string. Pass as a secret.'
+    required: true
+  rows:
+    description: 'Rows to generate per table. Free tier caps at 25.'
+    required: false
+    default: '50'
+  profile:
+    description: 'Reference profile: saas | ecommerce | b2b.'
+    required: false
+    default: 'saas'
+  provider:
+    description: 'LLM provider: openai | anthropic. Auto-detected from env when omitted.'
+    required: false
+    default: ''
+  model:
+    description: 'Model id override. Falls back to the provider default.'
+    required: false
+    default: ''
+  max-cost:
+    description: 'USD ceiling for the run. Quote this so YAML keeps it a string.'
+    required: false
+    default: '1.00'
+  dry-run:
+    description: 'Validate without inserting or spending. Set to "true" to enable.'
+    required: false
+    default: 'false'
+  working-directory:
+    description: 'Directory to run satus in (where satus.config.json lives).'
+    required: false
+    default: '.'
+  satus-version:
+    description: 'npm version of @passkeybridge/satus to install.'
+    required: false
+    default: '0.3.3'
+
+outputs:
+  run-id:
+    description: 'Server-side run UUID.'
+    value: ${{ steps.run.outputs.run-id }}
+  tables-seeded:
+    description: 'Number of tables the run touched.'
+    value: ${{ steps.run.outputs.tables-seeded }}
+  rows-inserted:
+    description: 'Total rows inserted (0 on dry-run).'
+    value: ${{ steps.run.outputs.rows-inserted }}
+  tokens-in:
+    description: 'Total input tokens across the run.'
+    value: ${{ steps.run.outputs.tokens-in }}
+  tokens-out:
+    description: 'Total output tokens across the run.'
+    value: ${{ steps.run.outputs.tokens-out }}
+  spent-usd:
+    description: 'Actual LLM spend in USD.'
+    value: ${{ steps.run.outputs.spent-usd }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Run satus generate
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        # database-url is passed to the CLI via env so it never lands in a
+        # command line that could show up in an accidental `set -x` trace.
+        DATABASE_URL: ${{ inputs.database-url }}
+      run: |
+        set -euo pipefail
+
+        # Build the CLI flag list from action inputs. Only pass flags the
+        # user actually set so the CLI's own defaults still apply.
+        FLAGS=(--json --rows "${{ inputs.rows }}" --profile "${{ inputs.profile }}" --max-cost "${{ inputs.max-cost }}")
+        if [ -n "${{ inputs.provider }}" ]; then
+          FLAGS+=(--provider "${{ inputs.provider }}")
+        fi
+        if [ -n "${{ inputs.model }}" ]; then
+          FLAGS+=(--model "${{ inputs.model }}")
+        fi
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          FLAGS+=(--dry-run)
+        fi
+
+        mkdir -p .satus
+        # --json emits one JSON object on stdout; human output goes to stderr.
+        # Tee stdout into the artifact file and preserve the CLI's exit code
+        # so a failed run correctly fails the step.
+        set +e
+        npx --yes "@passkeybridge/satus@${{ inputs.satus-version }}" generate "${FLAGS[@]}" \
+          | tee .satus/last-run.json
+        EXIT=${PIPESTATUS[0]}
+        set -e
+
+        # Parse outputs from the JSON payload. `jq` is preinstalled on
+        # ubuntu-latest runners; if it isn't, degrade gracefully.
+        if command -v jq >/dev/null 2>&1 && [ -s .satus/last-run.json ]; then
+          echo "run-id=$(jq -r '.run_id // empty' .satus/last-run.json)"                >> "$GITHUB_OUTPUT"
+          echo "tables-seeded=$(jq -r '(.tables // []) | length' .satus/last-run.json)" >> "$GITHUB_OUTPUT"
+          echo "rows-inserted=$(jq -r '.total_rows // 0' .satus/last-run.json)"         >> "$GITHUB_OUTPUT"
+          echo "tokens-in=$(jq -r '.input_tokens // 0' .satus/last-run.json)"           >> "$GITHUB_OUTPUT"
+          echo "tokens-out=$(jq -r '.output_tokens // 0' .satus/last-run.json)"         >> "$GITHUB_OUTPUT"
+          echo "spent-usd=$(jq -r '.total_cost_usd // 0' .satus/last-run.json)"         >> "$GITHUB_OUTPUT"
+        fi
+
+        exit $EXIT
+
+    - name: Upload run manifest
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: satus-run-manifest
+        path: ${{ inputs.working-directory }}/.satus/last-run.json
+        if-no-files-found: warn
+        retention-days: 30

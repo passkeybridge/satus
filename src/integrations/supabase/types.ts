@@ -210,16 +210,19 @@ export type Database = {
           finished_at: string | null
           id: string
           input_tokens: number | null
+          invocation_sequence: Json | null
           license_key: string | null
           model: string | null
           output_tokens: number | null
           profile: string | null
           provider: string | null
+          schema_fingerprint: string | null
           status: string
           tables: Json | null
           target_schema: string | null
           total_cost_usd: number | null
           total_rows: number | null
+          validator_class: string | null
         }
         Insert: {
           cli_version?: string | null
@@ -230,16 +233,19 @@ export type Database = {
           finished_at?: string | null
           id?: string
           input_tokens?: number | null
+          invocation_sequence?: Json | null
           license_key?: string | null
           model?: string | null
           output_tokens?: number | null
           profile?: string | null
           provider?: string | null
+          schema_fingerprint?: string | null
           status?: string
           tables?: Json | null
           target_schema?: string | null
           total_cost_usd?: number | null
           total_rows?: number | null
+          validator_class?: string | null
         }
         Update: {
           cli_version?: string | null
@@ -250,16 +256,19 @@ export type Database = {
           finished_at?: string | null
           id?: string
           input_tokens?: number | null
+          invocation_sequence?: Json | null
           license_key?: string | null
           model?: string | null
           output_tokens?: number | null
           profile?: string | null
           provider?: string | null
+          schema_fingerprint?: string | null
           status?: string
           tables?: Json | null
           target_schema?: string | null
           total_cost_usd?: number | null
           total_rows?: number | null
+          validator_class?: string | null
         }
         Relationships: []
       }

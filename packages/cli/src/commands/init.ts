@@ -40,6 +40,15 @@ export function registerInit(program: Command): void {
       const provider = await ask('LLM provider (openai | anthropic):', 'openai')
       const defaultModel = provider === 'anthropic' ? 'claude-haiku-4-5' : 'gpt-4o-mini'
       const model = await ask('Model id:', defaultModel)
+      // v0.3.3 opt-in: anonymised failure fingerprints. Off by default.
+      // Wording matches the CLI's other consent surface — plain English,
+      // states exactly what leaves the machine and what does not.
+      const shareFp = (
+        await ask(
+          'Share anonymised failure fingerprints? (SHA-256 of schema shape + validator rule name; never row data or identifiers) [y/N]:',
+          'n',
+        )
+      ).toLowerCase().startsWith('y')
       rl.close()
 
       const cfg = ConfigSchema.parse({
@@ -49,6 +58,7 @@ export function registerInit(program: Command): void {
         provider,
         model,
         exclude: [],
+        telemetry: { share_failure_fingerprints: shareFp },
       })
       const written = await writeConfig(cfg)
       console.log(pc.green('\n✓ ') + `wrote ${pc.bold(written)}`)
