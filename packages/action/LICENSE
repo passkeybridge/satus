@@ -1,0 +1,28 @@
+Copyright (c) 2026 PasskeyBridge LLC. All rights reserved.
+
+satus.sh (the "Software") is proprietary commercial software owned by
+PasskeyBridge LLC. Access to this source code does not grant any license
+to use, copy, modify, distribute, sublicense, or create derivative works.
+
+Use of the Software is governed by a separate commercial license issued
+at point of purchase via https://satus.sh. Each license key binds a
+single named seat and is non-transferable except as explicitly permitted
+in the commercial terms.
+
+Permitted, without a commercial license:
+  - Reading this source for security review or evaluation.
+  - Citing or quoting short excerpts for technical discussion, with
+    attribution.
+
+Not permitted, without a commercial license:
+  - Running the Software against any database other than for the
+    evaluation of satus.sh itself.
+  - Redistributing the Software, in source or compiled form, in whole
+    or in part.
+  - Removing or altering this notice, the satus.sh wordmark, or any
+    license-verification logic.
+
+Trademarks: "satus", "satus.sh", and the satus wordmark are trademarks
+of PasskeyBridge LLC.
+
+Contact: support@satus.sh
