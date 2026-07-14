@@ -58,7 +58,7 @@ For an Anthropic-first workflow, swap the two lines that mention OpenAI:
 | `max-cost` | no | `'1.00'` | USD ceiling. Must be quoted so YAML keeps it a string. |
 | `dry-run` | no | `false` | Validate without inserting or spending. |
 | `working-directory` | no | `.` | Directory to run the CLI in (where `satus.config.json` lives). |
-| `satus-version` | no | `0.3.3` | npm version to install. Pin for reproducibility. |
+| `satus-version` | no | `0.3.4` | npm version to install. Pin for reproducibility. |
 
 ## Outputs
 
