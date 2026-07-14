@@ -8,6 +8,10 @@ tags: [profile, ecommerce, distributions, postgres, seeding]
 draft: false
 ---
 
+> **Editor's note (2026-07-16):** This post describes profile-system design intent from mid-2026. The shipped CLI (v0.3.5) uses prompt-based profiles — `saas`, `ecommerce`, `b2b` — with no YAML profile files or per-profile invariant enforcement beyond the user's Postgres constraints. See [/profiles](/profiles) for the current behavior. The post is preserved for its distribution-modeling arguments.
+
+
+
 A consumer e-commerce schema is mostly three tables wearing trench coats: a catalog, a basket, and an order log. Each of those tables is dominated by a distribution that almost no uniformly random seeder reproduces. Catalogs are long-tailed: a small minority of SKUs absorb most of the traffic. Baskets are power-law-ish: most are one item, a few are five, and one in a thousand looks like somebody refreshing the page after the holiday email landed. Returns concentrate around a small set of categories and a small set of weeks. If your tests, dashboards, or planner statistics depend on those shapes, the default uniform fixture is silently wrong, and the wrongness only becomes visible once you have shipped. The `ecommerce` profile in [satus](/) is the choices we made about which of those shapes to encode by default and which to leave to you. This post is the inventory.
 
 The shape of this post mirrors the [medical-booking deep-dive](/blog/medical-booking-profile): the distributions baked in, the constraints we lean on, and the things we deliberately decline to ship. The constraints discussion assumes you have read [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild). The seasonality section builds on [Three timezone bugs we found by seeding production-shaped data](/blog/timezone-bugs-found-by-seed-data); if you have not read that one, the short version is that ecommerce traffic has the same hour-of-day curve as appointments and the same need to respect the customer's local time, not the server's.

@@ -58,9 +58,8 @@ type Cell = string | { mark: true } | null;
 const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
   { label: "CLI core",                       row: [{ mark: true }, { mark: true }, { mark: true }] },
   { label: "Bring-your-own LLM key",         row: [{ mark: true }, { mark: true }, { mark: true }] },
-  { label: "Community profiles",             row: [{ mark: true }, { mark: true }, { mark: true }] },
+  { label: "Built-in profiles (saas/ecommerce/b2b)", row: [{ mark: true }, { mark: true }, { mark: true }] },
   { label: "Row & table caps lifted",        row: [null,            { mark: true }, { mark: true }] },
-  { label: "Hosted profile updates",         row: [null,            { mark: true }, { mark: true }] },
   { label: "License, 14-day offline grace",  row: [null,            { mark: true }, { mark: true }] },
   { label: "Priority issue triage",          row: [null,            { mark: true }, { mark: true }] },
   { label: "Shared team profiles",           row: [null,            null,            { mark: true }] },
@@ -82,7 +81,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is there a free trial on Pro?",
-    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with no time limit. All three reference profiles (saas, ecommerce, b2b) are available on every tier. Pro lifts the row and table caps and adds hosted profile updates, priority triage, and a 14-day offline license grace. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
+    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with no time limit. All three built-in profiles (saas, ecommerce, b2b) are available on every tier. Pro lifts the row and table caps and adds priority triage and a 14-day offline license grace. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
   },
   {
     q: "What's the refund policy?",

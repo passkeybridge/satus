@@ -8,6 +8,10 @@ tags: [profile, medical, distributions, postgres, seeding]
 draft: false
 ---
 
+> **Editor's note (2026-07-16):** This post describes profile-system design intent from spring 2026. The shipped CLI (v0.3.5) uses simpler prompt-based profiles — `saas`, `ecommerce`, `b2b` — with no YAML profile files, no `satus profile show`, and no separate `satus plan` subcommand (use `satus generate --dry-run`). See [/profiles](/profiles) for the current behavior. The post is preserved as-is for its schema-modeling arguments; treat the CLI ergonomics described here as design notes, not current commands.
+
+
+
 Appointment data looks easy and isn't. A uniformly random `timestamptz` between two dates will pass every NOT NULL constraint, every foreign key, and almost every CHECK clause your schema has, and it will still produce a fixture that no real clinic could ever generate. Appointments cluster around mid-morning and just-after-lunch, collapse at night, never happen on public holidays, and trail a long, lopsided distribution of cancellations, reschedules, and no-shows. If your tests, dashboards, or planner statistics depend on those shapes, uniformly random data is silently wrong. The `medical-booking` profile in [satus](/) is the choices we made about which of those shapes to encode and which to push back on the user. This post is the inventory.
 
 We will cover three things: the distributions baked into the profile, the constraints we generate to keep them honest, and the things we deliberately chose not to model. The post assumes you have read [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild) and [NULL vs NOT NULL is not the question](/blog/null-vs-not-null-is-not-the-question), because the profile leans on both ideas.

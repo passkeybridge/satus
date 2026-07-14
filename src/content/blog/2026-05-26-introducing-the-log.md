@@ -8,6 +8,10 @@ tags: [meta, postgres]
 draft: false
 ---
 
+> **Editor's note (2026-07-16):** The "profile deep-dives" bullet lists names (`medical-booking`, `e-commerce`, `saas-subscriptions`) that reflect early naming. The shipped CLI (v0.3.5) uses `saas`, `ecommerce`, `b2b`. See [/profiles](/profiles) for current behavior.
+
+
+
 This is where we publish post-mortems on real production schemas, notes on
 Postgres internals that surprised us, and changelog entries for the satus
 CLI. No growth-hacked headlines, no listicles, no "Top 10 Reasons" posts.

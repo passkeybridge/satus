@@ -8,6 +8,10 @@ tags: [postgres, timezones, testing, seeding]
 draft: false
 ---
 
+> **Editor's note (2026-07-16):** Passages referencing a `medical-booking` profile with per-profile default timezones and DST-aware date windows describe design intent from mid-2026. The shipped CLI (v0.3.5) ships `saas`, `ecommerce`, and `b2b` prompt profiles ([/profiles](/profiles)) that bias value choice but do not encode timezone rules. The three DST bugs and the argument for reproducing them with seed data stand on their own.
+
+
+
 Most seed-data tools draw timestamps from a uniform random distribution over some window: pick a `created_at` somewhere between `now() - interval '90 days'` and `now()`, repeat. The resulting fixture is statistically smooth. It is also, in a very specific way, a lie. Real Postgres tables almost never look like that. They look like the traffic that filled them: a daily sine wave clipped to the business hours of whatever timezone the users live in, with a weekly notch on weekends, and the occasional spike when marketing sends an email.
 
 That shape difference matters because a long list of bugs that production has are bugs *about time*: cron windows, daily roll-ups, locks held across midnight, DST transitions, indexes that get hot at the wrong hour. A uniform fixture will not surface any of them. A fixture that looks like real traffic will. This post walks through three bugs we have reproduced in customer schemas after they switched their tests from uniform timestamps to satus's business-hours sampler, and the catalog signals satus uses to know when to apply that sampler in the first place.
