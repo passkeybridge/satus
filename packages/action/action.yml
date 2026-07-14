@@ -40,7 +40,7 @@ inputs:
   satus-version:
     description: 'npm version of @passkeybridge/satus to install.'
     required: false
-    default: '0.3.3'
+    default: '0.3.4'
 
 outputs:
   run-id:
