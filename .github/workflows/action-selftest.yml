@@ -19,22 +19,24 @@ jobs:
     timeout-minutes: 15
 
     services:
+      # pagila-schema.sql runs `ALTER SCHEMA public OWNER TO postgres;`, so
+      # the DB user must be `postgres` — anything else aborts the load.
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: satus
-          POSTGRES_PASSWORD: satus
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: pagila
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U satus"
+          --health-cmd "pg_isready -U postgres"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgres://satus:satus@localhost:5432/pagila
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/pagila
 
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +51,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends postgresql-client
           curl -fsSL https://raw.githubusercontent.com/devrimgunduz/pagila/master/pagila-schema.sql \
             -o /tmp/pagila-schema.sql
-          PGPASSWORD=satus psql -h localhost -U satus -d pagila -v ON_ERROR_STOP=1 -f /tmp/pagila-schema.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d pagila -v ON_ERROR_STOP=1 -f /tmp/pagila-schema.sql
 
       - name: Run action in dry-run mode
         id: dryrun
