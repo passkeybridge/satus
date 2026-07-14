@@ -4,7 +4,27 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [0.3.5] — 2026-07-14
+
+### Added
+
+- **Automated npm publishing.** New GitHub Actions workflow publishes `@passkeybridge/satus` to npm on every `v*` tag push, using the `NPM_PUBLISH_TOKEN` repo secret. Removes the manual `npm publish` step from the release checklist.
+
+### Fixed
+
+- **Introspection SQL alias.** Corrected a column alias in the single-CTE catalog introspection query that caused `satus generate` to fail on schemas containing quoted identifiers with mixed case. No config changes required.
+- **Selftest build failure.** `.github/workflows/action-selftest.yml` no longer fails on cold clones — the composite action's build step now installs `packages/cli` dependencies before invoking `satus generate`.
+
+### Changed
+
+- **CLI terminal chrome.** The command-box caret is now rendered inline (matches the `satus>` prompt cadence). The red perimeter animation on the marketing hero was removed; the border now uses a static uniform red at the same weight.
+
+### Backward compatibility
+
+- No CLI flags added, removed, or renamed. No telemetry schema changes. `satus.config.json` from 0.3.x continues to work unchanged.
+
 ## [0.3.3] — 2026-07-15
+
 
 ### Added
 
