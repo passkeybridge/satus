@@ -1,43 +1,55 @@
 ---
 slug: v0-3-5-release-notes
-title: "v0.3.5: automated npm publishing, two bug fixes"
-description: satus 0.3.5 moves npm releases onto a tag-triggered GitHub Actions workflow with npm provenance, and ships two small fixes to introspection and CI. No CLI behavior changes.
+title: "v0.3.5: automated npm publishing, two correctness fixes"
+description: satus 0.3.5 moves npm releases onto a tag-triggered GitHub Actions workflow with npm provenance, restores deferrable-FK detection in the introspection reader, and fixes the Action selftest to validate the in-repo CLI.
 date: 2026-07-14
 author: satus.sh
 tags: [release, ci, github, npm]
 draft: false
 ---
 
-`@passkeybridge/satus@0.3.5` is on npm. This is a maintenance release: one CI improvement, two bug fixes, no changes to CLI flags, config, or telemetry. If v0.3.4 works for you today, v0.3.5 works the same way.
+`@passkeybridge/satus@0.3.5` is on npm. Three changes: a new publish pipeline, one correctness fix in the introspection reader, and one CI fix in the Action selftest. No CLI flags, config, or telemetry-schema changes. If v0.3.4 worked for you, v0.3.5 works the same way from the outside.
 
-The release itself is the first one published by the new tag-triggered workflow described below.
+The release itself is the first one cut by the new tag-triggered workflow.
 
 ## Automated publishing
 
-Tagging `v*.*.*` on `main` now triggers a GitHub Actions workflow that builds and publishes the CLI to npm. The workflow lives at [`.github/workflows/cli-publish.yml`](https://github.com/passkeybridge/satus/blob/main/.github/workflows/cli-publish.yml) and does four things worth naming explicitly:
+Pushing a `v*.*.*` tag on `main` now triggers a GitHub Actions workflow that builds and publishes the CLI to npm. The workflow lives at [`.github/workflows/cli-publish.yml`](https://github.com/passkeybridge/satus/blob/main/.github/workflows/cli-publish.yml) and does four things worth naming:
 
-1. **Verifies the tag matches `packages/cli/package.json`.** If you push `v0.3.6` while `package.json` still says `0.3.5`, the workflow fails at the guard step before touching npm. This prevents the class of mistake where a tag and a package version drift out of sync.
-2. **Runs `npm ci` and `npm run build`** in `packages/cli/`. The `prepublishOnly` script also runs `tsc --noEmit`, so a type error blocks publish regardless of what the tag says.
-3. **Publishes with `--provenance`.** The workflow requests `id-token: write` and passes `--provenance` to `npm publish`, which attaches a signed [npm provenance statement](https://docs.npmjs.com/generating-provenance-statements) linking the tarball back to the exact GitHub Actions run and source commit. Consumers can verify the chain with `npm audit signatures`.
-4. **Uses a scoped `NPM_PUBLISH_TOKEN` repository secret.** The token is a granular npm access token with publish rights limited to `@passkeybridge/satus` and no other permissions. `workflow_dispatch` with `dry_run: true` is available for testing the pipeline without cutting a release.
+1. **Verifies the tag matches `packages/cli/package.json`.** If the tag and the package version disagree, the guard step fails before anything reaches npm.
+2. **Runs `npm ci` and `npm run build`** in `packages/cli/`. The package's `prepublishOnly` also runs `tsc --noEmit`, so a type error blocks publish regardless of what the tag says.
+3. **Publishes with `--provenance`.** The workflow requests `id-token: write` and passes `--provenance` to `npm publish`, which attaches a signed [npm provenance statement](https://docs.npmjs.com/generating-provenance-statements) linking the tarball to the exact Actions run and source commit. Consumers can verify the chain with `npm audit signatures`.
+4. **Uses a scoped `NPM_PUBLISH_TOKEN` secret** with publish rights limited to `@passkeybridge/satus`. `workflow_dispatch` with `dry_run: true` exercises the pipeline without cutting a release.
 
-Nothing about installing or running the CLI changes. `npm i -g @passkeybridge/satus` continues to work the same way; the difference is that the tarball on npm is now produced by a reproducible pipeline on tag push instead of a laptop.
+Nothing about installing or running the CLI changes. `npm i -g @passkeybridge/satus` still works the same way; the tarball on npm is now produced by a reproducible pipeline on tag push.
 
-## Bug fixes
+## Fix: deferrable FK detection in the introspection reader
 
-**Introspection SQL alias.** The single-CTE catalog introspection query (introduced in [v0.2.0](/blog/v0-2-0-deferred-constraints-faster-planning-smaller-binary)) had a column alias that could fail on schemas containing quoted identifiers with mixed case (e.g. `"UserID"`). The alias is corrected in v0.3.5. No config change required.
+The single-CTE catalog introspection query (introduced in [v0.2.0](/blog/v0-2-0-deferred-constraints-faster-planning-smaller-binary)) aliases its foreign-key deferrability columns as `is_deferrable` and `is_initially_deferred`, matching `information_schema` naming. The TypeScript reader was reading `deferrable` and `initially_deferred` off each row, so both fields resolved to `undefined` and every FK was recorded as non-deferrable regardless of its actual schema.
 
-**Action selftest build.** [`.github/workflows/action-selftest.yml`](https://github.com/passkeybridge/satus/blob/main/.github/workflows/action-selftest.yml), which loads the [pagila](https://github.com/devrimgunduz/pagila) schema and runs `satus generate` end-to-end against it on every push to `packages/action/`, previously failed on cold clones because the composite action's build step didn't install its own dependencies before invoking the CLI. The workflow now installs `packages/cli/` dependencies as an explicit step. This only affected the selftest workflow itself, not user-run installs of the Action.
+Practical impact: the cyclic-FK path shipped in v0.2.0, which depends on knowing which constraints are `DEFERRABLE INITIALLY DEFERRED`, could quietly fall back to non-deferred handling on schemas that actually had the right constraints in place. The fix aligns the reader with the query's own aliases. No config or CLI change is required; re-running `satus generate` picks up the corrected metadata.
+
+## Fix: Action selftest validates the in-repo CLI
+
+[`.github/workflows/action-selftest.yml`](https://github.com/passkeybridge/satus/blob/main/.github/workflows/action-selftest.yml) loads the [pagila](https://github.com/devrimgunduz/pagila) schema and runs the composite Action end-to-end on every push under `packages/action/`. The Action itself invokes the CLI with `npx --yes @passkeybridge/satus@<pinned>`, which pulled whatever was on npm rather than the code in the tree. On a version bump, the selftest could pass against the previously published CLI while the in-repo code was broken.
+
+v0.3.5 changes this so the selftest is meaningful:
+
+- The workflow now runs `npm ci && npm run build && npm pack && npm install -g` inside `packages/cli/` before invoking the action, so a `satus` binary built from the current tree is on `PATH`.
+- The composite Action prefers a `satus` binary already on `PATH` and falls back to the pinned `npx` install for normal consumers. Real users see no behavior change; the selftest now validates the code that's actually about to ship.
+
+The default `satus-version` in [`packages/action/action.yml`](https://github.com/passkeybridge/satus/blob/main/packages/action/action.yml) is bumped from `0.3.4` to `0.3.5` in the same release.
 
 ## Backward compatibility
 
-No CLI flags added, removed, or renamed. No telemetry schema changes. No changes to `satus.config.json` semantics. Every `satus.config.json` file that worked with v0.3.x continues to work unchanged.
+No CLI flags added, removed, or renamed. No telemetry-schema changes. No changes to `satus.config.json` semantics. Configs that worked with v0.3.x continue to work unchanged.
 
 ## References
 
 - [`@passkeybridge/satus` on npm](https://www.npmjs.com/package/@passkeybridge/satus)
 - [`cli-publish.yml` workflow source](https://github.com/passkeybridge/satus/blob/main/.github/workflows/cli-publish.yml)
-- [npm provenance statements](https://docs.npmjs.com/generating-provenance-statements) — verification with `npm audit signatures`
-- [v0.3.3 release notes](/blog/v0-3-3-release-notes) — the previous release, adds the GitHub Action and telemetry fingerprints
-- [v0.2.0 release notes](/blog/v0-2-0-deferred-constraints-faster-planning-smaller-binary) — original single-CTE introspection design
+- [`action-selftest.yml` workflow source](https://github.com/passkeybridge/satus/blob/main/.github/workflows/action-selftest.yml)
+- [npm provenance statements](https://docs.npmjs.com/generating-provenance-statements)
+- [v0.3.3 release notes](/blog/v0-3-3-release-notes) — the GitHub Action and opt-in failure fingerprints
+- [v0.2.0 release notes](/blog/v0-2-0-deferred-constraints-faster-planning-smaller-binary) — original single-CTE introspection and deferrable-constraint handling
 - [satus on GitHub](https://github.com/passkeybridge/satus)
