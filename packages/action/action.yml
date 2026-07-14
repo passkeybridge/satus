@@ -125,3 +125,6 @@ runs:
         path: ${{ inputs.working-directory }}/.satus/last-run.json
         if-no-files-found: warn
         retention-days: 30
+        # overwrite lets a workflow call this action more than once (e.g.
+        # dry-run + real run) without the second upload hitting a 409.
+        overwrite: true
