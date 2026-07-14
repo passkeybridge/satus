@@ -130,8 +130,8 @@ const INTROSPECT_SQL = `
       coalesce(root_fns.nspname, fns.nspname)   as ref_schema,
       coalesce(root_fcls.relname, fcls.relname) as ref_table,
       fatt.attname                              as ref_column,
-      con.condeferrable                         as deferrable,
-      con.condeferred                           as initially_deferred
+      con.condeferrable                         as is_deferrable,
+      con.condeferred                           as is_initially_deferred
     from pg_constraint con
     join pg_class cls    on cls.oid = con.conrelid
     join pg_namespace ns on ns.oid = cls.relnamespace
@@ -154,8 +154,8 @@ const INTROSPECT_SQL = `
     -- column pair; bool_or preserves DEFERRABLE if any copy has it.
     select
       table_name, column_name, ref_schema, ref_table, ref_column,
-      bool_or(deferrable)         as deferrable,
-      bool_or(initially_deferred) as initially_deferred
+      bool_or(is_deferrable)         as is_deferrable,
+      bool_or(is_initially_deferred) as is_initially_deferred
     from v_fks_raw
     group by table_name, column_name, ref_schema, ref_table, ref_column
   ),
@@ -213,8 +213,8 @@ export async function introspect(
       ref_schema: string
       ref_table: string
       ref_column: string
-      deferrable: boolean
-      initially_deferred: boolean
+      is_deferrable: boolean
+      is_initially_deferred: boolean
     }>
     uniques: Array<{ table_name: string; column_name: string }>
   }
@@ -259,8 +259,8 @@ export async function introspect(
       refSchema: r.ref_schema,
       refTable: r.ref_table,
       refColumn: r.ref_column,
-      deferrable: r.deferrable === true,
-      initiallyDeferred: r.initially_deferred === true,
+      deferrable: r.is_deferrable === true,
+      initiallyDeferred: r.is_initially_deferred === true,
     })
   }
 
