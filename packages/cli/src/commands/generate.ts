@@ -84,6 +84,30 @@ function buildProvider(id: ProviderId, apiKey: string, model: string): Provider 
 const FREE_MAX_ROWS = 25
 const FREE_MAX_TABLES = 5
 
+/**
+ * v0.3.3 telemetry: derive the invocation shape from process.argv without
+ * ever including flag values. Bounded to 16 entries so a pathological
+ * argv can't blow the payload cap.
+ */
+function invocationSequence(): string[] {
+  const seq: string[] = []
+  for (const arg of process.argv.slice(2)) {
+    if (arg.startsWith('--')) {
+      // Strip `--flag=value` -> `--flag`.
+      const eq = arg.indexOf('=')
+      seq.push(eq === -1 ? arg : arg.slice(0, eq))
+    } else if (arg.startsWith('-') && arg.length === 2) {
+      seq.push(arg)
+    } else if (seq.length === 0) {
+      // Positional subcommand (e.g. "generate"). Everything after the first
+      // positional is a flag value and gets dropped.
+      seq.push(arg)
+    }
+    if (seq.length >= 16) break
+  }
+  return seq
+}
+
 export function registerGenerate(program: Command): void {
   program
     .command('generate')
