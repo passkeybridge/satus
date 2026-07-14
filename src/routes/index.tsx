@@ -423,41 +423,42 @@ function AntiFeatures() {
 /* ------------------ §05 Sample output ------------------ */
 
 /**
- * Three real-shape preview rows from the medical-booking profile. Pairs the
- * §00 CLI transcript (which shows the *count* of generated rows) with the
+ * Three real-shape preview rows from the `saas` profile. Pairs the §00
+ * CLI transcript (which shows the *count* of generated rows) with the
  * actual *content* of those rows, so a visitor can judge realism without
- * cloning the repo. Values are illustrative; the README and fixture suite
- * are the source of truth at ship.
+ * cloning the repo. Values are illustrative; the shipped profile is a
+ * prompt hint (see packages/cli/src/generate/profiles.ts) and actual
+ * output varies with the user's own schema.
  */
 const SAMPLE_ROWS: { table: string; cols: { k: string; v: string }[] }[] = [
   {
-    table: "patients",
+    table: "orgs",
     cols: [
       { k: "id", v: "8e2c0a13-…" },
-      { k: "full_name", v: "Marisol Aguirre-Velez" },
-      { k: "dob", v: "1984-07-19" },
-      { k: "state", v: "CO" },
-      { k: "insurance_plan_id", v: "→ plans.id (Anthem BCBS, CO)" },
+      { k: "name", v: "Northbeam Analytics" },
+      { k: "plan", v: "pro" },
+      { k: "created_at", v: "2025-11-04 09:22 UTC" },
+      { k: "seat_count", v: "12" },
     ],
   },
   {
-    table: "providers",
+    table: "users",
     cols: [
       { k: "id", v: "1f9d2b77-…" },
-      { k: "full_name", v: "Dr. Khalil Okonkwo, MD" },
-      { k: "specialty", v: "Family Medicine" },
-      { k: "clinic_id", v: "→ clinics.id (Westside Family Health)" },
-      { k: "working_hours", v: "Mon–Thu 08:00–17:00 MT" },
+      { k: "org_id", v: "→ orgs.id (Northbeam Analytics)" },
+      { k: "email", v: "alice@northbeam.io" },
+      { k: "title", v: "Staff Engineer" },
+      { k: "role", v: "admin" },
     ],
   },
   {
-    table: "appointments",
+    table: "subscriptions",
     cols: [
       { k: "id", v: "a4c11e8f-…" },
-      { k: "patient_id", v: "→ patients.id (Marisol Aguirre-Velez)" },
-      { k: "provider_id", v: "→ providers.id (Dr. Khalil Okonkwo)" },
-      { k: "starts_at", v: "2026-06-04 14:30 America/Denver" },
-      { k: "reason", v: "annual wellness visit" },
+      { k: "org_id", v: "→ orgs.id (Northbeam Analytics)" },
+      { k: "plan", v: "pro" },
+      { k: "status", v: "active" },
+      { k: "current_period_end", v: "2026-08-04 09:22 UTC" },
     ],
   },
 ];
@@ -472,9 +473,9 @@ function SampleOutput() {
     >
       <Prose>
         <p>
-          Below: one patient, referenced by foreign key on an appointment, booked with a provider
-          whose specialty fits the visit and whose working hours cover the slot. Every field lines
-          up with every other.
+          Below: one org, its subscription, and a user with a workplace email inside the same
+          org. FK values line up. Enum-shaped columns (plan, role, status) pick from plausible
+          vocabularies. Timestamps cluster in the last 18 months, not uniformly across all time.
         </p>
       </Prose>
 
@@ -516,7 +517,7 @@ function SampleOutput() {
 
 
 const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string; desc: string }[] = [
-  { to: "/profiles", label: "Reference profiles", desc: "Three hand-tuned domains: medical, e-commerce, SaaS." },
+  { to: "/profiles", label: "Reference profiles", desc: "Three prompt hints: saas, ecommerce, b2b." },
   { to: "/pricing", label: "Pricing", desc: "Free, Pro, Team. Bring-your-own LLM key on every tier." },
   { to: "/quickstart", label: "Quickstart", desc: "Zero to a seeded database in under a minute." },
 ];

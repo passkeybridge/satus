@@ -40,8 +40,8 @@ function CheckoutCancelPage() {
         <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
           You closed checkout before completing payment. The Free tier is the
           same CLI binary, capped at 25 rows per table across 5 tables, with
-          community profiles and no time limit. If Pro doesn&rsquo;t earn its
-          $19 a month, staying on Free is the honest answer.
+          all three built-in profiles and no time limit. If Pro doesn&rsquo;t
+          earn its $19 a month, staying on Free is the honest answer.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link
