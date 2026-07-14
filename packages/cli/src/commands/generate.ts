@@ -212,6 +212,14 @@ export function registerGenerate(program: Command): void {
           process.exit(1)
         }
 
+        // v0.3.3: opt-in schema fingerprint. Computed here so it's
+        // available for both the dry-run failure path and the real-run
+        // telemetry. Off by default; never contains identifiers or rows.
+        const shareFp = cfg?.telemetry?.share_failure_fingerprints === true
+        const schemaFingerprint = shareFp ? fingerprint(schema) : undefined
+        const invocation = shareFp ? invocationSequence() : undefined
+
+
         const sort = topoSort(schema.tables)
         if (sort.cycle) {
           console.error(
@@ -356,7 +364,26 @@ export function registerGenerate(program: Command): void {
           }
 
           // Surface validation failures as a non-zero exit so CI gates work.
-          if (errorCount > 0) process.exit(2)
+          if (errorCount > 0) {
+            // v0.3.3: fingerprint + validator_class telemetry (opt-in).
+            // Fire-and-forget; dry-run itself never depends on the network.
+            if (shareFp) {
+              const firstError = simulated.findings.find((f) => f.severity === 'error')
+              await reportRun(newRunId(), {
+                profile,
+                provider: providerId,
+                model,
+                target_schema: schemaName,
+                environment: (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live',
+                status: 'failed',
+                error_message: 'dry_run_validation_failed',
+                schema_fingerprint: schemaFingerprint,
+                validator_class: firstError?.rule?.slice(0, 64),
+                invocation_sequence: invocation,
+              })
+            }
+            process.exit(2)
+          }
           return
         }
 
@@ -370,6 +397,9 @@ export function registerGenerate(program: Command): void {
           model,
           target_schema: schemaName,
           environment: env,
+          // v0.3.3 opt-in fields (undefined when the knob is off).
+          schema_fingerprint: schemaFingerprint,
+          invocation_sequence: invocation,
         }
         await reportRun(runId, { ...baseTelemetry, status: 'running' })
 
