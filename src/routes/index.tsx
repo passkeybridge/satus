@@ -153,29 +153,7 @@ function InstallLine() {
   const cmd = "npm i -g @passkeybridge/satus";
   return (
     <div className="relative flex items-stretch overflow-hidden border border-[var(--ink)] bg-[var(--paper)]">
-      {/* Ambient signal: a single signal-red hairline traces the full
-       * perimeter at uniform speed, holds for 5s, then loops. SVG sits
-       * on top of the border; pathLength normalization keeps dash math
-       * independent of the box's rendered size. */}
-      <svg
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 100"
-      >
-        <rect
-          className="satus-perimeter"
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          pathLength="1000"
-          fill="none"
-          stroke="var(--signal)"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
+
 
 
 
