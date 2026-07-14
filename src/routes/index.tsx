@@ -152,11 +152,32 @@ function InstallLine() {
   const [copied, setCopied] = useState(false);
   const cmd = "npm i -g @passkeybridge/satus";
   return (
-    <div className="flex items-stretch border border-[var(--ink)] bg-[var(--paper)]">
+    <div className="relative flex items-stretch overflow-hidden border border-[var(--ink)] bg-[var(--paper)]">
+      {/* Ambient signal: single signal-red hairline traveling the top edge every 6s. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden"
+      >
+        <div className="satus-signal h-full w-12 bg-[var(--signal)]" />
+      </div>
+      {/* Mirrored, softer trace along the bottom edge. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px overflow-hidden"
+      >
+        <div className="satus-signal h-full w-24 bg-[var(--signal)] opacity-30" />
+      </div>
+
       <div className="grid w-9 place-items-center border-r border-[var(--ink)] font-mono text-[12px] text-[var(--mute)]">
         $
       </div>
-      <code className="flex-1 px-3 py-2.5 font-mono text-[13.5px] text-[var(--ink)]">{cmd}</code>
+      <code className="flex flex-1 items-center px-3 py-2.5 font-mono text-[13.5px] text-[var(--ink)]">
+        <span>{cmd}</span>
+        <span
+          aria-hidden="true"
+          className="satus-caret ml-1.5 inline-block h-[14px] w-[7px] bg-[var(--signal)] align-middle"
+        />
+      </code>
       <button
         onClick={() => {
           navigator.clipboard.writeText(cmd);
