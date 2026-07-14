@@ -151,8 +151,8 @@ function TermsPage() {
       >
         <Prose>
           <p>
-            satus requires an API key from a supported LLM provider (OpenAI at launch; Anthropic
-            and Google in 0.2) to generate column-level values. You are responsible for:
+            satus requires an API key from a supported LLM provider (OpenAI or Anthropic) to
+            generate column-level values. You are responsible for:
           </p>
           <ul className="ml-5 list-disc space-y-1">
             <li>Procuring and paying for your own provider account.</li>
