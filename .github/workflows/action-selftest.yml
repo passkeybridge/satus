@@ -1,0 +1,93 @@
+name: action-selftest
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/action/**'
+      - '.github/workflows/action-selftest.yml'
+  workflow_dispatch:
+
+# Serialise selftest runs so two commits landing back-to-back don't fight
+# over the same OpenAI key rate window.
+concurrency:
+  group: action-selftest
+  cancel-in-progress: false
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: satus
+          POSTGRES_PASSWORD: satus
+          POSTGRES_DB: pagila
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U satus"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://satus:satus@localhost:5432/pagila
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pagila is the same fixture the corpus audit uses. Loading only the
+      # schema (not the sample data) keeps the run fast and gives satus a
+      # clean canvas to insert into.
+      - name: Load pagila schema
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client
+          curl -fsSL https://raw.githubusercontent.com/devrimgunduz/pagila/master/pagila-schema.sql \
+            -o /tmp/pagila-schema.sql
+          PGPASSWORD=satus psql -h localhost -U satus -d pagila -v ON_ERROR_STOP=1 -f /tmp/pagila-schema.sql
+
+      - name: Run action in dry-run mode
+        id: dryrun
+        uses: ./packages/action
+        with:
+          database-url: ${{ env.DATABASE_URL }}
+          rows: '25'
+          profile: saas
+          max-cost: '0.10'
+          dry-run: 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Assert dry-run touched at least one table
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.dryrun.outputs.tables-seeded }}" -lt 1 ]; then
+            echo "expected tables-seeded >= 1, got '${{ steps.dryrun.outputs.tables-seeded }}'" >&2
+            exit 1
+          fi
+
+      - name: Run action for real
+        id: real
+        uses: ./packages/action
+        with:
+          database-url: ${{ env.DATABASE_URL }}
+          rows: '25'
+          profile: saas
+          max-cost: '0.50'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Assert real run inserted rows
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.real.outputs.rows-inserted }}" -lt 1 ]; then
+            echo "expected rows-inserted >= 1, got '${{ steps.real.outputs.rows-inserted }}'" >&2
+            exit 1
+          fi
+          echo "run-id: ${{ steps.real.outputs.run-id }}"
+          echo "spent:  ${{ steps.real.outputs.spent-usd }} USD"
