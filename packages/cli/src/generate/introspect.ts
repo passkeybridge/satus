@@ -130,8 +130,8 @@ const INTROSPECT_SQL = `
       coalesce(root_fns.nspname, fns.nspname)   as ref_schema,
       coalesce(root_fcls.relname, fcls.relname) as ref_table,
       fatt.attname                              as ref_column,
-      con.condeferrable                         as deferrable,
-      con.condeferred                           as initially_deferred
+      con.condeferrable                         as is_deferrable,
+      con.condeferred                           as is_initially_deferred
     from pg_constraint con
     join pg_class cls    on cls.oid = con.conrelid
     join pg_namespace ns on ns.oid = cls.relnamespace
