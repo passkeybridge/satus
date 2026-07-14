@@ -127,21 +127,24 @@ function Overview() {
 
       <div className="mt-10 max-w-[640px] border-t border-[var(--hairline)] pt-6">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
-          example output · satus generate --profile medical-booking
+          example output · satus generate --profile saas
         </div>
+        {/* Illustrative run against a hypothetical SaaS schema. Real output
+            varies with the user's schema; the shape (introspect → plan →
+            generate per-table → insert in a transaction) is what the CLI
+            actually does. See packages/cli/src/generate/runner.ts. */}
         <pre className="mt-3 overflow-x-auto font-mono text-[12.5px] leading-[1.75] text-[var(--ink)]">
-{`$ satus generate --profile medical-booking
+{`$ satus generate --profile saas
   introspecting schema           14 tables · 38 FKs
   planning insert order          topological
-  generating · clinics              12 rows
-  generating · providers            48 rows
-  generating · patients            420 rows
-  generating · appointments      1,840 rows
-  validating invariants          ok
+  generating · orgs                 12 rows
+  generating · users               120 rows
+  generating · subscriptions        48 rows
+  generating · invoices            420 rows
   inserting (transaction)        ok
 `}
           <span className="text-[var(--signal)]">✓</span>{" "}
-          <span>2,320 rows · $0.04 · 7.2s</span>
+          <span>600 rows · $0.02 · 6.1s</span>
         </pre>
       </div>
     </Section>

@@ -59,7 +59,7 @@ const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
   { label: "CLI core",                       row: [{ mark: true }, { mark: true }, { mark: true }] },
   { label: "Bring-your-own LLM key",         row: [{ mark: true }, { mark: true }, { mark: true }] },
   { label: "Community profiles",             row: [{ mark: true }, { mark: true }, { mark: true }] },
-  { label: "Three official profiles",        row: [null,            { mark: true }, { mark: true }] },
+  { label: "Row & table caps lifted",        row: [null,            { mark: true }, { mark: true }] },
   { label: "Hosted profile updates",         row: [null,            { mark: true }, { mark: true }] },
   { label: "License, 14-day offline grace",  row: [null,            { mark: true }, { mark: true }] },
   { label: "Priority issue triage",          row: [null,            { mark: true }, { mark: true }] },
@@ -78,11 +78,11 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Which LLM providers are supported?",
-    a: "OpenAI is the only supported provider at launch. Anthropic and Google Gemini land in 0.2. The CLI uses structured outputs (tool calling), so any provider that supports a JSON-schema response can be added. Email support@satus.sh if your stack needs one.",
+    a: "OpenAI and Anthropic are supported today. The CLI auto-detects which key is present (OPENAI_API_KEY or ANTHROPIC_API_KEY) and uses structured outputs against the corresponding provider. Google Gemini is not yet supported. Email support@satus.sh if your stack needs another provider.",
   },
   {
     q: "Is there a free trial on Pro?",
-    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with community profiles and no time limit. Pro lifts the caps and adds the three official profiles, hosted profile updates, and priority triage. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
+    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with no time limit. All three reference profiles (saas, ecommerce, b2b) are available on every tier. Pro lifts the row and table caps and adds hosted profile updates, priority triage, and a 14-day offline license grace. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
   },
   {
     q: "What's the refund policy?",
