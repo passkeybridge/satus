@@ -77,14 +77,29 @@ export interface IntrospectedSchema {
 // FK rows also surface condeferrable / condeferred so the runner
 // can decide whether a topo-cycle is breakable via
 // SET CONSTRAINTS ALL DEFERRED.
+// Partitioned tables need special care. In pg_catalog a partitioned
+// parent has relkind='p' and each partition child has relispartition=true.
+// Postgres routes INSERTs on the parent to the correct partition, so we
+// want to seed only the parent — not the children. But FKs are often
+// declared per-partition in real-world schemas (pagila does this), which
+// means naive introspection sees the parent as FK-less and the topo sort
+// places it at in-degree 0. The runner then tries to INSERT into the
+// parent before its FK targets exist and Postgres rejects the row.
+//
+// Fix: exclude partition children from v_tables, and use
+// pg_partition_root() to re-attribute any FK declared on a partition
+// child back to the topmost partitioned ancestor. Duplicate FK rows
+// (same parent, same column pair) are collapsed with GROUP BY.
 const INTROSPECT_SQL = `
   with
   v_tables as (
-    select table_name
-    from information_schema.tables
-    where table_schema = $1
-      and table_type = 'BASE TABLE'
-    order by table_name
+    select c.relname as table_name
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = $1
+      and c.relkind in ('r', 'p')
+      and not c.relispartition
+    order by c.relname
   ),
   v_columns as (
     select
@@ -105,26 +120,44 @@ const INTROSPECT_SQL = `
       and tc.constraint_type = 'PRIMARY KEY'
     order by kcu.table_name, kcu.ordinal_position
   ),
-  v_fks as (
+  v_fks_raw as (
+    -- Attribute the FK to the partition root when the constraint is
+    -- declared on a partition child. coalesce falls back to the table
+    -- itself for non-partitioned tables.
     select
-      cls.relname        as table_name,
-      att.attname        as column_name,
-      fns.nspname        as ref_schema,
-      fcls.relname       as ref_table,
-      fatt.attname       as ref_column,
-      con.condeferrable  as deferrable,
-      con.condeferred    as initially_deferred
+      coalesce(root_cls.relname, cls.relname)   as table_name,
+      att.attname                               as column_name,
+      coalesce(root_fns.nspname, fns.nspname)   as ref_schema,
+      coalesce(root_fcls.relname, fcls.relname) as ref_table,
+      fatt.attname                              as ref_column,
+      con.condeferrable                         as deferrable,
+      con.condeferred                           as initially_deferred
     from pg_constraint con
     join pg_class cls    on cls.oid = con.conrelid
     join pg_namespace ns on ns.oid = cls.relnamespace
     join pg_class fcls   on fcls.oid = con.confrelid
     join pg_namespace fns on fns.oid = fcls.relnamespace
+    left join pg_class     root_cls  on cls.relispartition  and root_cls.oid  = pg_partition_root(cls.oid)
+    left join pg_namespace root_ns   on root_ns.oid = root_cls.relnamespace
+    left join pg_class     root_fcls on fcls.relispartition and root_fcls.oid = pg_partition_root(fcls.oid)
+    left join pg_namespace root_fns  on root_fns.oid = root_fcls.relnamespace
     join lateral unnest(con.conkey)  with ordinality as ck(attnum, ord) on true
     join lateral unnest(con.confkey) with ordinality as fk(attnum, ord) on fk.ord = ck.ord
     join pg_attribute att  on att.attrelid  = cls.oid  and att.attnum  = ck.attnum
     join pg_attribute fatt on fatt.attrelid = fcls.oid and fatt.attnum = fk.attnum
     where con.contype = 'f'
-      and ns.nspname = $1
+      and coalesce(root_ns.nspname, ns.nspname) = $1
+  ),
+  v_fks as (
+    -- Dedupe: when a FK is declared on the parent, Postgres also creates
+    -- an inherited row on every partition child. All rows carry the same
+    -- column pair; bool_or preserves DEFERRABLE if any copy has it.
+    select
+      table_name, column_name, ref_schema, ref_table, ref_column,
+      bool_or(deferrable)         as deferrable,
+      bool_or(initially_deferred) as initially_deferred
+    from v_fks_raw
+    group by table_name, column_name, ref_schema, ref_table, ref_column
   ),
   v_uniques as (
     -- Single-column unique constraints only. Multi-col uniques require
@@ -150,6 +183,7 @@ const INTROSPECT_SQL = `
     coalesce((select jsonb_agg(to_jsonb(v_fks.*))     from v_fks),     '[]'::jsonb) as fks,
     coalesce((select jsonb_agg(to_jsonb(v_uniques.*)) from v_uniques), '[]'::jsonb) as uniques
 `
+
 
 export async function introspect(
   client: Client,
