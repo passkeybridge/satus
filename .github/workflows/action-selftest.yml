@@ -60,7 +60,22 @@ jobs:
           PGPASSWORD=postgres psql -h localhost -U postgres -d pagila -v ON_ERROR_STOP=1 \
             -c "CREATE TABLE IF NOT EXISTS payment_pdefault PARTITION OF payment DEFAULT;"
 
+      # Build the CLI straight from this repo and install it globally so the
+      # action picks it up via PATH. This decouples the selftest from the
+      # npm publish cadence — a bumped in-repo version validates against
+      # the code that's actually in the tree, not whatever is on npm.
+      - name: Build and install in-repo CLI
+        working-directory: packages/cli
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+          npm pack
+          npm install -g ./passkeybridge-satus-*.tgz
+          satus --version
+
       - name: Run action in dry-run mode
+
         id: dryrun
         uses: ./packages/action
         with:
