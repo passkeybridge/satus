@@ -8,6 +8,10 @@ tags: [postgres, null, semantics, seeding]
 draft: false
 ---
 
+> **Editor's note (2026-07-16):** Sections that reference a `medical-booking` profile describe design intent from spring 2026. The shipped CLI (v0.3.5) ships `saas`, `ecommerce`, and `b2b` prompt profiles; see [/profiles](/profiles). The NULL-vs-NOT-NULL argument stands independent of that profile detail.
+
+
+
 A user filed a bug last week. Paraphrased: *"satus filled a nullable column with realistic values and my app crashed in production-shaped tests. The column is nullable, why is your tool inventing data for it?"* The column was `users.deleted_at`. The app treated `NULL` as "active" and any non-null timestamp as "soft-deleted". satus had cheerfully seeded ~30% of the rows with valid timestamps. The test suite then asked the catalog for active users, got two-thirds of what it expected, and 47 tests turned red at once.
 
 The reporter was right that we shipped the wrong default. They were also accidentally illustrating a deeper point: `NULL` versus `NOT NULL` is the wrong axis. The real axis is **what the column's NULL state means to the application that reads it**, and Postgres exposes three encodings for that, not two.

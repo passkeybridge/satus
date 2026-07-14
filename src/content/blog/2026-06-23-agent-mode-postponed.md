@@ -8,6 +8,10 @@ tags: [roadmap, agents, design, postgres]
 draft: false
 ---
 
+> **Editor's note (2026-07-16):** The version-line dates below (v0.4 mid-July, v0.5 late September, v0.6 open) reflect the June 2026 plan and have shifted. Post-2026-07-03 renumber: v0.3.3 = GitHub Action, v0.4.0 = agent mode. Anthropic support shipped in v0.3.0. Gemini is still not supported. See the [v0.3.5 release notes](/blog/v0-3-5-release-notes) for current status.
+
+
+
 The most common feature request we get, after "support my schema", is some version of "can it just figure it out?". The user runs `satus seed`, the [dry-run validator](/blog/dry-run-validation) flags an enum mismatch or a foreign key pointing at a row the planner never produced, and instead of reading the error and editing a YAML profile, they would like the tool to read its own output and propose the fix. That is a reasonable thing to want. It is also a category of feature that, done badly, would undermine the one thing satus is currently good at: producing the same rows on the same schema on every run, with no surprises.
 
 So we are committing to it, and we are committing to not shipping it yet. `satus agent` lands in v0.5, after 90 days of telemetry on v0.3 and v0.4. This post explains the shape of the feature, why the delay is the point rather than a concession, and what the deterministic CLI will and will not stop being.
