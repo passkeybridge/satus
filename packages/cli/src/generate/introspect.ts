@@ -213,8 +213,8 @@ export async function introspect(
       ref_schema: string
       ref_table: string
       ref_column: string
-      deferrable: boolean
-      initially_deferred: boolean
+      is_deferrable: boolean
+      is_initially_deferred: boolean
     }>
     uniques: Array<{ table_name: string; column_name: string }>
   }
