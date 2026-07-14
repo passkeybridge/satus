@@ -52,6 +52,13 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/devrimgunduz/pagila/master/pagila-schema.sql \
             -o /tmp/pagila-schema.sql
           PGPASSWORD=postgres psql -h localhost -U postgres -d pagila -v ON_ERROR_STOP=1 -f /tmp/pagila-schema.sql
+          # pagila's `payment` table is RANGE-partitioned by payment_date and
+          # ships with fixed monthly partitions. The LLM can (and does) pick
+          # dates outside that window, so give it a DEFAULT partition to catch
+          # anything the fixed partitions don't cover. Selftest-only concern;
+          # real user schemas don't need this.
+          PGPASSWORD=postgres psql -h localhost -U postgres -d pagila -v ON_ERROR_STOP=1 \
+            -c "CREATE TABLE IF NOT EXISTS payment_pdefault PARTITION OF payment DEFAULT;"
 
       - name: Run action in dry-run mode
         id: dryrun
