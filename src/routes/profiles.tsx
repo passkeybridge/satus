@@ -196,13 +196,13 @@ function ProfilesPage() {
             </div>
           </div>
 
-          <Prose className="mt-8">
-            <p className="text-[13px] text-[var(--mute)]">
+          <div className="mt-8 max-w-[860px]">
+            <p className="text-[13px] leading-[1.6] text-[var(--mute)]">
               Profiles bias value choice; they don&rsquo;t define your schema. The table set,
               column types, and FK graph come from introspecting your own database. Rows are
               validated against your Postgres constraints before they land.
             </p>
-          </Prose>
+          </div>
         </Section>
       ))}
 
