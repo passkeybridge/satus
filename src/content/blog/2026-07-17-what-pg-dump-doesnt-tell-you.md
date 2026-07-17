@@ -1,7 +1,7 @@
 ---
 slug: what-pg-dump-doesnt-tell-you
 title: "What pg_dump doesn't tell you about your own schema"
-description: pg_dump is a backup tool, not a schema-understanding tool. Three things it silently omits or hoists to the end of the file, and why a seeder reads pg_catalog directly instead.
+description: pg_dump is a backup tool, not a schema description. Three things it omits or reorders, and why a seeder should read pg_catalog directly instead.
 date: 2026-07-17
 author: satus.sh
 tags: [postgres, introspection, pg_dump]
