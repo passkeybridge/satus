@@ -66,9 +66,8 @@ UUIDv7 removes the argument that was doing most of the work against random UUIDs
 
 ## References
 
-- RFC 9562, *Universally Unique IDentifiers (UUIDs)*. <https://www.rfc-editor.org/rfc/rfc9562>
-- PostgreSQL 18 UUID functions, including `uuidv4()` and `uuidv7()`. <https://www.postgresql.org/docs/18/functions-uuid.html>
-- PostgreSQL data types: UUID. <https://www.postgresql.org/docs/current/datatype-uuid.html>
-- PostgreSQL numeric types (bigint storage). <https://www.postgresql.org/docs/current/datatype-numeric.html>
-- `CREATE TABLE` (identity columns, composite primary keys). <https://www.postgresql.org/docs/current/sql-createtable.html>
-- `pg_attrdef` catalog (column defaults). <https://www.postgresql.org/docs/current/catalog-pg-attrdef.html>
+- IETF, [RFC 9562: Universally Unique IDentifiers (UUIDs)](https://www.rfc-editor.org/rfc/rfc9562), including [§5.7 UUID Version 7](https://www.rfc-editor.org/rfc/rfc9562#section-5.7) and [§6.2 Monotonicity and Counters](https://www.rfc-editor.org/rfc/rfc9562#section-6.2).
+- PostgreSQL 18 documentation, [UUID Functions](https://www.postgresql.org/docs/18/functions-uuid.html) (`uuidv4()`, `uuidv7()`).
+- PostgreSQL documentation, [UUID Type](https://www.postgresql.org/docs/current/datatype-uuid.html) and [Numeric Types](https://www.postgresql.org/docs/current/datatype-numeric.html).
+- PostgreSQL documentation, [`CREATE TABLE`](https://www.postgresql.org/docs/current/sql-createtable.html) (identity columns, composite primary keys).
+- PostgreSQL documentation, [`pg_attrdef`](https://www.postgresql.org/docs/current/catalog-pg-attrdef.html) catalog.
