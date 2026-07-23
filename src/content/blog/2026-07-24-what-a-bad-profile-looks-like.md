@@ -1,7 +1,7 @@
 ---
 slug: what-a-bad-profile-looks-like
 title: "What a bad profile looks like"
-description: Three profile drafts we threw away before we shipped saas, ecommerce, and b2b—too many knobs, distributions that did not compose, and vertical assumptions leaking into shared code.
+description: Three profile drafts we threw away before shipping saas, ecommerce, and b2b. Too many knobs, distributions that did not compose, vertical leaks.
 date: 2026-07-24
 author: satus.sh
 tags: [profile, methodology, anti-pattern]
