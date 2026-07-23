@@ -1,7 +1,7 @@
 ---
 slug: seeding-stripe-shaped-data-without-stripe
 title: "Seeding Stripe-shaped data without Stripe"
-description: How to fill a billing schema with realistic Customer, Subscription, Invoice, and Charge rows locally, so your dashboards and reports render without cluttering a test-mode Stripe account.
+description: How to fill a billing schema with realistic Customer, Subscription, Invoice, and Charge rows locally, so dashboards render without touching test-mode Stripe.
 date: 2026-07-23
 author: satus.sh
 tags: [billing, stripe, patterns]
