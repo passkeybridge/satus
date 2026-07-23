@@ -54,7 +54,7 @@ Failed payments follow [Smart Retries](https://docs.stripe.com/billing/revenue-r
 
 When satus sees a table whose columns match one of Stripe's canonical shapes (customer, subscription, invoice, charge), the CLI takes the following stance:
 
-Identifier columns named `stripe_*_id` or ending in `_id` with a `text` type and a check constraint like `starts_with(value, 'cus_')` are treated as Stripe IDs. satus emits values of the correct prefix and a random 24-character alphanumeric suffix, mirroring Stripe's documented ID shape. It does not attempt to make them resolvable against the Stripe API, because that is not the point of a local seed.
+Identifier columns named `stripe_*_id` or ending in `_id` with a `text` type and a check constraint like `starts_with(value, 'cus_')` are treated as Stripe IDs. satus emits values with the correct prefix and a random alphanumeric suffix, mirroring the shape of Stripe's documented IDs (Stripe does not fix a suffix length, so the seeder picks one that matches the width already present in the target column). It does not attempt to make them resolvable against the Stripe API, because that is not the point of a local seed.
 
 Monetary columns (`integer` or `bigint` named `amount*`, `total*`, `subtotal*`, or `unit_amount*`) are treated as minor-unit amounts if a sibling `currency` column exists, and satus picks values that respect the [zero-decimal currency list](https://docs.stripe.com/currencies#zero-decimal). For USD-denominated `amount_paid` on `invoice`, values come from the plan-price set described above, not from a uniform range.
 
