@@ -1,7 +1,7 @@
 ---
 slug: what-a-bad-profile-looks-like
 title: "What a bad profile looks like"
-description: Three profile drafts we threw away before we shipped saas, ecommerce, and b2b — too many knobs, distributions that did not compose, and vertical assumptions leaking into shared code.
+description: Three profile drafts we threw away before we shipped saas, ecommerce, and b2b—too many knobs, distributions that did not compose, and vertical assumptions leaking into shared code.
 date: 2026-07-24
 author: satus.sh
 tags: [profile, methodology, anti-pattern]
@@ -48,8 +48,8 @@ If you are adding a fourth, the same three checks apply. If a candidate profile 
 
 ## References
 
-- [/profiles](/profiles) — the three shipped profiles, verbatim from `packages/cli/src/generate/profiles.ts`.
-- [When Faker is the wrong answer](/blog/when-faker-is-the-wrong-answer) — why prose-shaped profiles beat column-by-column value generators.
-- [Designing the medical booking profile](/blog/medical-booking-profile) — the design-phase sketch referenced above; not shipped in the current CLI.
-- [Designing the ecommerce profile](/blog/ecommerce-profile) — the shipped `ecommerce` profile design writeup.
-- [Designing the SaaS subscriptions profile](/blog/saas-subscriptions-profile) — row-level status legality for billing tables.
+- [/profiles](/profiles)—the three shipped profiles, verbatim from `packages/cli/src/generate/profiles.ts`.
+- [When Faker is the wrong answer](/blog/when-faker-is-the-wrong-answer)—why prose-shaped profiles beat column-by-column value generators.
+- [Designing the medical booking profile](/blog/medical-booking-profile)—the design-phase sketch referenced above; not shipped in the current CLI.
+- [Designing the ecommerce profile](/blog/ecommerce-profile)—the shipped `ecommerce` profile design writeup.
+- [Designing the SaaS subscriptions profile](/blog/saas-subscriptions-profile)—row-level status legality for billing tables.
