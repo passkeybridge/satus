@@ -53,9 +53,9 @@ If you are writing your own seeder and your users have started reporting "the da
 
 ## References
 
-- [PostGIS documentation](https://postgis.net/documentation/) — geometry types, SRID handling, validity predicates.
-- [PostGIS `ST_IsValid`](https://postgis.net/docs/ST_IsValid.html) and [`ST_GeomFromEWKT`](https://postgis.net/docs/ST_GeomFromEWKT.html) — validity check and text-to-geometry constructor.
-- [pgvector README](https://github.com/pgvector/pgvector) — `vector(n)` type, distance operators, ANN index types.
-- [Postgres pgcrypto docs](https://www.postgresql.org/docs/current/pgcrypto.html) — symmetric encryption and password-hashing functions.
-- [Designing the SaaS subscriptions profile](/blog/saas-subscriptions-profile) — a schema-first counterpart to this post: valid rows the extension does not touch still need row-level composition to be useful.
-- [When Faker is the wrong answer](/blog/when-faker-is-the-wrong-answer) — why column-type-driven generation misses domain semantics; extensions make the same point in stronger form.
+- [PostGIS documentation](https://postgis.net/documentation/)—geometry types, SRID handling, validity predicates.
+- [PostGIS `ST_IsValid`](https://postgis.net/docs/ST_IsValid.html) and [`ST_GeomFromEWKT`](https://postgis.net/docs/ST_GeomFromEWKT.html)—validity check and text-to-geometry constructor.
+- [pgvector README](https://github.com/pgvector/pgvector)—`vector(n)` type, distance operators, ANN index types.
+- [Postgres pgcrypto docs](https://www.postgresql.org/docs/current/pgcrypto.html)—symmetric encryption and password-hashing functions.
+- [Designing the SaaS subscriptions profile](/blog/saas-subscriptions-profile)—a schema-first counterpart to this post: valid rows the extension does not touch still need row-level composition to be useful.
+- [When Faker is the wrong answer](/blog/when-faker-is-the-wrong-answer)—why column-type-driven generation misses domain semantics; extensions make the same point in stronger form.
