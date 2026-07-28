@@ -85,13 +85,22 @@ jobs:
 
 ## Verification status
 
-Honest accounting of what has been executed and what has not:
+All three scripts were executed end to end, twice (they are re-runnable), on
+PostgreSQL 17.9 with PostGIS 3.6.1, pgvector 0.8.2, and pgcrypto 1.3. Observed
+output:
 
-- `03-pgcrypto.sql` behaviour is verified against PostgreSQL 17.6 with
-  pgcrypto 1.3: `pgp_sym_decrypt` on random bytes raises
-  `Wrong key or corrupt data`, `digest`/`crypt` round-trips hold, and the
-  extension resolves through the `extensions` schema as documented above.
-- `01-postgis.sql` and `02-pgvector.sql` are written against the documented
-  behaviour of PostGIS 3.4 and pgvector 0.8 and have not been executed in
-  this repository's CI, which has neither extension installed. Run `./run.sh`
-  or the CI job above to execute them.
+| Case | Server message |
+| --- | --- |
+| PostGIS, random bytea | `Unknown WKB type (84148994)!` |
+| PostGIS, wrong subtype | `Geometry type (LineString) does not match column type (Point)` |
+| PostGIS, wrong SRID | `Geometry SRID (3857) does not match column SRID (4326)` |
+| PostGIS, bowtie polygon | stored; `ST_IsValid` false, `ST_IsValidReason` = `Self-intersection[0.5 0.5]`, `ST_Area` = 0 |
+| pgvector, wrong dimension | `expected 1536 dimensions, not 384` |
+| pgvector, zero vector | cosine `<=>` returns `NaN`; L2 `<->` returns a finite 3.742 |
+| pgvector, random unit vectors | 200 rows, HNSW index builds, nearest-neighbour distances cluster at 0.916–0.942 (no meaningful ranking) |
+| pgcrypto, random bytes | 10 rows accepted; `pgp_sym_decrypt` then raises `Wrong key or corrupt data`; hash lookup returns 0 rows |
+| pgcrypto, correct seed | decrypt round-trips, hash lookup returns 1 row, `crypt` login true / wrong password false |
+
+The corrected seeds in each script are the assertions: run under
+`psql -v ON_ERROR_STOP=1`, any regression fails the script.
+

@@ -23,7 +23,8 @@ CREATE TABLE customer_record (
 
 -- Stand-in for the application key. In a real test environment this comes
 -- from the same secret store the app reads, never from a literal.
-\set enc_key 'test-environment-key'
+-- (The key is written inline below. In a real test environment it comes from
+--  the same secret store the application reads, never from a literal.)
 
 -- ---------------------------------------------------------------------------
 -- FAILURE: random bytes. Every insert succeeds. Nothing warns you.
