@@ -5,7 +5,7 @@ description: PostGIS wants valid geometries. pgvector wants meaningful embedding
 date: 2026-07-27
 author: satus.sh
 tags: [postgres, extensions]
-draft: true
+draft: false
 ---
 
 Most Postgres columns will accept a syntactically-valid value and stop asking questions. A `text` column accepts any string. An `integer` column accepts any int in range. A `jsonb` column accepts any parseable JSON. This is why generic seeders, and generic type-driven fuzzers, look like they work on most schemas.
