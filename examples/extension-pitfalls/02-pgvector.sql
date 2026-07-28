@@ -71,7 +71,8 @@ CREATE INDEX document_embedding_hnsw
 SELECT count(*)                                AS rows_seeded,
        bool_and(vector_dims(embedding) = 1536) AS dims_ok,
        -- Cosine distance to a fixed non-zero probe is NaN only for zero vectors.
-       bool_and(NOT isnan((embedding <=> array_fill(1.0::real, ARRAY[1536])::vector)::float8))
+       bool_and((embedding <=> array_fill(1.0::real, ARRAY[1536])::vector)::float8
+                <> 'NaN'::float8)
          AS no_zero_vectors
 FROM document_embedding;
 
