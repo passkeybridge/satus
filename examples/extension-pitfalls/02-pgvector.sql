@@ -68,10 +68,11 @@ FROM generate_series(1, 200) AS g;
 CREATE INDEX document_embedding_hnsw
   ON document_embedding USING hnsw (embedding vector_cosine_ops);
 
-SELECT count(*)                                    AS rows_seeded,
-       bool_and(vector_dims(embedding) = 1536)     AS dims_ok,
-       bool_and(embedding <=> embedding IS NOT NULL
-                AND NOT (embedding <=> embedding = 'NaN'::float8)) AS no_zero_vectors
+SELECT count(*)                                AS rows_seeded,
+       bool_and(vector_dims(embedding) = 1536) AS dims_ok,
+       -- Cosine distance to a fixed non-zero probe is NaN only for zero vectors.
+       bool_and(NOT isnan((embedding <=> array_fill(1.0::real, ARRAY[1536])::vector)::float8))
+         AS no_zero_vectors
 FROM document_embedding;
 
 -- Nearest-neighbour query: returns rows, and the distances are near-identical.
