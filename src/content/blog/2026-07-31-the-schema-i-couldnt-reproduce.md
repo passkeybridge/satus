@@ -34,7 +34,7 @@ Two facts had to be true simultaneously for the failure to appear. Pagila's `pay
 
 What made the reproduction slow was that neither fact is visible in a stack trace, and neither is unusual on its own. The fix, once we could see it, is small and lives in `packages/cli/src/generate/introspect.ts`: exclude partition children from the table list, re-attribute any FK declared on a child back to the topmost ancestor via [`pg_partition_root()`](https://www.postgresql.org/docs/current/functions-info.html), and aggregate the duplicated constraint rows with `bool_or` so the deferrability flags survive the collapse.
 
-The same release also had to make the free-tier table cap respect foreign-key closure. Truncating a schema to its first five tables can select a child without its parents, which produces an unsatisfiable plan that looks, from the outside, exactly like an introspection bug.
+The free-tier table cap interacts with the same code path, and the interaction is worth stating precisely: the cap slices the *topologically ordered* table list, not the catalog order, so the retained prefix always contains a table's parents before the table itself. Deferred back-edges are then filtered down to the retained set, so the runner never tries to patch a table it never wrote. Cap a schema on any other ordering and you can seed a child whose parents were trimmed, which produces an unsatisfiable plan that looks, from the outside, exactly like an introspection bug.
 
 ## Reproduction two: quoted mixed-case identifiers
 
