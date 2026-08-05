@@ -6,12 +6,12 @@ import { TEMPLATES } from '@/lib/email-templates/registry'
 
 // Configuration baked in at scaffold time
 const SITE_NAME = "satus"
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.satus.sh"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled—this is cosmetic only.
-const FROM_DOMAIN = "notify.satus.sh"
+// SENDER_DOMAIN is the sender subdomain FQDN verified in our Resend account.
+// NEVER use the root domain.
+const SENDER_DOMAIN = "mail.satus.sh"
+// FROM_DOMAIN is the domain shown in the From: header. Must be (a subdomain
+// of) a Resend-verified domain or sends are rejected.
+const FROM_DOMAIN = "mail.satus.sh"
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'

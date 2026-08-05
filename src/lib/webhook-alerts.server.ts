@@ -6,10 +6,9 @@
  * drifts. Without this, a silently broken webhook = a paying customer who
  * never gets their license = refund + churn.
  *
- * Delivery: posts to Resend through the Lovable connector gateway. Avoids
- * the project's queued email infra on purpose — ops alerts must not sit
- * in a queue that depends on the same Postgres/cron path that may be the
- * thing breaking.
+ * Delivery: posts directly to the Resend API. Avoids the project's queued
+ * email infra on purpose — ops alerts must not sit in a queue that depends
+ * on the same Postgres/cron path that may be the thing breaking.
  *
  * Dedup: every Stripe webhook delivery carries the same `event.id` across
  * its retry attempts. We INSERT that id into `public.webhook_alerts_sent`
@@ -29,14 +28,13 @@
 
 import { supabaseAdmin } from '@/integrations/supabase/client.server'
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+const RESEND_API_URL = 'https://api.resend.com'
 
 /**
- * Visible "From:" address. `onboarding@resend.dev` is the only sender that
- * works without a verified Resend domain. Override with ALERTS_FROM_EMAIL
- * once a satus.sh sender is verified in Resend.
+ * Visible "From:" address. `mail.satus.sh` is verified in our Resend
+ * account. Override with ALERTS_FROM_EMAIL if the sender identity changes.
  */
-const FROM = process.env.ALERTS_FROM_EMAIL ?? 'satus alerts <onboarding@resend.dev>'
+const FROM = process.env.ALERTS_FROM_EMAIL ?? 'satus alerts <alerts@mail.satus.sh>'
 
 /** Where the alert lands. Defaults to the founder-facing support inbox. */
 const TO = process.env.ALERTS_TO_EMAIL ?? 'support@satus.sh'
@@ -153,10 +151,9 @@ function renderEmail(args: WebhookFailureArgs & { dedupKey: string }) {
  */
 export async function notifyWebhookFailure(args: WebhookFailureArgs): Promise<void> {
   try {
-    const lovableKey = process.env.LOVABLE_API_KEY
     const resendKey = process.env.RESEND_API_KEY
-    if (!lovableKey || !resendKey) {
-      console.error('[webhook-alerts] missing LOVABLE_API_KEY or RESEND_API_KEY; skipping alert')
+    if (!resendKey) {
+      console.error('[webhook-alerts] missing RESEND_API_KEY; skipping alert')
       return
     }
 
@@ -178,12 +175,11 @@ export async function notifyWebhookFailure(args: WebhookFailureArgs): Promise<vo
 
     const { subject, text } = renderEmail({ ...args, dedupKey })
 
-    const res = await fetch(`${GATEWAY_URL}/emails`, {
+    const res = await fetch(`${RESEND_API_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${lovableKey}`,
-        'X-Connection-Api-Key': resendKey,
+        Authorization: `Bearer ${resendKey}`,
       },
       body: JSON.stringify({
         from: FROM,

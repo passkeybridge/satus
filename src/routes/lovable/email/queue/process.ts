@@ -1,4 +1,4 @@
-import { sendLovableEmail } from '@lovable.dev/email-js'
+import { sendResendEmail } from '@/lib/resend.server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -64,11 +64,11 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY
+        const resendKey = process.env.RESEND_API_KEY
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-        if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
+        if (!resendKey || !supabaseUrl || !supabaseServiceKey) {
           console.error('Missing required environment variables')
           return Response.json(
             { error: 'Server configuration error' },
@@ -221,23 +221,25 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
             }
 
             try {
-              await sendLovableEmail(
-                {
-                  run_id: payload.run_id,
-                  to: payload.to,
-                  from: payload.from,
-                  sender_domain: payload.sender_domain,
-                  subject: payload.subject,
-                  html: payload.html,
-                  text: payload.text,
-                  purpose: payload.purpose,
-                  label: payload.label,
-                  idempotency_key: payload.idempotency_key,
-                  unsubscribe_token: payload.unsubscribe_token,
-                  message_id: payload.message_id,
-                },
-                { apiKey, sendUrl: process.env.LOVABLE_SEND_URL }
-              )
+              // RFC 8058 one-click unsubscribe headers. Our /email/unsubscribe
+              // route handles both GET (link) and POST (one-click).
+              const siteUrl = process.env.PUBLIC_SITE_URL ?? 'https://satus.sh'
+              const unsubscribeHeaders: Record<string, string> = payload.unsubscribe_token
+                ? {
+                    'List-Unsubscribe': `<${siteUrl}/email/unsubscribe?token=${payload.unsubscribe_token}>`,
+                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                  }
+                : {}
+
+              await sendResendEmail({
+                to: payload.to,
+                from: payload.from,
+                subject: payload.subject,
+                html: payload.html,
+                text: payload.text,
+                headers: unsubscribeHeaders,
+                idempotencyKey: payload.idempotency_key || payload.message_id,
+              })
 
               // Log success
               await supabase.from('email_send_log').insert({
