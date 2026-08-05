@@ -1,7 +1,7 @@
 ---
 slug: triggers-i-have-loved-and-hated
 title: Triggers I have loved and hated
-description: Postgres triggers turn INSERT into a black box. Here is what audit, denormalization, and validation triggers actually do to a satus seed run, measured on PostgreSQL 17.9.
+description: Audit, denormalization, and validation triggers each break a Postgres seed run differently. What actually happens, measured on PostgreSQL 17.9.
 date: 2026-08-05
 author: satus.sh
 tags: [postgres, triggers]
