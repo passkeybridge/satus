@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: passkeybridge/satus-action@v1
+      - uses: passkeybridge/satus/packages/action@main
         with:
           database-url: ${{ secrets.PREVIEW_DATABASE_URL }}
           rows: 250
@@ -36,7 +36,7 @@ jobs:
 For an Anthropic-first workflow, swap the two lines that mention OpenAI:
 
 ```yaml
-      - uses: passkeybridge/satus-action@v1
+      - uses: passkeybridge/satus/packages/action@main
         with:
           database-url: ${{ secrets.PREVIEW_DATABASE_URL }}
           provider: anthropic

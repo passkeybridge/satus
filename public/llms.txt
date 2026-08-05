@@ -1,48 +1,69 @@
 # satus
 
-> A CLI that reads your Postgres schema and writes realistic, relationally-coherent seed data that respects every foreign key, constraint, and business rule. Postgres only. CLI only.
+> A CLI that reads your Postgres schema and writes realistic, relationally-coherent seed data that respects foreign keys and constraints. Postgres only. CLI only.
 
-satus is distributed as the npm package `@passkeybridge/satus` (binary: `satus`). It introspects your live Postgres schema, builds a dependency DAG from foreign keys, and emits inserts that load on the first try. Three built-in domain profiles (medical, e-commerce, SaaS) shape values so demo and QA data looks like a real business instead of `John Doe` and `Lorem Ipsum Corp`.
+satus is distributed as the npm package `@passkeybridge/satus` (binary: `satus`, Node >= 20). It introspects your live Postgres schema from pg_catalog (tables, columns, PKs, FKs with deferrability, single-column uniques, enums, partitioned tables), builds a dependency DAG from foreign keys, topologically sorts the insert order, breaks FK cycles by deferring a nullable back-edge and back-patching it after all tables are seeded, and generates rows with an LLM you bring your own key for (OpenAI or Anthropic). All inserts for a run happen in one transaction: a failure rolls everything back. Three built-in prompt profiles (`saas`, `ecommerce`, `b2b`) shape tone and value distributions so data looks like a real business instead of `John Doe`.
 
 ## Canonical commands
 
 ```bash
-# Install
+# Install (or run via npx @passkeybridge/satus)
 npm install -g @passkeybridge/satus
 
-# One-time setup in a project (writes ./satus/config.yml)
+# One-time interactive setup in a project (writes ./satus.config.json)
 satus init
 
-# Inspect the plan without writing data (DAG, row counts, profile binding)
-satus plan --schema public --profile medical
+# Plan + validate offline: cost estimate, simulated rows, relational
+# validation. No LLM calls, no writes. Exits 2 on validation errors
+# (usable as a CI gate). Add --json for a machine-readable report.
+satus generate --profile ecommerce --dry-run
 
-# Generate and load seed data
-satus generate --schema public --profile medical --rows 1000
+# Generate and insert for real
+satus generate --profile ecommerce --rows 50
 
-# Required environment
-# Required environment
-export DATABASE_URL=postgres://user:pass@host:5432/db
+# Activate a paid license (Free tier needs no activation)
+satus activate satus_live_...
 
-# LLM provider (pick one; set both and pass --provider, or set the
-# provider field in satus.config.json to disambiguate).
-export OPENAI_API_KEY=sk-...
-export ANTHROPIC_API_KEY=sk-ant-...
+# Show the cached license state
+satus whoami
 ```
 
-Exit codes: `0` success, `10` schema unreachable, `11` target schema not empty, `20` LLM rate-limited, `21` LLM auth, `30` profile not found. Full reference: https://satus.sh/cli.
+## Flags on `satus generate`
+
+`--profile saas|ecommerce|b2b` · `--rows <n>` (default 50) · `--max-cost <usd>` (default 1.00, aborts + rolls back before overshooting) · `--batch-size <n>` (default 25 rows per LLM call) · `--dsn <url>` · `--schema <name>` (default public) · `--provider openai|anthropic` (auto-detected from which API key env var is set; errors if both are set and no explicit choice) · `--model <id>` (defaults: gpt-4o-mini / claude-haiku-4-5) · `--truncate` (TRUNCATE ... RESTART IDENTITY CASCADE on target tables before inserting, same transaction) · `--dry-run` · `--verbose` · `--json`
+
+## Environment
+
+```bash
+export DATABASE_URL=postgres://user:pass@host:5432/db   # or SATUS_DATABASE_URL, or --dsn
+export OPENAI_API_KEY=sk-...        # or ANTHROPIC_API_KEY=sk-ant-... (pick one)
+```
+
+`OPENAI_BASE_URL` / `ANTHROPIC_BASE_URL` override the API endpoints (compatible providers, proxies).
+
+## Tiers, exit codes, limits
+
+- Free tier: 25 rows/table, 5 tables, no activation needed. Pro/Team (via https://satus.sh/pricing) remove the caps.
+- Exit codes: `0` success, `1` error (connection, config, LLM, budget), `2` dry-run validation findings.
+- Known v0.x limits, stated honestly: multi-column unique constraints are not enforced during generation; cross-column arithmetic (e.g. order totals summing from line items) is not reconciled; LLM output is not deterministic and there is no --seed flag — snapshot seeded state with pg_dump for reproducible fixtures.
+
+## GitHub Action
+
+Use `passkeybridge/satus/packages/action@main` — a composite action that installs the CLI and runs `satus generate` (optionally `--dry-run`) against a workflow-provided DATABASE_URL. Reference: https://satus.sh/docs/github-action.
 
 ## Pages
 
 - [Overview](/): What satus is, how the pipeline works, and what it deliberately will not do.
-- [Quickstart](/quickstart): Install the CLI and generate your first seed file in under five minutes.
-- [Docs](/docs): Full reference for configuration, profiles, and run modes.
-- [GitHub Action](/docs/github-action): passkeybridge/satus-action@v1 — composite action for PR-preview databases.
-- [CLI reference](/cli): Every flag, subcommand, and exit code.
-- [Profiles](/profiles): The three built-in domain profiles and what each one generates.
-- [Recipes](/recipes): Common patterns: PR preview environments, CI fixtures, screenshot data.
-- [Compare](/compare): satus vs faker, vs hand-written fixtures, vs database snapshots.
-- [Pricing](/pricing): Free CLI tier and paid license tiers.
-- [Blog](/blog): Articles on Postgres seed data, schema-aware testing, and related topics.
+- [Demo](/demo): In-browser instant demo — paste a schema, see generated rows.
+- [Quickstart](/quickstart): Install the CLI and seed a database in minutes.
+- [Docs](/docs): Configuration, profiles, and run modes.
+- [GitHub Action](/docs/github-action): CI reference for the composite action.
+- [CLI reference](/cli): Flags, subcommands, and exit codes.
+- [Profiles](/profiles): The three built-in prompt profiles and what each generates.
+- [Recipes](/recipes): PR preview environments, CI fixtures, E2E resets.
+- [Compare](/compare): satus vs faker, hand-written fixtures, and snapshots.
+- [Pricing](/pricing): Free tier and paid license tiers.
+- [Blog](/blog): Postgres seed data, schema-aware testing, and build notes.
 
 ## Optional
 

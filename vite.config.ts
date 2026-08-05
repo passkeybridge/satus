@@ -12,4 +12,9 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    // PGlite ships its own wasm + FS bundle; Vite's dep optimizer corrupts
+    // them in dev ("Invalid FS bundle size"). Standard upstream guidance.
+    optimizeDeps: { exclude: ["@electric-sql/pglite"] },
+  },
 });

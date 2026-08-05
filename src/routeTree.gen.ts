@@ -18,6 +18,7 @@ import { Route as QuickstartRouteImport } from './routes/quickstart'
 import { Route as ProfilesRouteImport } from './routes/profiles'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CliRouteImport } from './routes/cli'
 import { Route as IndexRouteImport } from './routes/index'
@@ -40,6 +41,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
 import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
+import { Route as ApiPublicDemoGenerateRouteImport } from './routes/api/public/demo/generate'
 import { Route as ApiPublicCliRunRouteImport } from './routes/api/public/cli/run'
 import { Route as ApiPublicBillingPortalRouteImport } from './routes/api/public/billing/portal'
 
@@ -86,6 +88,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -202,6 +209,11 @@ const ApiPublicHooksE2eHealthRoute = ApiPublicHooksE2eHealthRouteImport.update({
   path: '/api/public/hooks/e2e-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDemoGenerateRoute = ApiPublicDemoGenerateRouteImport.update({
+  id: '/api/public/demo/generate',
+  path: '/api/public/demo/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
   id: '/api/public/cli/run',
   path: '/api/public/cli/run',
@@ -217,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
+  '/demo': typeof DemoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -241,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
+  '/api/public/demo/generate': typeof ApiPublicDemoGenerateRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -252,6 +266,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
+  '/demo': typeof DemoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -276,6 +291,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
+  '/api/public/demo/generate': typeof ApiPublicDemoGenerateRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -288,6 +304,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cli': typeof CliRoute
   '/compare': typeof CompareRoute
+  '/demo': typeof DemoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profiles': typeof ProfilesRoute
@@ -312,6 +329,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
+  '/api/public/demo/generate': typeof ApiPublicDemoGenerateRoute
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -325,6 +343,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
+    | '/demo'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -349,6 +368,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/billing/portal'
     | '/api/public/cli/run'
+    | '/api/public/demo/generate'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
@@ -360,6 +380,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
+    | '/demo'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -384,6 +405,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/billing/portal'
     | '/api/public/cli/run'
+    | '/api/public/demo/generate'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
@@ -395,6 +417,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cli'
     | '/compare'
+    | '/demo'
     | '/pricing'
     | '/privacy'
     | '/profiles'
@@ -419,6 +442,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/billing/portal'
     | '/api/public/cli/run'
+    | '/api/public/demo/generate'
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
@@ -431,6 +455,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CliRoute: typeof CliRoute
   CompareRoute: typeof CompareRoute
+  DemoRoute: typeof DemoRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfilesRoute: typeof ProfilesRoute
@@ -455,6 +480,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicBillingPortalRoute: typeof ApiPublicBillingPortalRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
+  ApiPublicDemoGenerateRoute: typeof ApiPublicDemoGenerateRoute
   ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
   ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -526,6 +552,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -682,6 +715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksE2eHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/demo/generate': {
+      id: '/api/public/demo/generate'
+      path: '/api/public/demo/generate'
+      fullPath: '/api/public/demo/generate'
+      preLoaderRoute: typeof ApiPublicDemoGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cli/run': {
       id: '/api/public/cli/run'
       path: '/api/public/cli/run'
@@ -703,6 +743,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CliRoute: CliRoute,
   CompareRoute: CompareRoute,
+  DemoRoute: DemoRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfilesRoute: ProfilesRoute,
@@ -727,6 +768,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicBillingPortalRoute: ApiPublicBillingPortalRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,
+  ApiPublicDemoGenerateRoute: ApiPublicDemoGenerateRoute,
   ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,
   ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,

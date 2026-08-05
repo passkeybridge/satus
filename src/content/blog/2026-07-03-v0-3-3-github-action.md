@@ -8,6 +8,7 @@ tags: [roadmap, ci, github, release]
 draft: false
 ---
 
+> **Editor's note (2026-08-05):** This post references `passkeybridge/satus-action@v1` on the GitHub Marketplace. The Action was never published as a standalone Marketplace repo; it lives in the main repo and is referenced as `passkeybridge/satus/packages/action@main`. YAML snippets below have been updated to the working reference.
 **Update 2026-07-15: superseded by the [v0.3.3 release notes](/blog/v0-3-3-release-notes).** The Action shipped as designed; this post stays as the pre-release design record.
 
 This is a roadmap post, not a release announcement. The GitHub Action described below has not shipped yet. The current published CLI is `@passkeybridge/satus@0.3.2`. When v0.3.3 lands on npm, a proper changelog post replaces this one at a different slug; this post stays as the design record.
@@ -24,7 +25,7 @@ We are being careful not to overstate this signal. We do not yet have telemetry 
 
 The release is deliberately narrow. Everything below is scoped, not shipped:
 
-- `packages/action/`—a composite GitHub Action published to the Marketplace as `passkeybridge/satus-action@v1`. Composite means no Docker image, no container startup cost, no root filesystem writes; it is three shell steps that install Node, run `npx @passkeybridge/satus@<pinned-version> generate`, and upload the run manifest as a workflow artifact.
+- `packages/action/`—a composite GitHub Action published to the Marketplace as `passkeybridge/satus/packages/action@main`. Composite means no Docker image, no container startup cost, no root filesystem writes; it is three shell steps that install Node, run `npx @passkeybridge/satus@<pinned-version> generate`, and upload the run manifest as a workflow artifact.
 - `action.yml`—inputs for `database-url` (required, always passed as a secret), `rows`, `profile`, `provider`, `model`, `max-cost`, `dry-run`, `working-directory`, and `satus-version` (defaults to the latest 0.3.x). Outputs the `run-id`, `tables-seeded`, `rows-inserted`, `tokens-in`, `tokens-out`, and `spent-usd` fields so downstream steps can gate on cost.
 - One integration test in `.github/workflows/action-selftest.yml` that stands up an ephemeral Postgres service container, runs the Action against the `pagila` fixture from our [corpus audit](/blog/introducing-the-log), and asserts a clean `--dry-run` followed by a non-empty insert.
 - Docs at `/docs/github-action` on the marketing site, with a full example workflow and the security notes below.
@@ -47,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: passkeybridge/satus-action@v1
+      - uses: passkeybridge/satus/packages/action@main
         with:
           database-url: ${{ secrets.PREVIEW_DATABASE_URL }}
           rows: 250

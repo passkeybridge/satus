@@ -29,6 +29,7 @@ import {
 
 export const SITE_NAV = [
   { to: "/", label: "~/overview" },
+  { to: "/demo", label: "~/demo" },
   { to: "/profiles", label: "~/profiles" },
   { to: "/pricing", label: "~/pricing" },
   { to: "/docs", label: "~/docs" },

@@ -21,6 +21,7 @@ interface Entry {
 
 const STATIC_ROUTES: Entry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
+  { path: "/demo", changefreq: "monthly", priority: "0.9" },
   { path: "/profiles", changefreq: "monthly", priority: "0.8" },
   { path: "/pricing", changefreq: "monthly", priority: "0.8" },
   { path: "/docs", changefreq: "monthly", priority: "0.9" },

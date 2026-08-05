@@ -114,6 +114,9 @@ function Overview() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <Link to="/demo" className="link-underline font-mono text-[13px] text-[var(--signal)]">
+          try it in your browser →
+        </Link>
         <Link to="/quickstart" className="link-underline font-mono text-[13px]">
           read the quickstart →
         </Link>

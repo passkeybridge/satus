@@ -1,5 +1,5 @@
 /**
- * /docs/github-action — reference for passkeybridge/satus-action@v1.
+ * /docs/github-action — reference for passkeybridge/satus/packages/action@main.
  *
  * Documents the composite GitHub Action that wraps `satus generate` in a
  * PR-preview workflow. Facts here MUST stay in sync with:
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/docs/github-action")({
       {
         name: "description",
         content:
-          "passkeybridge/satus-action@v1: a composite GitHub Action that runs `satus generate` against your PR-preview Postgres database. Inputs, outputs, security notes.",
+          "passkeybridge/satus/packages/action@main: a composite GitHub Action that runs `satus generate` against your PR-preview Postgres database. Inputs, outputs, security notes.",
       },
       { property: "og:title", content: "GitHub Action—satus" },
       {
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/docs/github-action")({
           "@type": "TechArticle",
           headline: "satus GitHub Action reference",
           description:
-            "Reference for the passkeybridge/satus-action@v1 composite GitHub Action.",
+            "Reference for the passkeybridge/satus/packages/action@main composite GitHub Action.",
           url: SITE_URL + "/docs/github-action",
           inLanguage: "en",
           author: { "@type": "Organization", name: "satus.sh" },
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: passkeybridge/satus-action@v1
+      - uses: passkeybridge/satus/packages/action@main
         with:
           database-url: \${{ secrets.PREVIEW_DATABASE_URL }}
           rows: 250
@@ -144,7 +144,7 @@ function GitHubActionPage() {
       <Section id="overview" n="01" label="Overview" title={<>satus in one composite action.</>}>
         <Prose>
           <p>
-            <code>passkeybridge/satus-action@v1</code> runs{" "}
+            <code>passkeybridge/satus/packages/action@main</code> runs{" "}
             <code>satus generate</code> inside a GitHub Actions workflow and
             uploads the run manifest as a workflow artifact. It is a{" "}
             <a
@@ -299,7 +299,7 @@ function GitHubActionPage() {
             </li>
           </ul>
           <p className="mt-8 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-            Reference for <code>passkeybridge/satus-action@v1</code>. If
+            Reference for <code>passkeybridge/satus/packages/action@main</code>. If
             anything here drifts from{" "}
             <a
               href="https://github.com/passkeybridge/satus/blob/main/packages/action/action.yml"
