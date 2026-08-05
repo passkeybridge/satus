@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 
 
+import { Analytics } from "@vercel/analytics/react";
+
 import appCss from "../styles.css?url";
 import { PaymentTestModeBanner } from "@/components/site/PaymentTestModeBanner";
 
@@ -237,6 +239,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        {/* Vercel Web Analytics. `/react` entry, not `/next` — this app is
+         *  Vite + TanStack Start. Requires Analytics enabled on the Vercel
+         *  project; no-ops locally. */}
+        <Analytics />
         <Scripts />
       </body>
     </html>
