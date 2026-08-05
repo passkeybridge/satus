@@ -140,7 +140,7 @@ So the split is clean. Everything declarative is checkable offline. Everything p
 | `BEFORE` row, rewrites `NEW` | Safe. `RETURNING` reflects the edit, so FK chaining stays correct | Nothing |
 | Audit / history | Extra rows per insert, plus one per cycle back-patch `UPDATE`; survives `TRUNCATE` | `exclude` the log table, truncate it yourself |
 | Denormalization counter | Silent drift when the counter column has no default | Give the column a default, or reconcile after seeding |
-| Validation, raises | Whole run rolls back, zero rows written | Encode the rule in a `CHECK` or a column comment |
+| Validation, raises | Whole run rolls back, zero rows written | Encode the rule in a `CHECK`, or `exclude` the table |
 | HTTP / side-effecting | Fires per row, invisible to satus | Audit `pg_trigger` before seeding an unfamiliar database |
 
 Triggers are the part of a schema that a catalog read cannot summarize. satus will not pretend otherwise, and the two defenses it does offer, one transaction and an `exclude` list, are the ones that hold.
