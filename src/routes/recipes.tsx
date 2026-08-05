@@ -93,14 +93,15 @@ function RecipesPage() {
           <Shell>{`export OPENAI_API_KEY=$OPENAI_API_KEY`}</Shell>
           <Blank />
           <Cmt>{`# seed it. one transaction. all-or-nothing.`}</Cmt>
-          <Shell>{`satus generate --profile e-commerce --seed 42`}</Shell>
-          <Out>{`✓ 4,812 rows · $0.07 · 11.4s`}</Out>
+          <Shell>{`satus generate --profile ecommerce --rows 50`}</Shell>
+          <Out>{`✓ inserted 250 rows across 5 tables`}</Out>
         </Terminal>
 
         <Note>
-          Pin <code>--seed</code> so a re-run on the same branch produces
-          identical data. Reviewers can deep-link to a specific row by ID and
-          trust it stays put.
+          Each run generates fresh data—the model varies values by design. If
+          a review depends on stable fixtures, keep the branch alive instead
+          of re-seeding it, or snapshot the seeded state with{" "}
+          <code>pg_dump</code>.
         </Note>
       </Section>
 
@@ -124,24 +125,25 @@ function RecipesPage() {
           <Shell>{`jobs:`}</Shell>
           <Shell>{`  seed:`}</Shell>
           <Shell>{`    runs-on: ubuntu-latest`}</Shell>
+          <Shell>{`    env:`}</Shell>
+          <Shell>{`      DATABASE_URL: \${{ secrets.DATABASE_URL }}`}</Shell>
+          <Shell>{`      OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}`}</Shell>
           <Shell>{`    steps:`}</Shell>
           <Shell>{`      - uses: actions/checkout@v4`}</Shell>
           <Shell>{`      - uses: actions/setup-node@v4`}</Shell>
           <Shell>{`        with: { node-version: 20 }`}</Shell>
           <Shell>{`      - run: npm i -g @passkeybridge/satus`}</Shell>
-          <Shell>{`      - run: satus plan --profile saas-subscriptions --json`}</Shell>
+          <Shell>{`      - run: satus generate --profile saas --dry-run --json`}</Shell>
           <Shell>{`        if: github.event_name == 'pull_request'`}</Shell>
-          <Shell>{`      - run: satus generate --profile saas-subscriptions`}</Shell>
+          <Shell>{`      - run: satus generate --profile saas`}</Shell>
           <Shell>{`        if: github.ref == 'refs/heads/main'`}</Shell>
-          <Shell>{`        env:`}</Shell>
-          <Shell>{`          DATABASE_URL: \${{ secrets.DATABASE_URL }}`}</Shell>
-          <Shell>{`          OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}`}</Shell>
         </Terminal>
 
         <Note>
-          <code>satus plan --json</code> is read-only and needs no DB
-          credentials when given <code>--schema ./schema.sql</code>. Use it as a
-          PR check to catch schema-breaking changes before merge.
+          <code>satus generate --dry-run --json</code> introspects but never
+          writes and never calls the model—no LLM key needed, no spend. It
+          exits non-zero when the relational validator finds errors, so it
+          works as a PR gate for schema-breaking changes.
         </Note>
       </Section>
 
@@ -154,9 +156,10 @@ function RecipesPage() {
         <Prose>
           <p>
             Cypress, Playwright, and Vitest E2E suites need a known-good
-            database state. The pattern: truncate user tables, then{" "}
-            <code>satus generate --seed</code> with a fixed seed. The fixed
-            seed gives every test the same starting rows.
+            database state. The pattern: seed once with{" "}
+            <code>--truncate</code>, snapshot the result with{" "}
+            <code>pg_dump</code>, and restore that fixture between suites—
+            restores are fast and byte-identical, which generation is not.
           </p>
         </Prose>
 
@@ -165,19 +168,16 @@ function RecipesPage() {
           <Shell>{`#!/usr/bin/env bash`}</Shell>
           <Shell>{`set -euo pipefail`}</Shell>
           <Blank />
-          <Cmt>{`# 1 · truncate everything user-owned in a single tx`}</Cmt>
-          <Shell>{`psql "$DATABASE_URL" -c "TRUNCATE \\`}</Shell>
-          <Shell>{`  orders, order_items, products, customers \\`}</Shell>
-          <Shell>{`  RESTART IDENTITY CASCADE;"`}</Shell>
-          <Blank />
-          <Cmt>{`# 2 · re-seed with a fixed seed for deterministic IDs`}</Cmt>
-          <Shell>{`satus generate --profile e-commerce --seed 1 --force`}</Shell>
+          <Cmt>{`# truncate the target tables and re-seed in one run`}</Cmt>
+          <Shell>{`satus generate --profile ecommerce --truncate`}</Shell>
         </Terminal>
 
         <Note>
-          <code>--force</code> is required here because the truncate may leave
-          residual rows in tables satus doesn't own. Wire this into Cypress's{" "}
-          <code>before(...)</code> hook or Playwright's{" "}
+          <code>--truncate</code> issues{" "}
+          <code>TRUNCATE ... RESTART IDENTITY CASCADE</code> on the run&rsquo;s
+          tables inside the same transaction as the inserts, so sequences reset
+          and a failed run leaves the old data in place. Wire this into
+          Cypress&rsquo;s <code>before(...)</code> hook or Playwright&rsquo;s{" "}
           <code>globalSetup</code>.
         </Note>
       </Section>
@@ -202,7 +202,7 @@ function RecipesPage() {
           <Shell>{`export DATABASE_URL=$(echo "$BRANCH" | jq -r .connection_uris[0].connection_uri)`}</Shell>
           <Blank />
           <Cmt>{`# seed`}</Cmt>
-          <Shell>{`satus generate --profile saas-subscriptions`}</Shell>
+          <Shell>{`satus generate --profile saas`}</Shell>
         </Terminal>
 
         <Note>

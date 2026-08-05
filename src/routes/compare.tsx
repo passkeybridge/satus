@@ -196,7 +196,7 @@ function ComparePage() {
           ]}
           ours={[
             "Generates synthetic data without ever touching production.",
-            "Single binary; runs anywhere Node 18+ does.",
+            "Single binary; runs anywhere Node 20+ does.",
             "Works on day one with no source dataset to subset.",
           ]}
           verdict="Pick Tonic if you have production data and need to safely move a subset of it downstream. Pick satus if you want plausible data without ever copying real customer rows."

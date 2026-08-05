@@ -54,6 +54,21 @@ function hashIp(ip: string | null): string | null {
   return crypto.createHash('sha256').update(ip).digest('hex').slice(0, 32)
 }
 
+/**
+ * The CLI's license contract is plan ∈ 'free' | 'pro' | 'team' — the shipped
+ * binary literally gates paid caps on `plan === 'pro' || plan === 'team'`.
+ * The licenses table stores the Stripe checkout lookup key verbatim
+ * (satus_pro_monthly, satus_team_seat_monthly, ...), so normalize at this
+ * API boundary. Unrecognized values (e.g. the e2e 'monitor' plan) pass
+ * through unchanged, which the CLI treats as unpaid.
+ */
+function normalizePlan(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  if (raw.includes('team')) return 'team'
+  if (raw.includes('pro')) return 'pro'
+  return raw
+}
+
 const Payload = z.object({
   key: z
     .string()
@@ -135,7 +150,7 @@ export const Route = createFileRoute('/api/public/license/verify')({
 
         return json(200, {
           valid: true,
-          plan: data.plan,
+          plan: normalizePlan(data.plan),
           expires_at: data.current_period_end,
         })
       },

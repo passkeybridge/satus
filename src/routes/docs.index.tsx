@@ -100,7 +100,7 @@ function DocsPage() {
             to="/profiles"
             kicker="catalogue"
             title="Profiles"
-            body="The three bundled domains—medical booking, e-commerce, SaaS subscriptions—with their invariants and sample output."
+            body="The three bundled domains—saas, ecommerce, b2b—with the tone and distribution hints each one gives the model."
           />
         </CardGrid>
       </Section>

@@ -39,7 +39,7 @@ const FAQS: Faq[] = [
   },
   {
     q: "Which Node versions are supported?",
-    a: "Node 18, 20, and 22 on macOS and Linux. Windows is supported via WSL2. Older Node versions are not tested and will likely fail at install or first run.",
+    a: "Node 20 and 22 on macOS and Linux (the package declares engines >=20). Windows is supported via WSL2. Older Node versions are not tested and will likely fail at install or first run.",
   },
   {
     q: "Do I need any environment variables to run `satus init`?",
@@ -57,7 +57,7 @@ const FAQS: Faq[] = [
   },
   {
     q: "E_PROFILE_NOT_FOUND: profile name doesn't match",
-    a: "The --profile value must match either one of the three bundled profiles (medical-booking, e-commerce, saas-subscriptions) or a Markdown file in ./satus/profiles/. Check spelling, check the directory you're running from, and check that `satus init --profile <name>` actually wrote the file.",
+    a: "The --profile value must be one of the three bundled profiles: saas, ecommerce, or b2b. There are no hyphens in the names, and custom profile files are not supported yet—`satus init` writes the chosen profile into satus.config.json, which `satus generate` reads when the flag is omitted.",
   },
   {
     q: "satus generated rows that violate a CHECK constraint I didn't think to declare in the profile",
@@ -89,11 +89,11 @@ const FAQS: Faq[] = [
   },
   {
     q: "Can I run satus generate twice in a row?",
-    a: "Yes, against a fresh or empty database. If the first run committed successfully you'll trip the 10,000-row safety guard on the second; pass --force or truncate first. For CI loops, point at a database branch and reset between runs.",
+    a: "Yes. Each run inserts on top of whatever is there—satus never deletes data unless you ask. Pass --truncate to clear the target tables (TRUNCATE ... RESTART IDENTITY CASCADE) inside the same transaction before re-seeding. For CI loops, point at a database branch and reset between runs.",
   },
   {
     q: "How do I produce the same data twice for snapshot tests?",
-    a: "Pass --seed <n>. Identical seed + identical schema + identical profile + same model version = identical rows. Across model versions reproducibility is best-effort; OpenAI does not guarantee deterministic output at a given temperature.",
+    a: "You can't—LLM output is non-deterministic and satus has no --seed flag, on purpose: we won't promise reproducibility the model providers don't offer. For snapshot tests, seed once and capture the state with pg_dump (or a database branch snapshot), then restore that fixture between runs.",
   },
   {
     q: "Does satus need superuser access on Postgres?",

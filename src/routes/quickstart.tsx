@@ -66,13 +66,13 @@ export const Route = createFileRoute("/quickstart")({
             {
               "@type": "HowToStep",
               name: "Configure",
-              text: "Set DATABASE_URL and run satus init --profile e-commerce.",
+              text: "Set DATABASE_URL and run satus init to scaffold satus.config.json.",
               url: SITE_URL + "/quickstart#configure",
             },
             {
               "@type": "HowToStep",
               name: "Preview",
-              text: "Dry-run to inspect the SQL before it hits your database.",
+              text: "Dry-run to validate the plan offline before anything touches your database.",
               url: SITE_URL + "/quickstart#preview",
             },
             {
@@ -108,11 +108,11 @@ function QuickstartPage() {
         id="install"
         n="01"
         label="Install"
-        title={<>one global binary. node 18+.</>}
+        title={<>one global binary. node 20+.</>}
       >
         <Prose>
           <p>
-            satus ships as a single Node binary. We test on Node 18, 20, and 22 across macOS and
+            satus ships as a single Node binary. We test on Node 20 and 22 across macOS and
             Linux. Windows is supported via WSL2.
           </p>
         </Prose>
@@ -122,7 +122,7 @@ function QuickstartPage() {
           <Blank />
           <Cmt>{`# verify`}</Cmt>
           <Shell>{`satus --version`}</Shell>
-          <Out>{`satus 0.3.2`}</Out>
+          <Out>{`0.3.5`}</Out>
         </Terminal>
       </Section>
 
@@ -135,8 +135,8 @@ function QuickstartPage() {
         <Prose>
           <p>
             Supabase, Neon, Railway, RDS, or a local instance—satus reads <code>DATABASE_URL</code>{" "}
-            and your LLM provider key from the environment. It will refuse to run against a database with
-            more than 10,000 user rows unless you pass <code>--force</code>.
+            and your LLM provider key from the environment. The free tier caps runs at 25 rows per
+            table across 5 tables; a Pro or Team key (<code>satus activate</code>) removes the caps.
           </p>
           <p>
             Pick one provider: export <code>OPENAI_API_KEY</code> or{" "}
@@ -151,10 +151,9 @@ function QuickstartPage() {
           <Shell>{`export DATABASE_URL="postgres://user:pass@localhost:5432/app"`}</Shell>
           <Shell>{`export OPENAI_API_KEY="sk-..."`}</Shell>
           <Blank />
-          <Cmt>{`# 2 · fork an official profile into ./satus/`}</Cmt>
-          <Shell>{`satus init --profile e-commerce`}</Shell>
-          <Out>{`✓ wrote satus/profiles/e-commerce.md`}</Out>
-          <Out>{`✓ wrote satus/satus.config.json`}</Out>
+          <Cmt>{`# 2 · scaffold satus.config.json (interactive: schema, profile, provider, model)`}</Cmt>
+          <Shell>{`satus init`}</Shell>
+          <Out>{`✓ wrote satus.config.json`}</Out>
         </Terminal>
       </Section>
 
@@ -166,16 +165,18 @@ function QuickstartPage() {
       >
         <Prose>
           <p>
-            <code>--dry</code> runs the full pipeline—introspect, plan, generate—but writes the
-            output to stdout as a single SQL transcript instead of executing it. Diff it, review it,
-            commit it as a fixture.
+            <code>--dry-run</code> runs the full pipeline offline—introspect, FK-sort, simulate,
+            validate—without calling the model or writing a row. It prints a per-table cost
+            estimate, then runs the relational validator against simulated output and exits
+            non-zero on findings, so it works as a CI gate. Add <code>--json</code> for a
+            machine-readable report.
           </p>
         </Prose>
         <Terminal>
-          <Cmt>{`# write the planned inserts to a file`}</Cmt>
-          <Shell>{`satus generate --profile e-commerce --dry > satus-output.sql`}</Shell>
-          <Out>{`✓ planned 4,812 rows across 14 tables`}</Out>
-          <Out>{`✓ estimated cost · $0.07`}</Out>
+          <Cmt>{`# plan + validate offline; no spend, no writes`}</Cmt>
+          <Shell>{`satus generate --profile ecommerce --dry-run`}</Shell>
+          <Out>{`  estimated cost: $0.0094`}</Out>
+          <Out>{`  ✓ no validation findings across 5 tables`}</Out>
         </Terminal>
       </Section>
 
@@ -192,8 +193,8 @@ function QuickstartPage() {
           </p>
         </Prose>
         <Terminal>
-          <Shell>{`satus generate --profile e-commerce`}</Shell>
-          <Out>{`✓ 4,812 rows · $0.07 · 11.4s`}</Out>
+          <Shell>{`satus generate --profile ecommerce --rows 25`}</Shell>
+          <Out>{`✓ inserted 125 rows across 5 tables`}</Out>
         </Terminal>
       </Section>
 
@@ -218,14 +219,14 @@ function QuickstartPage() {
             body="satus detects cycles in your FK graph at planning time and breaks them automatically by deferring a nullable column and back-patching in pass 2 (see the cyclic FKs post). This error fires when every column on the cycle is NOT NULL with no DEFAULT, so there's nowhere to put a placeholder. Mark one side nullable, add a DEFAULT, or declare the constraint DEFERRABLE."
           />
           <Issue
-            code="E_DB_NOT_EMPTY"
-            title="Database has more than 10,000 user rows"
-            body="Safety guard. Re-run with --force if you are certain you want to add seed data on top of real rows. We recommend pointing at a fresh branch (Supabase, Neon) or a Docker container instead."
+            code="E_NO_PARENT_ROWS"
+            title="No parent rows available for a NOT NULL foreign key"
+            body="A child table's NOT NULL FK points at a table that isn't in the run set—usually because it lives in another schema or is listed under `exclude` in satus.config.json. Bring the parent into the run, make the column nullable, or seed the parent yourself first."
           />
           <Issue
             code="E_LLM_RATE_LIMIT"
             title="LLM provider rate-limited the run"
-            body="satus retries with exponential backoff up to 5 attempts. If you hit a hard tier ceiling, lower --batch-size (default 50) or upgrade your provider tier. We never resell tokens—the bill is on your provider's dashboard."
+            body="The run aborts and the transaction rolls back, so your database is untouched—re-run once the limit clears. Lower --batch-size (default 25) to shrink each request, or upgrade your provider tier. We never resell tokens—the bill is on your provider's dashboard."
           />
         </ul>
 
