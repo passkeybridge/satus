@@ -1,9 +1,11 @@
 # satus.sh — Lovable Independence Migration Dossier
 
-Status: **discovery complete** (2026-08-05). This document inventories every
-Lovable dependency in the satus stack and lays out the cutover plan to run
-fully on our own Vercel + Supabase + Stripe + Resend accounts, following the
-same playbook as PasskeyBridge.
+Status: **code + database migrated** (2026-08-05). Discovery, the
+independence code changes, and the Supabase re-platform are done; what
+remains is secrets/env cutover and DNS. This document inventories every
+Lovable dependency in the satus stack and tracks the cutover to our own
+Vercel + Supabase + Stripe + Resend accounts, following the same playbook
+as PasskeyBridge.
 
 ## 1. Current architecture
 
@@ -57,36 +59,72 @@ handful of rows copied over.
 - Resend account with **`mail.satus.sh` already verified** (us-east-1,
   sending enabled) — ready to replace Lovable email.
 
-## 2. Cutover plan
+## 2. Completed (2026-08-05)
 
-1. **Supabase** — create `satus` project in our org; apply the in-repo
-   migrations; copy the rows above; issue publishable + service-role keys.
-2. **Stripe direct** — replace the gateway `httpClient` in
-   `stripe.server.ts` with a plain `Stripe(secretKey)` client
-   (`STRIPE_SECRET_KEY` sandbox/live); register our own webhook endpoint at
-   `https://satus.sh/api/public/payments/webhook` and swap in its signing
-   secrets. Confirm the three price lookup keys resolve in live mode.
-3. **Email via Resend** — swap `sendLovableEmail` for the Resend API using
-   `mail.satus.sh` as sender domain (update `SENDER_DOMAIN`/`FROM_DOMAIN`
-   in `send.ts`, or verify `notify.satus.sh` in Resend and un-delegate its
-   NS from Lovable). Queue/DLQ/suppression code stays as-is.
-4. **Vercel env + cron** — set all env vars on the Vercel project; add a
-   Vercel Cron (or Routine) to hit the email queue processor, which Lovable
-   currently triggers.
-5. **DNS cutover** — point `satus.sh` (+ `www`) at Vercel; add the domains
-   to the Vercel project. The CLI's license-verify URL doesn't change, so
-   released CLI versions keep working through the cutover.
-6. **Decommission** — smoke-test checkout (sandbox + live), license verify,
-   email send; then unpublish the Lovable deployment and treat the Lovable
-   project as archive-only. Future edits happen via Claude on this repo.
+1. **Code independence** — all Lovable runtime services removed:
+   - `stripe.server.ts` talks directly to `api.stripe.com` using
+     `STRIPE_SANDBOX_SECRET_KEY` / `STRIPE_LIVE_SECRET_KEY` (real `sk_` keys).
+   - New `src/lib/resend.server.ts`; queue processor, webhook alerts, and
+     e2e-health alerts all post directly to `api.resend.com`.
+   - Sender domain switched `notify.satus.sh` → `mail.satus.sh` (verified in
+     our Resend account).
+   - Suppression endpoint rewritten as a svix-verified **Resend webhook**
+     (`email.bounced` / `email.complained`), secret in
+     `RESEND_WEBHOOK_SECRET`.
+   - `@lovable.dev/email-js` + `@lovable.dev/webhooks-js` dropped;
+     `bun.lock` regenerated against the public npm registry (was pinned to
+     Lovable's private mirror); `@tanstack/react-router` pinned to 1.168.25.
+   - Build + `tsc --noEmit` green.
+2. **Supabase re-platform** — project `satus` (`xbnrjwzryuonuinzuomk`,
+   us-east-1, our org, $10/mo compute) created; schema applied as four
+   baseline migrations replaying the 24 repo files; the dynamically-created
+   `email_queue_wake`/`email_queue_dispatch` self-arming queue trigger was
+   extracted from the live Lovable DB and ported (URL now
+   `https://satus.sh/lovable/email/queue/process`). All data copied and
+   verified: 7 licenses, 8 satus_runs, 16 email_send_log, 2 unsubscribe
+   tokens, 6 e2e_health_log, send-state config, e2e auth user + identity.
+   The 3 prune cron jobs are scheduled. Function inventory matches the
+   Lovable DB exactly.
+   - Project URL: `https://xbnrjwzryuonuinzuomk.supabase.co`
+   - Publishable key: `sb_publishable_lQTJrK09yoRsg2vHynu38g_Uh3qUYUq`
 
-## 3. Open items
+## 3. Remaining cutover steps
 
-- Vercel project env vars can't be listed via API from here — audit in the
-  dashboard while setting the new ones.
-- `VITE_PAYMENTS_CLIENT_TOKEN` (Lovable payments client token) — replaced by
-  our real Stripe publishable key in the embedded checkout component.
-- Decide sender identity: keep `notify.satus.sh` (re-verify in Resend after
-  removing Lovable NS delegation) vs. standardize on `mail.satus.sh`.
-- Ongoing ops previously done inside Lovable (weekly blog posts, e2e health
-  checks, accuracy audits) move to this Claude thread.
+1. **Secrets (dashboard, human-held)** — set on the Vercel `satus` project:
+   - `SUPABASE_URL` + `VITE_SUPABASE_URL` = `https://xbnrjwzryuonuinzuomk.supabase.co`
+   - `SUPABASE_PUBLISHABLE_KEY` + `VITE_SUPABASE_PUBLISHABLE_KEY` =
+     `sb_publishable_lQTJrK09yoRsg2vHynu38g_Uh3qUYUq`
+   - `SUPABASE_SERVICE_ROLE_KEY` — from the new project's dashboard
+     (Settings → API). Also store it in the DB vault so the queue cron can
+     authenticate:
+     `select vault.create_secret('<key>', 'email_queue_service_role_key');`
+   - `STRIPE_SANDBOX_SECRET_KEY` / `STRIPE_LIVE_SECRET_KEY` — from the
+     Stripe dashboard (acct_1TFI5yGTWx4Bh4zb).
+   - `PAYMENTS_SANDBOX_WEBHOOK_SECRET` / `PAYMENTS_LIVE_WEBHOOK_SECRET` —
+     from new Stripe webhook endpoints pointed at
+     `https://satus.sh/api/public/payments/webhook`.
+   - `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET` (create a Resend webhook →
+     `https://satus.sh/lovable/email/suppression`, events: bounced,
+     complained), `VITE_PAYMENTS_CLIENT_TOKEN` (real `pk_` publishable key),
+     `PUBLIC_SITE_URL=https://satus.sh`, `ALERTS_TO_EMAIL`.
+2. **Stripe** — confirm the three price lookup keys (`satus_pro_monthly`,
+   `satus_pro_yearly`, `satus_team_seat_monthly`) resolve in live + sandbox
+   mode now that calls bypass the gateway.
+3. **DNS cutover** — add `satus.sh` + `www` to the Vercel project and point
+   DNS at Vercel (currently Lovable's edge at 185.158.133.1). Released CLIs
+   keep working: the license-verify URL is unchanged.
+4. **Post-cutover smoke test** — checkout (sandbox), license verify, an
+   e2e-health run, one transactional email through the queue.
+5. **Decommission** — unpublish the Lovable deployment; keep the Lovable
+   project as archive. Future edits happen via Claude on this repo.
+
+## 4. Notes / follow-ups
+
+- `@lovable.dev/vite-tanstack-config` (build tooling) is still used — it's a
+  public npm package with no service dependency, so it keeps working without
+  Lovable. Replacing it with plain Vite config is optional hardening.
+- The e2e-health daily cron was never actually scheduled on the live DB
+  (last cron-triggered run: 2026-06-12); schedule it on the new project
+  post-cutover if we want daily checks.
+- Ongoing ops previously done inside Lovable (weekly blog posts, accuracy
+  audits, e2e health) move to this Claude thread.
