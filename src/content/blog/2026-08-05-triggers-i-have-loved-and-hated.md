@@ -110,7 +110,7 @@ ROLLBACK
 
 Zero rows. Not a partial seed, not a half-populated parent table with orphaned children waiting on it. The transactional writer means a trigger rejection costs you the run and nothing else, which is the correct trade for a tool that people point at development databases.
 
-The practical consequence is that a validation trigger encoding a business rule the model cannot infer (a naming convention, a tenant-prefix format, a checksum) will fail the run every time until you teach the model about it. Column comments help here, because satus reads them; a rule expressed only inside a PL/pgSQL body does not reach the prompt.
+The practical consequence is that a validation trigger encoding a business rule the model cannot infer (a naming convention, a tenant-prefix format, a checksum) will fail the run every time. satus builds its prompt from column names, types, and declared constraints; a rule that exists only inside a PL/pgSQL body is invisible to it. Move the rule into a `CHECK` constraint where you can, or `exclude` the table and seed it yourself.
 
 ### The fifth category: triggers that leave the database
 
