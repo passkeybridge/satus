@@ -90,6 +90,17 @@ handful of rows copied over.
 
 ## 3. Remaining cutover steps
 
+> Progress 2026-08-05 (later): live Stripe webhook endpoint created
+> (`we_1U13qRGTWx4Bh4zbfpSCi9a5` → satus.sh, 4 events) and the three price
+> lookup keys verified in live mode. Resend sending key
+> (`satus-vercel-production`, scoped to mail.satus.sh) and suppression
+> webhook (`ce189c42-...` → /lovable/email/suppression, bounced+complained)
+> created; secrets handed to the owner in chat. Public Supabase config is
+> now baked into `.env.production`, so the Vercel env list is secrets-only.
+> At decommission: disable Lovable's satus webhook endpoints
+> `we_1TbJPfGTWx4Bh4zbRPM9LfU5` and `we_1TbJPeGTWx4Bh4zb4cpZdPtc` (leave
+> the petsupplies/booked/passkeybridge ones alone).
+
 1. **Secrets (dashboard, human-held)** — set on the Vercel `satus` project:
    - `SUPABASE_URL` + `VITE_SUPABASE_URL` = `https://xbnrjwzryuonuinzuomk.supabase.co`
    - `SUPABASE_PUBLISHABLE_KEY` + `VITE_SUPABASE_PUBLISHABLE_KEY` =
