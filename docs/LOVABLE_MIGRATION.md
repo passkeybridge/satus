@@ -1,11 +1,15 @@
 # satus.sh — Lovable Independence Migration Dossier
 
-Status: **code + database migrated** (2026-08-05). Discovery, the
-independence code changes, and the Supabase re-platform are done; what
-remains is secrets/env cutover and DNS. This document inventories every
-Lovable dependency in the satus stack and tracks the cutover to our own
-Vercel + Supabase + Stripe + Resend accounts, following the same playbook
-as PasskeyBridge.
+Status: **MIGRATION COMPLETE** (2026-08-05). satus.sh runs entirely on our
+own Vercel + Supabase + Stripe + Resend accounts. DNS cut over (apex
+canonical, www 308s to apex). Post-cutover smoke tests all green:
+e2e-health 4/4 (license verify, webhook signature, magic link, email
+queue), queue processor authenticates via the vault key, and a live
+license-delivery email was sent through Resend end-to-end. Lovable's old
+satus Stripe webhook endpoints disappeared on their own (verified absent);
+only our direct endpoint remains. Daily e2e-health cron scheduled 06:00
+UTC. Remaining: unpublish the Lovable deployment (owner action in the
+Lovable editor). This document is the migration record.
 
 ## 1. Current architecture
 
