@@ -17,7 +17,20 @@
  */
 import type { Provider, ProviderRequest, ProviderResponse } from './types.js'
 
-const DEFAULT_BASE = process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com/v1'
+/**
+ * Anthropic's official SDK convention for ANTHROPIC_BASE_URL excludes the
+ * /v1 suffix (the SDK appends it), and users often have the var exported
+ * for other tools. Accept either form: append /v1 unless the override
+ * already ends in a version segment. Without this, a bare
+ * `https://api.anthropic.com` produced an unhelpful empty-body 404.
+ */
+function normalizeBase(raw: string | undefined): string {
+  if (!raw) return 'https://api.anthropic.com/v1'
+  const trimmed = raw.replace(/\/+$/, '')
+  return /\/v\d+$/.test(trimmed) ? trimmed : `${trimmed}/v1`
+}
+
+const DEFAULT_BASE = normalizeBase(process.env.ANTHROPIC_BASE_URL)
 
 /**
  * Pinned API version. This is the long-stable Messages API surface that
