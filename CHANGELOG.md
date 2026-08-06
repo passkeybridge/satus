@@ -4,6 +4,16 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [0.3.6] — 2026-08-06
+
+### Fixed
+
+- **`ANTHROPIC_BASE_URL` with or without `/v1`.** The Anthropic provider assumed the override included the `/v1` suffix, while Anthropic's official SDK convention excludes it — a bare `https://api.anthropic.com` (common when the variable is exported for other tooling) produced an unhelpful empty-body `Anthropic 404`. The base URL is now normalized: `/v1` is appended unless a version segment is already present. Verified with live generation runs in both forms.
+
+### Changed
+
+- **`packages/cli/package-lock.json` regenerated against the public npm registry.** The previous lockfile pinned tarball URLs to a private mirror that is unreachable outside the original build environment, which broke `npm ci` for contributors and CI. Dev-facing only; the published tarball is unaffected.
+
 ## [0.3.5] — 2026-07-14
 
 ### Added

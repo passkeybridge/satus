@@ -10,6 +10,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
+import { SATUS_VERSION } from "@/lib/version";
 
 const SITE_URL = "https://satus.sh";
 
@@ -122,7 +123,7 @@ function QuickstartPage() {
           <Blank />
           <Cmt>{`# verify`}</Cmt>
           <Shell>{`satus --version`}</Shell>
-          <Out>{`0.3.5`}</Out>
+          <Out>{SATUS_VERSION}</Out>
         </Terminal>
       </Section>
 
