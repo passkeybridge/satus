@@ -37,9 +37,38 @@ jobs:
           fi
           echo "Publishing @passkeybridge/satus@$PKG"
 
+      # The tag guard above only fires for tag pushes, so a workflow_dispatch
+      # publish had no version check at all — it would happily republish an
+      # existing version (E403 late, after everything else passed) or ship an
+      # untagged release from any branch. This runs on every path and fails
+      # early with a message that says which case you are in.
+      - name: Verify version is not already published
+        working-directory: packages/cli
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          if npm view "@passkeybridge/satus@$PKG" version > /dev/null 2>&1; then
+            echo "::error::@passkeybridge/satus@$PKG is already on the registry. Bump packages/cli/package.json (and src/version.ts) before publishing."
+            exit 1
+          fi
+          echo "Version $PKG is free on the registry."
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            echo "::warning::Publishing from ${GITHUB_REF_NAME} without a tag. Push v$PKG afterwards so the release is reproducible from git."
+          fi
+
       - name: Install
         working-directory: packages/cli
         run: npm ci
+
+      # cli-ci.yml has `on.push.branches: [main]`, and a tag push does not
+      # match a branch filter — so releases were publishing without a single
+      # test having run in CI. Run them here, where it matters most.
+      - name: Test
+        working-directory: packages/cli
+        run: npm test
+
+      - name: Typecheck
+        working-directory: packages/cli
+        run: npm run typecheck
 
       - name: Build
         working-directory: packages/cli
