@@ -89,7 +89,7 @@ const FAQS: Faq[] = [
   },
   {
     q: "Can I run satus generate twice in a row?",
-    a: "Yes. Each run inserts on top of whatever is there—satus never deletes data unless you ask. Pass --truncate to clear the target tables (TRUNCATE ... RESTART IDENTITY CASCADE) inside the same transaction before re-seeding. For CI loops, point at a database branch and reset between runs.",
+    a: "Yes. Each run inserts on top of whatever is there—satus never deletes data unless you ask. Pass --truncate to clear the target tables (TRUNCATE ... RESTART IDENTITY, no CASCADE) inside the same transaction before re-seeding. Since 0.3.7 there is deliberately no CASCADE: if a table outside the run set has a foreign key into one inside it, satus errors out instead of emptying a table you never asked it to touch. For CI loops, point at a database branch and reset between runs.",
   },
   {
     q: "How do I produce the same data twice for snapshot tests?",

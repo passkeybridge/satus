@@ -10,7 +10,7 @@
 
 ## Status
 
-`v0.3.0` — released 2026-06-20. Adds first-class Anthropic support alongside OpenAI, formalizes the provider abstraction, prints per-batch token and cost breakdowns via `--verbose`, and emits machine-readable run summaries via `--json` so CI can parse them. Telemetry now records the provider and token counts. Previous release notes: [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).
+`v0.3.7` — released 2026-08-10. Correctness release: identity columns are left to the database instead of being handed to the model, foreign keys targeting non-primary-key columns resolve instead of silently inserting NULL, the dry-run estimate and the live cost meter share one price table, `--truncate` no longer cascades outside the run set, and run telemetry was cut back to match the published privacy promise. Full detail in [CHANGELOG.md](../../CHANGELOG.md); previous release notes at [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).
 
 ## Install
 
@@ -91,13 +91,13 @@ For per-call detail, pass `-v` / `--verbose` — every batch logs a line:
 · users                        batch=1 rows=25 in=842 out=1310 $0.0011
 ```
 
-For CI, pass `--json` to get a single newline-terminated JSON object on stdout (snake_case keys, matching the telemetry payload) while all human output is redirected to stderr:
+For CI, pass `--json` to get a single newline-terminated JSON object on stdout while all human output is redirected to stderr. This report stays on your machine, so unlike the telemetry payload it does name your tables and schema:
 
 ```json
 {"run_id":"...","status":"success","provider":"openai","model":"gpt-4o-mini","profile":"saas","target_schema":"public","tables":[{"name":"users","rows_generated":25}],"total_rows":25,"total_cost_usd":0.001100,"input_tokens":842,"output_tokens":1310,"duration_ms":3142}
 ```
 
-Anthropic pricing rates in the built-in table are intentionally conservative until verified against Anthropic's public pricing page on the day of a release; `--max-cost` therefore errs on the safe side for Anthropic runs. OpenAI rates are pinned and dated in `packages/cli/src/generate/providers/openai.ts`.
+Both cost numbers you see for a run — the `--dry-run` estimate and the live meter — read the same per-model rate table, selected by `--provider` and `--model`. Rates are pinned and dated in `packages/cli/src/generate/providers/openai.ts` and `anthropic.ts`; a model id not in either table falls back to the most expensive entry in its own table, so an unpriced model can only make `--max-cost` abort early, never overshoot. Rates drift — treat every figure as an estimate and your provider's dashboard as the invoice.
 
 ### Custom endpoints
 
@@ -105,7 +105,16 @@ Anthropic pricing rates in the built-in table are intentionally conservative unt
 
 ## Privacy
 
-`satus` never sends your schema, your data, or your column names to satus.sh. The only network call to satus.sh is the license verify, which sends your license key and nothing else. LLM calls go directly from your machine to your provider with your key. Anonymous run telemetry (provider, model, profile, table count, row count, duration, token totals — no table or column names, no row data) is posted to satus.sh on completion; failures swallow silently and never break a run.
+`satus` never sends your schema, your data, or your column names to satus.sh. LLM calls go directly from your machine to your provider with your key.
+
+Two requests reach satus.sh:
+
+- **License verify** — sends your license key and nothing else.
+- **Run telemetry**, posted once when `satus generate` finishes. It carries a random run UUID, the CLI version, provider, model, profile, the *number* of tables touched, total rows, token totals, estimated spend, duration, and — on failure — a fixed-vocabulary error class (`pg_23505`, `provider_http_429`, `budget_exceeded`, …). No table names, no column names, no schema name, no row data, no raw error text. Failures swallow silently and never break a run.
+
+The exact payload is defined by `RunTelemetry` in `packages/cli/src/generate/telemetry.ts`, and that file's header treats this section as its specification.
+
+> **Correction (v0.3.7).** CLI versions 0.2.0–0.3.6 also sent the list of table names, the target schema name, and the raw error message — and a Postgres unique-violation message embeds the offending row value. That contradicted this section as written. v0.3.7 stops sending all three, and the ingest endpoint discards them from any payload an older CLI still sends. The only runs ever recorded under the old behaviour were our own release tests.
 
 ## Development
 

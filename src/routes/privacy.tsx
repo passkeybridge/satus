@@ -111,7 +111,7 @@ function PrivacyPage() {
         id="what"
         n="03"
         label="Data we collect"
-        title={<>three buckets. nothing about your database.</>}
+        title={<>four buckets. nothing about your database.</>}
       >
         <Prose>
           <p>
@@ -127,6 +127,25 @@ function PrivacyPage() {
             the request IP is hashed in memory (SHA-256, truncated) for the lifetime of the Worker
             isolate and discarded; we do not persist your IP, your machine ID, or any project
             metadata against your key.
+          </p>
+          <p>
+            <strong>Run telemetry.</strong> When <code>satus generate</code> finishes it posts one
+            record to <code>/api/public/cli/run</code>. As of CLI v0.3.7 that record contains a
+            random run UUID, the CLI version, the provider and model name, the profile name, the{" "}
+            <em>number</em> of tables touched, the total row count, the token totals, the estimated
+            spend, the duration, and—on failure—a fixed-vocabulary error class such as{" "}
+            <code>pg_23505</code> or <code>provider_http_429</code>. It contains no table names, no
+            column names, no schema name, no row data, and no raw error text. The request fails
+            silently if it cannot reach us; it never blocks or breaks a run.
+          </p>
+          <p className="text-[var(--mute)]">
+            CLI versions 0.2.0 through 0.3.6 additionally sent the list of table names, the target
+            schema name, and the raw error message—which, for a Postgres unique violation, embeds
+            the offending row value. That contradicted the promise on this page and in the CLI
+            README. v0.3.7 stops sending those three fields, and the ingest endpoint now discards
+            them from any payload an older CLI still sends, so the promise holds regardless of
+            which version is installed. The only records ever collected under the old behaviour
+            were our own release-test runs.
           </p>
           <p>
             <strong>Web analytics.</strong> The marketing site uses Ahrefs Web Analytics, a

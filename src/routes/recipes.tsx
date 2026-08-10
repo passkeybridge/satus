@@ -174,10 +174,14 @@ function RecipesPage() {
 
         <Note>
           <code>--truncate</code> issues{" "}
-          <code>TRUNCATE ... RESTART IDENTITY CASCADE</code> on the run&rsquo;s
-          tables inside the same transaction as the inserts, so sequences reset
-          and a failed run leaves the old data in place. Wire this into
-          Cypress&rsquo;s <code>before(...)</code> hook or Playwright&rsquo;s{" "}
+          <code>TRUNCATE ... RESTART IDENTITY</code> on the run&rsquo;s tables
+          inside the same transaction as the inserts, so sequences reset and a
+          failed run leaves the old data in place. Note the absent{" "}
+          <code>CASCADE</code>: if a table outside the run set has a foreign key
+          into one inside it, satus stops with an error rather than emptying a
+          table you never asked it to seed. Bring that table into the run set or
+          truncate it yourself. Wire this into Cypress&rsquo;s{" "}
+          <code>before(...)</code> hook or Playwright&rsquo;s{" "}
           <code>globalSetup</code>.
         </Note>
       </Section>

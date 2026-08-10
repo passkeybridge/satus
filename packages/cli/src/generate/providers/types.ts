@@ -34,6 +34,21 @@ export interface ProviderResponse<T> {
   usage: LlmUsage
 }
 
+/**
+ * USD per million tokens for the model this provider is configured with.
+ *
+ * Exposed on the Provider so the dry-run estimator (`planRun`) and the live
+ * meter inside `generate()` price the *same* model with the *same* numbers.
+ * Before v0.3.7 `planRun` hardcoded gpt-4o-mini's rates, so an Anthropic
+ * dry-run quoted an OpenAI price and the two figures a user saw for one run
+ * could not be reconciled. Sourcing both from one field makes them agree by
+ * construction rather than by discipline.
+ */
+export interface TokenRates {
+  inputPerMTok: number
+  outputPerMTok: number
+}
+
 export interface Provider {
   /**
    * Stable identifier; surfaces in telemetry and JSON output. The
@@ -43,6 +58,8 @@ export interface Provider {
   readonly id: 'openai' | 'anthropic' | 'simulated'
   /** Model id actually being called; surfaces in telemetry and logs. */
   readonly model: string
+  /** Rates used by both the live cost meter and the dry-run estimator. */
+  readonly rates: TokenRates
   generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>>
 }
 

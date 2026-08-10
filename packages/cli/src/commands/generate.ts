@@ -21,7 +21,7 @@ import { introspect } from '../generate/introspect.js'
 import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
-import { newRunId, reportRun } from '../generate/telemetry.js'
+import { newRunId, reportRun, classifyError } from '../generate/telemetry.js'
 import { fingerprint } from '../generate/fingerprint.js'
 import { readCachedLicense } from '../license.js'
 import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
@@ -373,10 +373,10 @@ export function registerGenerate(program: Command): void {
                 profile,
                 provider: providerId,
                 model,
-                target_schema: schemaName,
+                table_count: ordered.length,
                 environment: (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live',
                 status: 'failed',
-                error_message: 'dry_run_validation_failed',
+                error_class: 'dry_run_validation_failed',
                 schema_fingerprint: schemaFingerprint,
                 validator_class: firstError?.rule?.slice(0, 64),
                 invocation_sequence: invocation,
@@ -391,11 +391,14 @@ export function registerGenerate(program: Command): void {
         const runId = newRunId()
         const startedAt = Date.now()
         const env = (process.env.SATUS_ENV === 'live' ? 'live' : 'dev') as 'dev' | 'live'
+        // Every field here is one the published privacy promise names.
+        // Table names and the schema name are deliberately absent; see the
+        // header of generate/telemetry.ts before adding anything.
         const baseTelemetry = {
           profile,
           provider: providerId,
           model,
-          target_schema: schemaName,
+          table_count: ordered.length,
           environment: env,
           // v0.3.3 opt-in fields (undefined when the knob is off).
           schema_fingerprint: schemaFingerprint,
@@ -453,7 +456,6 @@ export function registerGenerate(program: Command): void {
           await reportRun(runId, {
             ...baseTelemetry,
             status: 'success',
-            tables: tablesReport,
             total_rows: total,
             total_cost_usd: Number(report.spentUsd.toFixed(6)),
             input_tokens: report.inputTokens,
@@ -487,7 +489,10 @@ export function registerGenerate(program: Command): void {
           await reportRun(runId, {
             ...baseTelemetry,
             status: 'failed',
-            error_message: errorMessage,
+            // Classified, not verbatim: raw Postgres errors embed column
+            // names and offending row values. The full message still goes
+            // to the user's own stderr and --json stdout below.
+            error_class: classifyError(err),
             duration_ms: durationMs,
           })
           if (jsonMode) {

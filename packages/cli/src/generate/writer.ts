@@ -29,6 +29,17 @@ export async function insertRows(
   table: Table,
   columnNames: string[],
   rows: Array<Record<string, unknown>>,
+  /**
+   * Extra columns to RETURN alongside the primary key. The runner passes
+   * every column of this table that some other table's FK points at, so a
+   * FK referencing a UNIQUE non-PK column (`orders.user_email ->
+   * users.email`) can still find its target value in the pool.
+   *
+   * Before v0.3.7 only PK columns were returned; a FK to a non-PK column
+   * read `undefined` off the pooled row, which `serialize()` turned into
+   * NULL. A nullable FK column then inserted silently unlinked.
+   */
+  alsoReturn: string[] = [],
 ): Promise<InsertResult> {
   if (rows.length === 0) {
     return { inserted: 0, returnedPkRows: [] }
@@ -47,9 +58,10 @@ export async function insertRows(
     placeholders.push('(' + tuple.join(', ') + ')')
   }
 
-  const returning = table.primaryKey.length > 0
-    ? ' returning ' + table.primaryKey.map(quoteIdent).join(', ')
-    : ''
+  // Dedupe while preserving order: a referenced column is often also the PK.
+  const returnCols = [...new Set([...table.primaryKey, ...alsoReturn])]
+  const returning =
+    returnCols.length > 0 ? ' returning ' + returnCols.map(quoteIdent).join(', ') : ''
 
   const sql =
     `insert into ${quoteIdent(table.schema)}.${quoteIdent(table.name)} ` +
@@ -74,14 +86,41 @@ function serialize(v: unknown): unknown {
   return v
 }
 
+/**
+ * Empty the run set before seeding it (`satus generate --truncate`).
+ *
+ * Deliberately **without CASCADE**. Every table in the run set is named in
+ * one statement, so Postgres is satisfied whenever the FK graph is closed
+ * over that set — the ordinary case. It refuses only when a table *outside*
+ * the set references one inside, which is precisely the case where CASCADE
+ * would have emptied a table the user never asked us to touch (an audit
+ * log, an `exclude`d table, a table in another schema). Through v0.3.6 we
+ * passed CASCADE and Postgres carried out that deletion with nothing more
+ * than a NOTICE. Refusing is the correct answer; the user can widen the run
+ * set or truncate the outside table themselves.
+ */
 export async function truncate(client: Client, tables: Table[]): Promise<void> {
   if (tables.length === 0) return
   const names = tables
     .map((t) => `${quoteIdent(t.schema)}.${quoteIdent(t.name)}`)
     .join(', ')
   // RESTART IDENTITY resets sequences so re-runs produce the same low IDs.
-  // CASCADE handles FK chains so callers don't have to order the truncate.
-  await client.query(`truncate ${names} restart identity cascade`)
+  try {
+    await client.query(`truncate ${names} restart identity`)
+  } catch (err) {
+    // 0A000 (feature_not_supported) is what Postgres raises for
+    // "cannot truncate a table referenced in a foreign key constraint".
+    const e = err as { code?: string; detail?: string; message?: string }
+    if (e.code !== '0A000') throw err
+    throw new Error(
+      `--truncate cannot run: a table outside the run set has a foreign key into it. ` +
+        `${e.detail ?? e.message ?? ''} `.trim() +
+        `\n  satus will not TRUNCATE ... CASCADE, because that would also empty a table ` +
+        `you did not ask it to seed.` +
+        `\n  Either bring the referencing table into the run set (remove it from "exclude" ` +
+        `in satus.config.json), or truncate it yourself first.`,
+    )
+  }
 }
 
 /**

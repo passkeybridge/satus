@@ -58,9 +58,11 @@ Two things to notice.
 
 The `UPDATE` is satus's own. When a foreign-key cycle is broken, the child row lands with `NULL` in the back-edge column and is patched afterward with one `UPDATE` per row, which is exactly why the third audit row exists. If your audit trigger fires on `UPDATE`, a cyclic schema produces more audit rows than seeded rows. The cycle mechanics are in [Cyclic foreign keys in the wild](/blog/cyclic-fks-in-the-wild).
 
-The `TRUNCATE` fired nothing. Row-level triggers do not fire on `TRUNCATE`; only `FOR EACH STATEMENT ... ON TRUNCATE` triggers do. satus truncates the tables in the run set with `TRUNCATE ... RESTART IDENTITY CASCADE`, and `CASCADE` follows foreign keys. An audit table with no foreign key back to the audited table is not in that graph, so it survives. Re-run the seed ten times and you have ten generations of audit rows describing tables whose rows no longer exist.
+The `TRUNCATE` fired nothing. Row-level triggers do not fire on `TRUNCATE`; only `FOR EACH STATEMENT ... ON TRUNCATE` triggers do. satus truncates the tables in the run set with `TRUNCATE ... RESTART IDENTITY`, so an audit table outside the run set is untouched. Re-run the seed ten times and you have ten generations of audit rows describing tables whose rows no longer exist.
 
 The fix is boring and it works: put the audit table in `exclude` in `satus.config.json` so satus never seeds it directly, and truncate it yourself in the same script that calls satus if you want a clean slate.
+
+> **Update, 2026-08-10.** As published, this section said satus truncates with `TRUNCATE ... RESTART IDENTITY CASCADE` and explained that an audit table with no foreign key back to the audited table falls outside the cascade graph and therefore survives. That was accurate for v0.3.6 and earlier, and the advice above was correct — but it only held because the audit table in this example has no FK. Give it one (`audit_rows.project_id references projects(id)`, a perfectly ordinary design) and `CASCADE` would have emptied it, with nothing louder than a `NOTICE`. [v0.3.7](/blog/v0-3-7-release-notes) drops `CASCADE`: satus now refuses to truncate rather than reach outside the run set. The paragraph has been corrected to describe current behaviour.
 
 ### 3. Denormalization triggers
 
@@ -138,7 +140,7 @@ So the split is clean. Everything declarative is checkable offline. Everything p
 | Trigger kind | Effect on a satus run | What to do |
 | --- | --- | --- |
 | `BEFORE` row, rewrites `NEW` | Safe. `RETURNING` reflects the edit, so FK chaining stays correct | Nothing |
-| Audit / history | Extra rows per insert, plus one per cycle back-patch `UPDATE`; survives `TRUNCATE` | `exclude` the log table, truncate it yourself |
+| Audit / history | Extra rows per insert, plus one per cycle back-patch `UPDATE`; survives `--truncate` | `exclude` the log table, truncate it yourself |
 | Denormalization counter | Silent drift when the counter column has no default | Give the column a default, or reconcile after seeding |
 | Validation, raises | Whole run rolls back, zero rows written | Encode the rule in a `CHECK`, or `exclude` the table |
 | HTTP / side-effecting | Fires per row, invisible to satus | Audit `pg_trigger` before seeding an unfamiliar database |

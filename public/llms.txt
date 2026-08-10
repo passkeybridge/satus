@@ -30,7 +30,7 @@ satus whoami
 
 ## Flags on `satus generate`
 
-`--profile saas|ecommerce|b2b` · `--rows <n>` (default 50) · `--max-cost <usd>` (default 1.00, aborts + rolls back before overshooting) · `--batch-size <n>` (default 25 rows per LLM call) · `--dsn <url>` · `--schema <name>` (default public) · `--provider openai|anthropic` (auto-detected from which API key env var is set; errors if both are set and no explicit choice) · `--model <id>` (defaults: gpt-4o-mini / claude-haiku-4-5) · `--truncate` (TRUNCATE ... RESTART IDENTITY CASCADE on target tables before inserting, same transaction) · `--dry-run` · `--verbose` · `--json`
+`--profile saas|ecommerce|b2b` · `--rows <n>` (default 50) · `--max-cost <usd>` (default 1.00, aborts + rolls back before overshooting) · `--batch-size <n>` (default 25 rows per LLM call) · `--dsn <url>` · `--schema <name>` (default public) · `--provider openai|anthropic` (auto-detected from which API key env var is set; errors if both are set and no explicit choice) · `--model <id>` (defaults: gpt-4o-mini / claude-haiku-4-5) · `--truncate` (TRUNCATE ... RESTART IDENTITY on target tables before inserting, same transaction; deliberately NO CASCADE — if a table outside the run set has an FK into one inside it, the run errors instead of emptying it) · `--dry-run` · `--verbose` · `--json`
 
 ## Environment
 

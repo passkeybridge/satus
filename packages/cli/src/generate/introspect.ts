@@ -24,7 +24,21 @@ export interface Column {
   charMaxLength: number | null
   numericPrecision: number | null
   numericScale: number | null
-  isGenerated: boolean // GENERATED ALWAYS / IDENTITY columns
+  /**
+   * GENERATED ALWAYS AS (expr) STORED. Note this is *not* identity — in
+   * information_schema, `is_generated` reports 'NEVER' for identity
+   * columns. See `isIdentity`.
+   */
+  isGenerated: boolean
+  /**
+   * GENERATED ALWAYS / BY DEFAULT AS IDENTITY. Postgres reports these with
+   * `column_default = NULL` and `is_generated = 'NEVER'`, so neither
+   * `hasDefault` nor `isGenerated` catches them and they must be tracked
+   * separately. Verified against PostgreSQL 16.13.
+   */
+  isIdentity: boolean
+  /** 'ALWAYS' | 'BY DEFAULT' when isIdentity, else null. */
+  identityGeneration: string | null
 }
 
 export interface ForeignKey {
@@ -105,7 +119,8 @@ const INTROSPECT_SQL = `
     select
       table_name, column_name, data_type, udt_name, is_nullable,
       column_default, character_maximum_length, numeric_precision,
-      numeric_scale, is_generated, ordinal_position
+      numeric_scale, is_generated, is_identity, identity_generation,
+      ordinal_position
     from information_schema.columns
     where table_schema = $1
     order by table_name, ordinal_position
@@ -205,6 +220,8 @@ export async function introspect(
       numeric_precision: number | null
       numeric_scale: number | null
       is_generated: string
+      is_identity: string
+      identity_generation: string | null
     }>
     pks: Array<{ table_name: string; column_name: string }>
     fks: Array<{
@@ -246,6 +263,8 @@ export async function introspect(
       numericPrecision: r.numeric_precision,
       numericScale: r.numeric_scale,
       isGenerated: !!r.is_generated && r.is_generated !== 'NEVER',
+      isIdentity: r.is_identity === 'YES',
+      identityGeneration: r.identity_generation ?? null,
     })
   }
 

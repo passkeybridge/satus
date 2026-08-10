@@ -1,12 +1,27 @@
 /**
  * CLI run telemetry sink. Called by `satus generate` (fire-and-forget) after
- * each run finishes. Records what was generated, the model used, and the
+ * each run finishes. Records how much was generated, the model used, and the
  * spend so we can validate end-to-end runs and see real usage data in the
  * `public.satus_runs` table.
  *
- * POST { id?, status, license_key?, profile, model, target_schema,
- *        tables, total_rows, total_cost_usd, duration_ms, error_message?,
- *        cli_version, environment }
+ * POST { id?, status, profile, provider, model, table_count, total_rows,
+ *        total_cost_usd, input_tokens, output_tokens, duration_ms,
+ *        error_class?, cli_version, environment }
+ *
+ * ## Legacy fields are accepted and discarded
+ *
+ * The published privacy promise says satus never sends table names, column
+ * names, the schema name, or row data. CLI versions 0.2.0 through 0.3.6 did
+ * send `tables` (every table name), `target_schema`, and `error_message`
+ * (raw error text, which embeds identifiers and — for unique violations —
+ * actual row values). v0.3.7 stops sending them, but older CLIs are already
+ * installed and will keep sending them for as long as they are in use.
+ *
+ * So the sink drops them here too: the zod schema still *accepts* the three
+ * legacy keys (rejecting them would 400 every older client and break a
+ * contract they were built against), and `toRow` then strips them so they
+ * are never written. Keeping the promise has to hold on the receiving end
+ * as well, or it only holds for users who upgrade.
  *
  * Public + bounded payload. No auth: the CLI runs on customer machines
  * where we can't ship secrets. Tight zod validation + small INSERTs only.
@@ -34,25 +49,37 @@ const TableReport = z.object({
   rows_generated: z.number().int().min(0).max(1_000_000),
 })
 
+/**
+ * Keys accepted from pre-0.3.7 clients purely so they receive a 200, then
+ * stripped by `toRow` before the insert. Never persisted, never logged.
+ */
+const LEGACY_DROPPED_KEYS = ['tables', 'target_schema', 'error_message', 'license_key'] as const
+
 const RunSchema = z.object({
   id: z.string().uuid().optional(),
   status: z.enum(['running', 'success', 'failed']),
-  license_key: z.string().min(8).max(128).optional(),
   profile: z.string().min(1).max(32).optional(),
   // v0.3.0 (optional, backward-compatible with v0.2.x clients which omit it).
   provider: z.enum(['openai', 'anthropic']).optional(),
   model: z.string().min(1).max(64).optional(),
-  target_schema: z.string().min(1).max(64).optional(),
-  tables: z.array(TableReport).max(200).optional(),
+  // v0.3.7: replaces the per-table `tables` array.
+  table_count: z.number().int().min(0).max(10_000).optional(),
   total_rows: z.number().int().min(0).max(10_000_000).optional(),
   total_cost_usd: z.number().min(0).max(10_000).optional(),
   // v0.3.0 token counts (optional). Bounded to prevent abuse but generous.
   input_tokens: z.number().int().min(0).max(1_000_000_000).optional(),
   output_tokens: z.number().int().min(0).max(1_000_000_000).optional(),
   duration_ms: z.number().int().min(0).max(24 * 60 * 60 * 1000).optional(),
-  error_message: z.string().max(2_000).optional(),
+  // v0.3.7: fixed-vocabulary failure class; replaces free-text error_message.
+  error_class: z.string().min(1).max(64).regex(/^[a-zA-Z0-9_]+$/).optional(),
   cli_version: z.string().min(1).max(32).optional(),
   environment: z.enum(['dev', 'live']).default('dev'),
+
+  // --- Legacy, accepted then discarded. See the header. ---
+  license_key: z.string().min(8).max(128).optional(),
+  target_schema: z.string().min(1).max(64).optional(),
+  tables: z.array(TableReport).max(200).optional(),
+  error_message: z.string().max(2_000).optional(),
   // v0.3.3 opt-in telemetry (all optional; older CLIs never send these).
   // Fingerprint is a 64-char lowercase hex SHA-256; anything else is
   // rejected before it lands in the DB.
@@ -60,6 +87,20 @@ const RunSchema = z.object({
   validator_class: z.string().min(1).max(64).optional(),
   invocation_sequence: z.array(z.string().min(1).max(32)).max(16).optional(),
 })
+
+/**
+ * Build the DB row from a validated payload, dropping every legacy
+ * identifying field. Written as an explicit delete over a copy rather than
+ * a hand-listed allow-list so a future column added to both the CLI and
+ * the table cannot be silently forgotten here — while the four keys we
+ * refuse to store stay named in one place.
+ */
+function toRow(data: z.infer<typeof RunSchema>): Record<string, unknown> {
+  const row: Record<string, unknown> = { ...data }
+  for (const key of LEGACY_DROPPED_KEYS) delete row[key]
+  row.finished_at = data.status === 'running' ? null : new Date().toISOString()
+  return row
+}
 
 export const Route = createFileRoute('/api/public/cli/run')({
   server: {
@@ -76,10 +117,7 @@ export const Route = createFileRoute('/api/public/cli/run')({
         if (!parsed.success) {
           return json(400, { ok: false, reason: 'invalid_payload', issues: parsed.error.issues })
         }
-        const row = {
-          ...parsed.data,
-          finished_at: parsed.data.status === 'running' ? null : new Date().toISOString(),
-        }
+        const row = toRow(parsed.data)
 
         // Upsert by id when the CLI provides one (so a single run shows up
         // as one row across "running" -> "success/failed" updates).

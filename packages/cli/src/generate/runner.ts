@@ -85,10 +85,16 @@ export interface RunReport {
  * Dry-run estimate. Uses a rough heuristic of 80 input tokens per column
  * per row + 40 output tokens per cell. Good enough to choose --rows safely;
  * the real number is logged at the end of a real run.
+ *
+ * Rates come from the provider the caller built for the *real* run, so an
+ * Anthropic dry-run is priced with Anthropic rates. Through v0.3.6 this
+ * function hardcoded gpt-4o-mini's $0.15/$0.60, which meant the estimate a
+ * user saw before a Claude run and the spend reported after it were priced
+ * off two unrelated tables.
  */
 export function planRun(tables: Table[], opts: RunOptions): TablePlan[] {
-  const ratePerMillionInput = 0.15
-  const ratePerMillionOutput = 0.6
+  const ratePerMillionInput = opts.provider.rates.inputPerMTok
+  const ratePerMillionOutput = opts.provider.rates.outputPerMTok
   return tables.map((t) => {
     const cells = t.columns.length * opts.rowsPerTable
     const inputTokens = cells * 80
@@ -108,6 +114,23 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)] as T
 }
 
+/**
+ * For each table in the run set, the columns some other table's FK points
+ * at. The writer adds these to its RETURNING list so the pool carries the
+ * values children actually need — not every FK targets a primary key.
+ */
+function referencedColumnsByTable(tables: Table[]): Map<string, string[]> {
+  const byTable = new Map<string, Set<string>>()
+  for (const t of tables) {
+    for (const fk of t.foreignKeys) {
+      const set = byTable.get(fk.refTable) ?? new Set<string>()
+      set.add(fk.refColumn)
+      byTable.set(fk.refTable, set)
+    }
+  }
+  return new Map([...byTable].map(([k, v]) => [k, [...v]]))
+}
+
 export async function runGenerate(
   client: Client,
   tables: Table[],
@@ -122,6 +145,7 @@ export async function runGenerate(
   // children later in the run. In dry-run mode this is populated with
   // synthesized PKs so downstream tables still get plausible FK targets.
   const pkPool: Map<string, Array<Record<string, unknown>>> = new Map()
+  const referenced = referencedColumnsByTable(tables)
 
   for (const table of tables) {
     if (budget.exceeded()) {
@@ -201,7 +225,20 @@ export async function runGenerate(
             }
             continue
           }
-          row[fk.column] = pickRandom(parents)[fk.refColumn]
+          const parent = pickRandom(parents)
+          // A missing key means the parent's referenced column never made
+          // it into the pool. Historically this fell through to undefined,
+          // which the writer serialized to NULL — a nullable FK column then
+          // inserted silently unlinked and nobody found out. Fail instead.
+          if (!(fk.refColumn in parent)) {
+            throw new Error(
+              `Cannot resolve ${table.name}.${fk.column} -> ${fk.refTable}.${fk.refColumn}: ` +
+                `column "${fk.refColumn}" is absent from the seeded rows of ${fk.refTable} ` +
+                `(available: ${Object.keys(parent).join(', ') || 'none'}). ` +
+                `This is a satus bug — please report the schema at https://satus.sh/support.`,
+            )
+          }
+          row[fk.column] = parent[fk.refColumn]
         }
       }
 
@@ -223,14 +260,20 @@ export async function runGenerate(
       // table's actual PK column types and the simulator's deterministic
       // counter, so the FK existence check in validate.ts sees the same
       // values the runner injects into child rows.
-      const synthetic = synthesizePkRows(table, allRows.length)
+      const synthetic = synthesizePkRows(table, allRows, referenced.get(table.name) ?? [])
       if (synthetic.length > 0) pkPool.set(table.name, synthetic)
       inserted[table.name] = 0
       process.stdout.write(pc.yellow(' (dry-run)\n'))
       continue
     }
 
-    const result = await insertRows(client, table, buildRowSchema(table, 1).insertColumns, allRows)
+    const result = await insertRows(
+      client,
+      table,
+      buildRowSchema(table, 1).insertColumns,
+      allRows,
+      referenced.get(table.name) ?? [],
+    )
     inserted[table.name] = result.inserted
     pkPool.set(table.name, result.returnedPkRows)
     process.stdout.write(pc.green(` ${result.inserted}\n`))
