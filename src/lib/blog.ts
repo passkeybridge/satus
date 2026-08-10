@@ -6,8 +6,17 @@
  * runtime, Cloudflare Workers safe.
  *
  * Frontmatter contract is documented in `src/content/blog/README.md`.
- * Validation is intentionally strict: a malformed post is a build-time
- * error, not a runtime surprise.
+ * Validation is intentionally strict, and is enforced in two places:
+ *
+ *   - `scripts/validate-blog.mjs` runs before `vite build` and fails the
+ *     deploy. This is where a malformed post is meant to be caught.
+ *   - `parsePost` below re-validates at runtime; a post that somehow fails
+ *     here is skipped with a console error rather than thrown, so it can
+ *     never take the whole site down (see the POSTS comment).
+ *
+ * Until 2026-08-10 this comment claimed malformed posts were "a build-time
+ * error, not a runtime surprise". They were exactly the opposite: the
+ * check lived only inside parsePost, which `vite build` never evaluates.
  *
  * Frontmatter parsing is intentionally hand-rolled. The third-party
  * gray-matter package depends on Node's Buffer global, which is absent in
@@ -145,10 +154,31 @@ function parsePost(rawPath: string, raw: string): Post {
 }
 
 /* Parse once at module-eval time. Module is cached per Worker isolate, so
- * subsequent requests pay nothing. */
+ * subsequent requests pay nothing.
+ *
+ * A malformed post is skipped here rather than thrown, and this is the
+ * whole reason: module-scope evaluation means a throw does not fail one
+ * blog page, it fails the module — and with it every route that imports
+ * the router. On 2026-08-10 a post with a 211-character description (limit
+ * 200) took satus.sh down entirely, homepage included, for about four
+ * minutes. A content typo should never be able to do that.
+ *
+ * Skipping is NOT the primary defence, because a silently missing post is
+ * its own bug. `scripts/validate-blog.mjs` runs ahead of `vite build` and
+ * fails the deploy loudly. This is the blast-radius floor for anything
+ * that gets past it. */
 const POSTS: Post[] = Object.entries(modules)
   .filter(([path]) => !path.endsWith("/README.md"))
-  .map(([path, raw]) => parsePost(path, raw))
+  .flatMap(([path, raw]) => {
+    try {
+      return [parsePost(path, raw)];
+    } catch (err) {
+      console.error(
+        `[blog] skipping ${path}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return [];
+    }
+  })
   .sort((a, b) => (a.date < b.date ? 1 : -1));
 
 const PUBLIC_POSTS = POSTS.filter((p) => !p.draft);
