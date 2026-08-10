@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 .output
+# Build output. .output is Nitro's; .vercel/output is the Vercel adapter's
+# copy of the same thing. Committing the latter is actively dangerous —
+# Vercel treats a checked-in .vercel/output as prebuilt output and ships it
+# instead of building from source, so the deployed site silently freezes at
+# whatever was committed. See the 2026-08-10 rss.xml incident.
+.vercel
 .vinxi
 .tanstack/**
 .nitro
