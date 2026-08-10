@@ -21,6 +21,8 @@ function col(name: string, udt: string, opts: Partial<Column> = {}): Column {
     numericPrecision: null,
     numericScale: null,
     isGenerated: false,
+    isIdentity: false,
+    identityGeneration: null,
     ...opts,
   }
 }

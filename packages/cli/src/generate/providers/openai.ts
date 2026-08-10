@@ -26,13 +26,30 @@ const PRICING: Record<string, { input: number; output: number }> = {
   'gpt-4.1': { input: 2, output: 8 },
 }
 
-const FALLBACK_PRICE = { input: 1, output: 3 }
+/**
+ * Applied to any model id not matched above. Set to the most expensive
+ * entry in the table: an unpriced model can then only cause `--max-cost`
+ * to abort early, never to overshoot silently. The previous value
+ * ($1/$3) was *below* three of the four priced models, so unlisted ids
+ * were under-billed — the wrong direction for a budget guardrail. This is
+ * a deliberate upper bound, not a claim about any particular model.
+ */
+const FALLBACK_PRICE = { input: 2.5, output: 10 }
 
+/**
+ * Longest matching prefix wins, so `gpt-4o-mini` cannot be shadowed by
+ * `gpt-4o` regardless of object key order.
+ */
 function priceFor(model: string) {
-  for (const key of Object.keys(PRICING)) {
-    if (model.startsWith(key)) return PRICING[key] ?? FALLBACK_PRICE
+  let best: { input: number; output: number } | undefined
+  let bestLen = -1
+  for (const [key, price] of Object.entries(PRICING)) {
+    if (model.startsWith(key) && key.length > bestLen) {
+      best = price
+      bestLen = key.length
+    }
   }
-  return FALLBACK_PRICE
+  return best ?? FALLBACK_PRICE
 }
 
 /**
@@ -51,9 +68,11 @@ export interface OpenAiProviderOptions {
 
 export function createOpenAiProvider(opts: OpenAiProviderOptions): Provider {
   const { apiKey, model } = opts
+  const price = priceFor(model)
   return {
     id: 'openai',
     model,
+    rates: { inputPerMTok: price.input, outputPerMTok: price.output },
     async generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>> {
       const body: Record<string, unknown> = {
         model,
@@ -103,7 +122,6 @@ export function createOpenAiProvider(opts: OpenAiProviderOptions): Provider {
         throw new Error(`Failed to parse model JSON: ${(err as Error).message}`)
       }
 
-      const price = priceFor(model)
       const inputTokens = payload.usage?.prompt_tokens ?? 0
       const outputTokens = payload.usage?.completion_tokens ?? 0
       const usd =

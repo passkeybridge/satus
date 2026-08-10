@@ -72,9 +72,9 @@ export function validateTable(table: Table, opts: ValidateOptions): Finding[] {
   for (let i = 0; i < opts.rows.length; i++) {
     const row = opts.rows[i]!
     for (const col of table.columns) {
-      // Generated columns and defaulted columns are filled by the DB at
+      // Generated, identity, and defaulted columns are filled by the DB at
       // INSERT time; the runner intentionally omits them. Skip.
-      if (col.isGenerated || col.hasDefault) continue
+      if (col.isGenerated || col.isIdentity || col.hasDefault) continue
       // Skip FK columns whose presence is enforced separately below;
       // type/length checks still apply through the general path though.
       const value = row[col.name]

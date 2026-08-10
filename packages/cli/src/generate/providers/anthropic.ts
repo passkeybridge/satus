@@ -46,25 +46,55 @@ const ANTHROPIC_VERSION = '2023-06-01'
 const TOOL_NAME = 'emit_rows'
 
 /**
- * USD per million tokens. Intentionally empty in v0.3.0 Pass 3 — the
- * spec defers concrete rates to Pass 4 so we don't ship numbers we
- * haven't verified against Anthropic's pricing page on the day of
- * release. Any model not in this map uses `FALLBACK_PRICE`, which is
- * deliberately pessimistic so `--max-cost` errs on the safe side.
+ * USD per million tokens, keyed by model-id prefix. Last verified
+ * 2026-08-10 against Anthropic's published per-MTok rates.
  *
- * When populating: add entries keyed by model-id prefix
- * (e.g. 'claude-haiku-4-5', 'claude-sonnet-4-5') with a
- * `// last verified: YYYY-MM-DD` comment.
+ * Empty from v0.3.0 through v0.3.6: every Anthropic run fell through to
+ * `FALLBACK_PRICE`, which was 3x the real rate for the default model
+ * (`claude-haiku-4-5`). Costs were over-reported by exactly 3x, so
+ * `--max-cost` aborted runs that were nowhere near the cap.
+ *
+ * Keys are matched with `startsWith`, longest first (see `priceFor`), so a
+ * dated variant such as `claude-haiku-4-5-20251001` resolves to its family.
  */
-const PRICING: Record<string, { input: number; output: number }> = {}
+const PRICING: Record<string, { input: number; output: number }> = {
+  'claude-fable-5': { input: 10, output: 50 },
+  'claude-opus-5': { input: 5, output: 25 },
+  'claude-opus-4-8': { input: 5, output: 25 },
+  'claude-opus-4-7': { input: 5, output: 25 },
+  'claude-opus-4-6': { input: 5, output: 25 },
+  // Sonnet 5 carries introductory pricing of $2/$10 through 2026-08-31.
+  // We quote the standard rate: over-estimating during the promo is the
+  // safe direction for a budget guardrail, and it needs no expiry logic.
+  'claude-sonnet-5': { input: 3, output: 15 },
+  'claude-sonnet-4-6': { input: 3, output: 15 },
+  'claude-haiku-4-5': { input: 1, output: 5 },
+}
 
-const FALLBACK_PRICE = { input: 3, output: 15 }
+/**
+ * Applied to any model id not matched above — an id newer than this
+ * release, or a proxy-specific name behind `ANTHROPIC_BASE_URL`. Set to
+ * the most expensive entry in the table so an unpriced model can only ever
+ * cause `--max-cost` to abort early, never to overshoot silently. This is
+ * a deliberate upper bound, not a claim about any particular model.
+ */
+const FALLBACK_PRICE = { input: 10, output: 50 }
 
+/**
+ * Longest matching prefix wins, so adding a more specific id later (say
+ * `claude-opus-5-mini`) cannot be shadowed by a shorter one already in the
+ * table. Object key order is not relied upon.
+ */
 function priceFor(model: string) {
-  for (const key of Object.keys(PRICING)) {
-    if (model.startsWith(key)) return PRICING[key] ?? FALLBACK_PRICE
+  let best: { input: number; output: number } | undefined
+  let bestLen = -1
+  for (const [key, price] of Object.entries(PRICING)) {
+    if (model.startsWith(key) && key.length > bestLen) {
+      best = price
+      bestLen = key.length
+    }
   }
-  return FALLBACK_PRICE
+  return best ?? FALLBACK_PRICE
 }
 
 export interface AnthropicProviderOptions {
@@ -84,9 +114,11 @@ interface AnthropicMessagesResponse {
 
 export function createAnthropicProvider(opts: AnthropicProviderOptions): Provider {
   const { apiKey, model } = opts
+  const price = priceFor(model)
   return {
     id: 'anthropic',
     model,
+    rates: { inputPerMTok: price.input, outputPerMTok: price.output },
     async generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>> {
       const body = {
         model,
@@ -135,7 +167,6 @@ export function createAnthropicProvider(opts: AnthropicProviderOptions): Provide
 
       const parsed = toolUse.input as T
 
-      const price = priceFor(model)
       const inputTokens = payload.usage?.input_tokens ?? 0
       const outputTokens = payload.usage?.output_tokens ?? 0
       const usd =

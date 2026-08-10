@@ -28,6 +28,8 @@ function tbl(name: string, opts: {
       numericPrecision: null,
       numericScale: null,
       isGenerated: false,
+      isIdentity: false,
+      identityGeneration: null,
     })),
     foreignKeys: (opts.fks ?? []).map((fk) => ({
       column: fk.column,

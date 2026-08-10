@@ -26,6 +26,8 @@ function tbl(name: string, columns: Array<{ name: string; udt: string; nullable?
       numericPrecision: null,
       numericScale: null,
       isGenerated: false,
+      isIdentity: false,
+      identityGeneration: null,
     })),
     primaryKey: opts.pk ?? [],
     foreignKeys: (opts.fks ?? []).map((f) => ({

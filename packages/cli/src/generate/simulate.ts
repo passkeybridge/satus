@@ -38,6 +38,10 @@ export function createSimulatedProvider(): Provider {
   return {
     id: 'simulated',
     model: 'simulated/dry-run',
+    // The simulator never calls an upstream API, so it costs nothing and
+    // reports zero usage. The dry-run *estimate* is priced separately, off
+    // the real provider the user selected (see planRun in runner.ts).
+    rates: { inputPerMTok: 0, outputPerMTok: 0 },
     async generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>> {
       const root = req.jsonSchema.schema as unknown as JsonSchemaNode
       const rowsNode = (root.properties?.rows ?? {}) as JsonSchemaNode
@@ -136,22 +140,45 @@ function deterministicUuid(i: number): string {
 }
 
 /**
- * Fabricate the primary-key rows the writer would normally RETURN. Called
- * by the runner in dry-run mode so downstream tables can pull FK targets
- * from `pkPool` without touching the database.
+ * Fabricate the rows the writer would normally RETURN. Called by the
+ * runner in dry-run mode so downstream tables can pull FK targets from
+ * `pkPool` without touching the database.
  *
- * Mirrors deterministicUuid()/integer-counter so the same parent rows
- * appear in every dry-run.
+ * Two kinds of column land in the pool:
+ *
+ *   - Primary keys, which the database would have generated. Synthesized
+ *     here via deterministicUuid()/integer-counter so the same parent rows
+ *     appear in every dry-run.
+ *   - Any column another table's FK references. When the simulator already
+ *     produced a value for it (the common case for a UNIQUE text column
+ *     like `users.email`) the real value is carried through rather than
+ *     re-invented, so the validator compares against what a real run would
+ *     actually have written. Columns filled by a DB default fall back to
+ *     the same deterministic synthesis as PKs.
+ *
+ * Without the second kind, a FK targeting a non-PK column found nothing in
+ * the pool and the run either NULLed the child silently (pre-v0.3.7) or
+ * now aborts.
  */
-export function synthesizePkRows(table: Table, count: number): Array<Record<string, unknown>> {
-  if (table.primaryKey.length === 0 || count === 0) return []
+export function synthesizePkRows(
+  table: Table,
+  generatedRows: Array<Record<string, unknown>>,
+  referencedColumns: string[] = [],
+): Array<Record<string, unknown>> {
+  const poolColumns = [...new Set([...table.primaryKey, ...referencedColumns])]
+  if (poolColumns.length === 0 || generatedRows.length === 0) return []
   const rows: Array<Record<string, unknown>> = []
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < generatedRows.length; i++) {
     const row: Record<string, unknown> = {}
-    for (const pkName of table.primaryKey) {
-      const col = table.columns.find((c) => c.name === pkName)
+    for (const name of poolColumns) {
+      const produced = generatedRows[i]?.[name]
+      if (produced !== undefined) {
+        row[name] = produced
+        continue
+      }
+      const col = table.columns.find((c) => c.name === name)
       const udt = col?.udtName.toLowerCase() ?? 'int4'
-      row[pkName] = udt === 'uuid' ? deterministicUuid(i) : i + 1
+      row[name] = udt === 'uuid' ? deterministicUuid(i) : i + 1
     }
     rows.push(row)
   }
