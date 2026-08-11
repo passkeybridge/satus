@@ -40,20 +40,42 @@ jobs:
       # The tag guard above only fires for tag pushes, so a workflow_dispatch
       # publish had no version check at all — it would happily republish an
       # existing version (E403 late, after everything else passed) or ship an
-      # untagged release from any branch. This runs on every path and fails
-      # early with a message that says which case you are in.
-      - name: Verify version is not already published
+      # untagged release from any branch. This runs on every path.
+      - name: Check the registry for this version
+        id: registry
         working-directory: packages/cli
         run: |
           PKG=$(node -p "require('./package.json').version")
+          echo "version=$PKG" >> "$GITHUB_OUTPUT"
           if npm view "@passkeybridge/satus@$PKG" version > /dev/null 2>&1; then
-            echo "::error::@passkeybridge/satus@$PKG is already on the registry. Bump packages/cli/package.json (and src/version.ts) before publishing."
-            exit 1
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "@passkeybridge/satus@$PKG is already on the registry."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Version $PKG is free on the registry."
           fi
-          echo "Version $PKG is free on the registry."
           if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
             echo "::warning::Publishing from ${GITHUB_REF_NAME} without a tag. Push v$PKG afterwards so the release is reproducible from git."
           fi
+
+      # A dispatch that names an already-published version is a mistake: the
+      # operator meant to ship something and it would silently not ship.
+      - name: Refuse to republish from a manual dispatch
+        if: steps.registry.outputs.published == 'true' && github.event_name == 'workflow_dispatch' && !inputs.dry_run
+        run: |
+          echo "::error::@passkeybridge/satus@${{ steps.registry.outputs.version }} is already on the registry. Bump packages/cli/package.json (and src/version.ts) before publishing."
+          exit 1
+
+      # A *tag* that names an already-published version is normal and correct.
+      # Tag pushes are blocked from some environments, so a release often goes
+      # out by dispatch and gets tagged afterwards for reproducibility. Failing
+      # that run trains everyone to ignore red builds; it is a no-op, so say so
+      # and let the job go green. (This is why the v0.3.7 tag push failed on
+      # 2026-08-11 — nothing was wrong, npm had simply already accepted it.)
+      - name: Tag records an already-published release
+        if: steps.registry.outputs.published == 'true' && github.event_name == 'push'
+        run: |
+          echo "::notice::@passkeybridge/satus@${{ steps.registry.outputs.version }} is already on the registry; this tag records that release. Nothing to publish."
 
       - name: Install
         working-directory: packages/cli
@@ -80,7 +102,7 @@ jobs:
         run: npm publish --access public --dry-run
 
       - name: Publish
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+        if: steps.registry.outputs.published == 'false' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
         working-directory: packages/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
