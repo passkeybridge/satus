@@ -1,0 +1,15 @@
+# RFC 9116 security.txt for satus.sh
+#
+# The canonical, human-readable policy lives at https://satus.sh/security
+# and is mirrored as SECURITY.md in the repository root. This file exists
+# so automated tooling and scanners find the contact without scraping HTML.
+#
+# Expires is mandatory under RFC 9116 §2.5.5. It is checked by
+# scripts/validate-docs.mjs, which fails the build once the date is within
+# 30 days, so this cannot quietly go stale.
+
+Contact: mailto:support@satus.sh
+Expires: 2027-08-11T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://satus.sh/.well-known/security.txt
+Policy: https://satus.sh/security

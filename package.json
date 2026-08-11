@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "node scripts/validate-blog.mjs && vite build",
+    "build": "node scripts/validate-blog.mjs && node scripts/validate-docs.mjs && vite build",
+    "validate": "node scripts/validate-blog.mjs && node scripts/validate-docs.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

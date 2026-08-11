@@ -156,7 +156,7 @@ function ComparePage() {
           ours={[
             "CLI, not a library; drops into any stack without code changes.",
             "LLM-driven generation gives plausible content (names, addresses, copy) tuned per profile.",
-            "Commercial roadmap backed by PasskeyBridge LLC; support inbox with SLA.",
+            "Commercial roadmap backed by PasskeyBridge LLC; priority issue triage on paid tiers, and a published 2/7/90-day security-disclosure timeline.",
           ]}
           verdict="Pick Snaplet Seed if you want a zero-dependency open-source library and can accept a slower release cadence. Pick satus if you want plausible content out of the box and a vendor on the other end of an email."
         />
