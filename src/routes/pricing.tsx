@@ -60,7 +60,7 @@ const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
   { label: "Bring-your-own LLM key",         row: [{ mark: true }, { mark: true }, { mark: true }] },
   { label: "Built-in profiles (saas/ecommerce/b2b)", row: [{ mark: true }, { mark: true }, { mark: true }] },
   { label: "Row & table caps lifted",        row: [null,            { mark: true }, { mark: true }] },
-  { label: "License, 14-day offline grace",  row: [null,            { mark: true }, { mark: true }] },
+  { label: "License, 24-hour offline grace", row: [null,            { mark: true }, { mark: true }] },
   { label: "Priority issue triage",          row: [null,            { mark: true }, { mark: true }] },
   { label: "Shared team profiles",           row: [null,            null,            { mark: true }] },
   { label: "CI mode",                        row: [null,            null,            { mark: true }] },
@@ -89,7 +89,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Does it work offline?",
-    a: "Pro and Team licenses include a 14-day offline grace period—the CLI keeps generating against your local LLM provider even if it can't reach our license server. Free is fully offline forever.",
+    a: "Pro and Team licenses cache their verdict locally for 24 hours, so the CLI keeps generating against your own LLM provider even if it can't reach our license server — enough to cover a flight or a license-server outage. Past that window with no network, activation fails closed. Free is fully offline forever.",
   },
   {
     q: "When does the Team tier launch?",

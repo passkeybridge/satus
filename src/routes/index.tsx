@@ -574,8 +574,8 @@ function ClosingBand() {
     >
       <div className="grid grid-cols-1 items-baseline gap-x-10 gap-y-5 md:grid-cols-[1fr_auto]">
         <p className="max-w-[52ch] font-sans text-[16px] leading-[1.55] text-[var(--ink)]">
-          The free tier seeds up to 500 rows per run against any Postgres database. No account, no
-          credit card, no hosted runtime.
+          The free tier seeds up to 25 rows per table across 5 tables&mdash;125 rows per
+          run&mdash;against any Postgres database. No account, no credit card, no hosted runtime.
         </p>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[13px] md:justify-end">
           <Link to="/quickstart" className="link-underline text-[var(--ink)]">

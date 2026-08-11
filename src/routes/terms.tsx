@@ -253,8 +253,11 @@ function TermsPage() {
           </p>
           <p>
             <strong>Backups are your responsibility.</strong> Always run satus against a development
-            or preview database first. Use <code>--dry</code> to inspect generated SQL before
-            execution.
+            or preview database first. Use <code>--dry-run</code> to review the insert plan, the
+            per-table row counts, and the cost estimate before any write. Since v0.3.8 satus also
+            refuses to run against a database already holding more than 10,000 rows unless you pass{" "}
+            <code>--force</code>, but that guard is a backstop, not a substitute for pointing{" "}
+            <code>DATABASE_URL</code> at the right database.
           </p>
         </Prose>
       </Section>

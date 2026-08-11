@@ -87,8 +87,10 @@ Codes `10` and `11` both mean "satus declined to act" as opposed to "satus tried
 | Tier | Price | Rows/table | Max tables | Profiles | LLM key |
 |---|---|---|---|---|---|
 | Free | $0 | 25 | 5 | all three | BYO |
-| Pro | $19/mo | unlimited | unlimited | all three | BYO |
-| Team | $79/mo | unlimited | unlimited | all three + custom | BYO, shared license |
+| Pro | $19/mo (or $190/yr) | unlimited | unlimited | all three | BYO |
+| Team | $49/seat/mo — **waitlist, not yet purchasable** | unlimited | unlimited | all three | BYO |
+
+The CLI ships exactly three profiles (`saas`, `ecommerce`, `b2b`) on every tier; custom or private profiles do not exist in any version. See <https://satus.sh/pricing> for the current tier matrix.
 
 License keys are verified against `https://satus.sh/api/public/license/verify` and cached locally for 24 hours under `~/.satus/`.
 
