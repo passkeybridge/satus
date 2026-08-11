@@ -10,6 +10,8 @@
 
 ## Status
 
+`v0.3.8` — released 2026-08-11. Adds the production-database safety guard described below: `satus generate` now refuses to run against a database already holding more than 10,000 rows, exiting `11` without writing anything. The guard had been documented on satus.sh since v0.3.x but was never implemented; this release makes the documentation true. `--force` bypasses it.
+
 `v0.3.7` — released 2026-08-10. Correctness release: identity columns are left to the database instead of being handed to the model, foreign keys targeting non-primary-key columns resolve instead of silently inserting NULL, the dry-run estimate and the live cost meter share one price table, `--truncate` no longer cascades outside the run set, and run telemetry was cut back to match the published privacy promise. Full detail in [CHANGELOG.md](../../CHANGELOG.md); previous release notes at [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).
 
 ## Install
@@ -35,10 +37,39 @@ satus generate --profile saas --dry-run   # plan only, no LLM call, no writes
 | Command | Description |
 |---|---|
 | `satus init` | Scaffold `satus.config.json` in the current directory. Flags: `--force`. |
-| `satus generate` | Introspect schema and write seed rows. Flags: `--profile`, `--rows`, `--max-cost`, `--batch-size`, `--dsn`, `--schema`, `--provider`, `--model`, `--truncate`, `--dry-run`, `-v / --verbose`, `--json`. |
+| `satus generate` | Introspect schema and write seed rows. Flags: `--profile`, `--rows`, `--max-cost`, `--batch-size`, `--dsn`, `--schema`, `--provider`, `--model`, `--truncate`, `--force`, `--dry-run`, `-v / --verbose`, `--json`. |
 | `satus activate <key>` | Activate a Pro or Team license key. |
 | `satus whoami` | Print the currently activated license (from local cache). |
 | `satus --help` | Full command reference. |
+
+## Safety guard
+
+`satus generate` writes rows, so before it writes anything it counts rows in every user table — every table outside `pg_catalog`, `information_schema`, and `pg_toast`, in every schema, not just the one being seeded. If the total exceeds **10,000** the run is refused.
+
+The intent is narrow: catch the case where `DATABASE_URL` was pointed at production by accident. 10,000 is deliberately conservative — a fresh dev database sits at zero, a container with today's migrations sits in the low hundreds, an already-seeded test database sits in the low thousands.
+
+```
+Refusing to run: this database already holds more than 10,000 rows across 7 user table(s).
+  satus generate writes rows, and a database this full is usually not the one you meant
+  to seed. Check DATABASE_URL.
+  If it is the right database — a staging environment with real fixtures, say — re-run
+  with --force.
+```
+
+Pass `--force` to bypass it. `--dry-run` is never blocked (it writes nothing) but warns that a real run would be refused.
+
+Counting is bounded: each table is counted through a subquery capped at 10,001 rows and the total short-circuits as soon as it crosses the threshold, so the guard costs about the same on a 400-million-row production table as on an empty one. Tables the connecting role cannot `SELECT` are skipped and reported rather than raising.
+
+The guard is not a permission check (Postgres roles do that better) and not a rollback mechanism (the single transaction does that).
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Success. |
+| `1` | General failure — bad config, connection refused, unbreakable FK cycle, LLM or database error. |
+| `2` | `--dry-run` completed but the relational validator found errors. Use as a CI gate. |
+| `11` | `E_DB_NOT_EMPTY` — the safety guard refused to run. Nothing was written. Distinguishes "refused to run" from "tried and failed". |
 
 ## Reference profiles
 

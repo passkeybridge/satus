@@ -22,6 +22,7 @@ import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
 import { newRunId, reportRun, classifyError } from '../generate/telemetry.js'
+import { countUserRows, guardMessage, ROW_LIMIT, E_DB_NOT_EMPTY } from '../generate/guard.js'
 import { fingerprint } from '../generate/fingerprint.js'
 import { readCachedLicense } from '../license.js'
 import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
@@ -122,6 +123,10 @@ export function registerGenerate(program: Command): void {
     .option('--model <id>', 'model id (overrides config; falls back to the provider default)')
     .option('--truncate', 'truncate target tables before inserting')
     .option(
+      '--force',
+      `bypass the ${ROW_LIMIT.toLocaleString()}-row safety guard (exit ${E_DB_NOT_EMPTY} when it trips)`,
+    )
+    .option(
       '--dry-run',
       'simulate LLM output and run relational validation without writing rows or spending credits',
     )
@@ -206,6 +211,31 @@ export function registerGenerate(program: Command): void {
       }
 
       try {
+        // Safety guard, before anything else touches the database. Documented
+        // at https://satus.sh/docs/how-it-works: a database already holding
+        // more than ROW_LIMIT rows is almost never the one you meant to seed.
+        //
+        // Skipped for --dry-run, which writes nothing — but a dry run against
+        // an over-threshold database still says so, because the whole point of
+        // a dry run is to learn what the real run would do.
+        if (!opts.force) {
+          const guard = await countUserRows(client)
+          if (guard.exceeded) {
+            if (opts.dryRun) {
+              console.log(
+                pc.yellow(
+                  `  ! this database holds more than ${ROW_LIMIT.toLocaleString()} rows; ` +
+                    `a real run would be refused (exit ${E_DB_NOT_EMPTY}). Use --force to override.`,
+                ),
+              )
+            } else {
+              console.error(pc.red(guardMessage(guard)))
+              await client.end().catch(() => {})
+              process.exit(E_DB_NOT_EMPTY)
+            }
+          }
+        }
+
         const schema = await introspect(client, schemaName, exclude)
         if (schema.tables.length === 0) {
           console.error(pc.red(`No tables found in schema "${schemaName}".`))

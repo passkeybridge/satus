@@ -264,7 +264,12 @@ function CliPage() {
             [
               "--truncate",
               "false",
-              "TRUNCATE target tables (RESTART IDENTITY CASCADE) before inserting.",
+              "TRUNCATE target tables (RESTART IDENTITY, no CASCADE) before inserting. If a table outside the run set has a foreign key into one inside it, satus stops rather than emptying a table you did not ask it to seed.",
+            ],
+            [
+              "--force",
+              "false",
+              "Bypass the 10,000-row safety guard. Without it, satus refuses to run against a database that already holds more than 10,000 user-table rows and exits 11 (E_DB_NOT_EMPTY).",
             ],
             [
               "--dry-run",

@@ -4,6 +4,34 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [0.3.8] — 2026-08-11
+
+### Added
+
+- **The 10,000-row safety guard — the one satus.sh already advertised.** `satus generate` writes rows, and the single most expensive mistake available to a user is pointing `DATABASE_URL` at production. <https://satus.sh/docs/how-it-works> has described a guard against exactly that since the v0.3.x docs went up: count user-table rows, refuse above 10,000, bypass with `--force`, exit `11` (`E_DB_NOT_EMPTY`) so CI can tell "refused to run" from "tried and failed". None of it existed in the code. `resolveDsn` took the string and connected.
+
+  This release implements the published contract exactly, and it now runs before anything else touches the database — ahead of introspection, not just ahead of the first `INSERT`. Rows are counted in **every** schema outside `pg_catalog`, `information_schema`, and `pg_toast`, not just the schema being seeded, because a production database is rarely all in `public`.
+
+  Counting is bounded rather than naive: each table is counted through a subquery capped at 10,001 rows and the running total short-circuits the moment it crosses, so the guard costs roughly the same against a 400-million-row table as against an empty one. Planner estimates (`pg_class.reltuples`) would be free but report `-1` for a never-analyzed table — the exact state of a freshly restored production dump — and a guard that reads restored production as empty is worse than no guard. Partitioned parents (`relkind = 'p'`) are excluded so partitioned rows are not counted twice; tables the connecting role cannot `SELECT` are skipped and reported rather than raising.
+
+  `--dry-run` is never blocked, since it writes nothing, but it warns that a real run would be refused — which is what a dry run is for.
+
+### Fixed
+
+- **`/cli` still documented `--truncate` as using `CASCADE`.** The 0.3.7 change removed it and updated `/recipes`, `/docs/troubleshooting`, and `llms.txt`, but the flag table on the CLI reference page was missed. Corrected, and `--force` added alongside it.
+
+### Changed
+
+- `packages/cli/README.md` documents the guard and, for the first time, the full exit-code table (`0`, `1`, `2`, `11`).
+- `packages/action/action.yml` pins `satus-version` to `0.3.8`.
+- New `src/generate/guard.test.ts` (14 tests), each mutation-checked: removing the per-table `LIMIT`, narrowing the scan to `public`, including partitioned parents, weakening `>` to `>=`, and silently dropping unreadable tables were each introduced in turn and confirmed to turn the suite red.
+
+### Backward compatibility
+
+- **A run against a database holding more than 10,000 rows now fails where it previously succeeded.** That is the entire point. Add `--force` if the target really is a large staging database with real fixtures.
+- No flag removed or renamed; `--force` is new and defaults off. `satus.config.json` from 0.3.x works unchanged.
+- Exit codes `0`, `1`, and `2` are unchanged. `11` is new and only ever means the guard refused; nothing was written.
+
 ## [0.3.7] — 2026-08-10
 
 Correctness release. Five defects, four of which failed silently — the run reported success and the damage showed up later, in your application. Every fix below was reproduced and then re-verified against a live PostgreSQL 16.13 instance.
