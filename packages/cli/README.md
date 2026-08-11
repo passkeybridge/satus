@@ -10,6 +10,8 @@
 
 ## Status
 
+`v0.3.9` — released 2026-08-11. Exposes `force` and `truncate` on the GitHub Action, which had no way to bypass the new safety guard, and makes an unbreakable FK cycle exit `10` (`E_FK_CYCLE`) as the docs have always specified.
+
 `v0.3.8` — released 2026-08-11. Adds the production-database safety guard described below: `satus generate` now refuses to run against a database already holding more than 10,000 rows, exiting `11` without writing anything. The guard had been documented on satus.sh since v0.3.x but was never implemented; this release makes the documentation true. `--force` bypasses it.
 
 `v0.3.7` — released 2026-08-10. Correctness release: identity columns are left to the database instead of being handed to the model, foreign keys targeting non-primary-key columns resolve instead of silently inserting NULL, the dry-run estimate and the live cost meter share one price table, `--truncate` no longer cascades outside the run set, and run telemetry was cut back to match the published privacy promise. Full detail in [CHANGELOG.md](../../CHANGELOG.md); previous release notes at [satus.sh/blog](https://satus.sh/blog) and [satus.sh/cli](https://satus.sh/cli).

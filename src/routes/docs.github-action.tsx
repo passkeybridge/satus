@@ -202,6 +202,8 @@ function GitHubActionPage() {
                 <TableRow cells={["model", "no", "provider default", "Model id override."]} />
                 <TableRow cells={["max-cost", "no", "'1.00'", "USD ceiling. Quote it so YAML keeps a string."]} />
                 <TableRow cells={["dry-run", "no", "false", "Validate without inserting or spending."]} />
+                <TableRow cells={["truncate", "no", "false", "TRUNCATE target tables before inserting (RESTART IDENTITY, no CASCADE)."]} />
+                <TableRow cells={["force", "no", "false", "Bypass the 10,000-row safety guard. Without it satus exits 11 (E_DB_NOT_EMPTY) against a database holding more than 10,000 rows, and writes nothing."]} />
                 <TableRow cells={["working-directory", "no", ".", "Where satus.config.json lives."]} />
                 <TableRow cells={["satus-version", "no", SATUS_VERSION, "npm version to install. Pin for reproducibility."]} />
               </tbody>

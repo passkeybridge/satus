@@ -4,6 +4,25 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [0.3.9] — 2026-08-11
+
+### Fixed
+
+- **The GitHub Action could not bypass the safety guard.** 0.3.8 added the 10,000-row guard but the composite action exposed no way to override it, so a workflow pointed at a long-lived preview branch with real fixtures would exit `11` and write nothing, with no input to set. A safety feature that cannot be turned off in the one environment that runs unattended is a regression, and it was ours. `packages/action/action.yml` gains a `force` input (and `truncate`, which had also never been exposed) wired through to the CLI flags.
+
+- **An unbreakable foreign-key cycle now exits `10` (`E_FK_CYCLE`), as documented.** <https://satus.sh/docs/how-it-works> has specified that code — and the reason for it, "so CI can distinguish refused-to-run from tried-and-failed" — while the CLI exited `1`, indistinguishable from a connection failure. Exit codes now live in `packages/cli/src/exit-codes.ts` as one documented contract (`1`, `2`, `10`, `11`), `generate/guard.ts` re-exports `E_DB_NOT_EMPTY` from there rather than defining it twice, and a test pins every value and asserts none collide.
+
+### Changed
+
+- `packages/action/action.yml` pins `satus-version` to `0.3.9`.
+- `packages/cli/README.md` corrects the license-tier table: Team is **$49/seat/month and on a waitlist**, not `$79/mo`, and no tier has custom or private profiles — the CLI ships exactly three (`saas`, `ecommerce`, `b2b`) on every tier. This README ships inside the npm tarball, so the wrong price was public on npmjs.com.
+
+### Backward compatibility
+
+- Exit `10` replaces exit `1` on the unbreakable-FK-cycle path only. A pipeline testing `!= 0` is unaffected; one testing `== 1` for that specific case should widen to `!= 0` or add `10`.
+- Both new action inputs default to `false`, so existing workflows are unchanged.
+- No CLI flag added, removed, or renamed. `satus.config.json` from 0.3.x works unchanged.
+
 ## [0.3.8] — 2026-08-11
 
 ### Added

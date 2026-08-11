@@ -62,9 +62,9 @@ const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
   { label: "Row & table caps lifted",        row: [null,            { mark: true }, { mark: true }] },
   { label: "License, 24-hour offline grace", row: [null,            { mark: true }, { mark: true }] },
   { label: "Priority issue triage",          row: [null,            { mark: true }, { mark: true }] },
-  { label: "Shared team profiles",           row: [null,            null,            { mark: true }] },
-  { label: "CI mode",                        row: [null,            null,            { mark: true }] },
-  { label: "Audit log",                      row: [null,            null,            { mark: true }] },
+  { label: "Shared team profiles (planned)", row: [null,            null,            { mark: true }] },
+  { label: "CI mode (planned)",              row: [null,            null,            { mark: true }] },
+  { label: "Audit log (planned)",            row: [null,            null,            { mark: true }] },
   { label: "Invoiced billing",               row: [null,            null,            { mark: true }] },
 ];
 

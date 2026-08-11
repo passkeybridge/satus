@@ -33,6 +33,18 @@ inputs:
     description: 'Validate without inserting or spending. Set to "true" to enable.'
     required: false
     default: 'false'
+  truncate:
+    description: 'TRUNCATE the target tables before inserting (RESTART IDENTITY, no CASCADE). Set to "true" to enable.'
+    required: false
+    default: 'false'
+  force:
+    description: >-
+      Bypass the 10,000-row safety guard. Needed when the target database
+      legitimately holds more than 10,000 rows — a long-lived preview branch
+      with real fixtures, for example. Without it satus exits 11
+      (E_DB_NOT_EMPTY) and writes nothing. Set to "true" to enable.
+    required: false
+    default: 'false'
   working-directory:
     description: 'Directory to run satus in (where satus.config.json lives).'
     required: false
@@ -40,7 +52,7 @@ inputs:
   satus-version:
     description: 'npm version of @passkeybridge/satus to install.'
     required: false
-    default: '0.3.8'
+    default: '0.3.9'
 
 outputs:
   run-id:
@@ -92,6 +104,15 @@ runs:
         fi
         if [ "${{ inputs.dry-run }}" = "true" ]; then
           FLAGS+=(--dry-run)
+        fi
+        if [ "${{ inputs.truncate }}" = "true" ]; then
+          FLAGS+=(--truncate)
+        fi
+        # Without this passthrough the 10,000-row guard added in CLI 0.3.8
+        # is unbypassable from the action: a preview database with real
+        # fixtures would exit 11 with no way to override.
+        if [ "${{ inputs.force }}" = "true" ]; then
+          FLAGS+=(--force)
         fi
 
         mkdir -p .satus

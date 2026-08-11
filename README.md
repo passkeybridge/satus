@@ -65,7 +65,8 @@ Full walkthrough: [satus.sh/quickstart](https://satus.sh/quickstart).
 - **Generation**: batched structured-output calls (OpenAI `json_schema`,
   Anthropic tool-forcing) against a JSON schema built from your columns;
   FK values are injected from actually-inserted parent PKs, never invented.
-- **Safety**: one transaction per run; a `--max-cost` USD budget that
+- **Safety**: refuses to run against a database already holding more than
+  10,000 rows (exit `11`, `--force` to override); one transaction per run; a `--max-cost` USD budget that
   aborts and rolls back before overshooting; `--dry-run` simulates and
   validates offline and exits non-zero on findings (CI gate).
 - **Honest limits (v0.x)**: multi-column uniques are not enforced during
