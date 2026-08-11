@@ -22,7 +22,8 @@ import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
 import { newRunId, reportRun, classifyError } from '../generate/telemetry.js'
-import { countUserRows, guardMessage, ROW_LIMIT, E_DB_NOT_EMPTY } from '../generate/guard.js'
+import { countUserRows, guardMessage, ROW_LIMIT } from '../generate/guard.js'
+import { E_DB_NOT_EMPTY, E_FK_CYCLE } from '../exit-codes.js'
 import { fingerprint } from '../generate/fingerprint.js'
 import { readCachedLicense } from '../license.js'
 import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
@@ -260,7 +261,9 @@ export function registerGenerate(program: Command): void {
               '\n  Fix: make one of the FK columns nullable, or `exclude` one of the tables in' +
               '\n  satus.config.json and re-run.',
           )
-          process.exit(1)
+          // Documented as E_FK_CYCLE so CI can tell an unseedable schema from
+          // a run that failed for some other reason. Nothing was written.
+          process.exit(E_FK_CYCLE)
         }
 
         let ordered = sort.order

@@ -158,9 +158,9 @@ function HowItWorksPage() {
             </li>
             <li>
               <strong>Build the DAG, find the cycles.</strong> Treat tables as
-              nodes and FKs as edges. A straightforward topological sort
-              handles 100% of acyclic schemas. For the remainder, Tarjan&rsquo;s
-              algorithm enumerates every strongly-connected component.
+              nodes and FKs as edges. Kahn&rsquo;s algorithm resolves 100% of
+              acyclic schemas. When it terminates with nodes still unresolved,
+              those nodes are exactly the tables caught in a cycle.
             </li>
             <li>
               <strong>Break each cycle on the weakest edge.</strong> Inside a
@@ -270,10 +270,12 @@ function HowItWorksPage() {
           </ul>
           <p>
             The trade-off: very large seed runs hold a long-lived transaction.
-            For datasets above ~50,000 rows we recommend planning with{" "}
-            <code>--dry</code> first and reviewing the SQL—not because the
-            transaction will fail, but so you know what you&rsquo;re about to
-            commit.
+            For datasets above ~50,000 rows we recommend running{" "}
+            <code>--dry-run</code> first—not because the transaction will fail,
+            but so you see the insert order, the per-table row counts, and the
+            cost estimate before you commit to them. Note that{" "}
+            <code>--dry-run</code> does not emit a SQL transcript; it reports
+            the plan and runs the relational validator against simulated rows.
           </p>
         </Prose>
       </Section>

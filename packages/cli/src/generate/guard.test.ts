@@ -8,7 +8,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import type { Client } from 'pg'
-import { countUserRows, guardMessage, ROW_LIMIT, E_DB_NOT_EMPTY } from './guard.js'
+import { countUserRows, guardMessage, ROW_LIMIT } from './guard.js'
+import { E_GENERAL, E_VALIDATION, E_FK_CYCLE, E_DB_NOT_EMPTY } from '../exit-codes.js'
 
 /**
  * Minimal fake Client. Records every statement so the tests can assert on
@@ -161,6 +162,19 @@ describe('safety guard: contract', () => {
     // changes a public contract, so make that require editing a test.
     expect(ROW_LIMIT).toBe(10_000)
     expect(E_DB_NOT_EMPTY).toBe(11)
+  })
+
+  it('pins every published exit code', () => {
+    // CI pipelines branch on these. They are documented on
+    // satus.sh/docs/how-it-works and in packages/cli/README.md; a change
+    // here is a wire-format change and must be deliberate.
+    expect(E_GENERAL).toBe(1)
+    expect(E_VALIDATION).toBe(2)
+    expect(E_FK_CYCLE).toBe(10)
+    expect(E_DB_NOT_EMPTY).toBe(11)
+    // No two codes may collide, or a pipeline cannot tell them apart.
+    const codes = [E_GENERAL, E_VALIDATION, E_FK_CYCLE, E_DB_NOT_EMPTY]
+    expect(new Set(codes).size).toBe(codes.length)
   })
 
   it('refusal message names the cause, the variable, and the escape hatch', () => {

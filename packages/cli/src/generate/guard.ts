@@ -38,8 +38,8 @@ import type { Client } from 'pg'
 /** Published threshold. Changing this changes a documented contract. */
 export const ROW_LIMIT = 10_000
 
-/** Exit code for a guard trip. Documented as E_DB_NOT_EMPTY. */
-export const E_DB_NOT_EMPTY = 11
+/** Re-exported for convenience; the contract lives in ../exit-codes.ts. */
+export { E_DB_NOT_EMPTY } from '../exit-codes.js'
 
 /**
  * Tables per counting statement. Bounds both the SQL text length and the
