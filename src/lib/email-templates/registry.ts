@@ -7,6 +7,16 @@ export interface TemplateEntry {
   previewData?: Record<string, any>
   /** Fixed recipient—overrides caller-provided recipientEmail when set. */
   to?: string
+  /**
+   * 'transactional': service email the recipient's account requires
+   * (license keys, billing lifecycle). Still delivered to an address whose
+   * only suppression is an 'unsubscribe' — that records a marketing
+   * opt-out, and CAN-SPAM exempts transactional mail from it. Bounce and
+   * complaint suppressions block every category. Unset means 'marketing'
+   * (blocked by any suppression), so a template must opt in explicitly to
+   * bypass an unsubscribe.
+   */
+  category?: 'transactional' | 'marketing'
 }
 
 /**

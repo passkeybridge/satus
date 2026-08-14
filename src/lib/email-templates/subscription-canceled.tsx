@@ -133,6 +133,7 @@ export const template = {
     manageUrl:
       'https://satus.sh/api/public/billing/portal?key=satus_live_a3f9b8c1d2e3f4a5b6c7d8e9f0a1b2c3',
   },
+  category: 'transactional',
 } satisfies TemplateEntry
 
 

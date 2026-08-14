@@ -122,7 +122,7 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         // 2. Check suppression list (fail-closed: if we can't verify, don't send)
         const { data: suppressed, error: suppressionError } = await supabase
           .from('suppressed_emails')
-          .select('id')
+          .select('id, reason')
           .eq('email', effectiveRecipient.toLowerCase())
           .maybeSingle()
 
@@ -137,7 +137,21 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           )
         }
 
-        if (suppressed) {
+        // Bounce/complaint suppressions block every send: the mailbox is
+        // unreachable or the recipient reported us. An 'unsubscribe' is a
+        // marketing opt-out — transactional templates (license keys,
+        // billing lifecycle) are still delivered, since a customer who
+        // unsubscribed and later paid must still receive the key they
+        // bought. Templates without an explicit category count as
+        // marketing, so only a deliberate opt-in bypasses an unsubscribe.
+        const suppressionBlocks =
+          suppressed != null &&
+          !(
+            suppressed.reason === 'unsubscribe' &&
+            template.category === 'transactional'
+          )
+
+        if (suppressionBlocks) {
           // Log the suppressed attempt
           await supabase.from('email_send_log').insert({
             message_id: messageId,
@@ -153,9 +167,12 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           return Response.json({ success: false, reason: 'email_suppressed' })
         }
 
-        // 3. Get or create unsubscribe token (one token per email address)
+        // 3. Get or create unsubscribe token (one token per email address).
+        // Null means "send without a List-Unsubscribe header" — the one
+        // legitimate case is a transactional send to an address that
+        // already unsubscribed (token burned, marketing opt-out recorded).
         const normalizedEmail = effectiveRecipient.toLowerCase()
-        let unsubscribeToken: string
+        let unsubscribeToken: string | null
 
         // Check for existing token for this email
         const { data: existingToken, error: tokenLookupError } = await supabase
@@ -238,9 +255,18 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             )
           }
           unsubscribeToken = storedToken.token
+        } else if (template.category === 'transactional') {
+          // Token already used = the address unsubscribed. That's a
+          // marketing opt-out, and this send is transactional (it passed
+          // the scoped suppression check above), so it still goes out —
+          // just without a List-Unsubscribe header, since the single
+          // per-address token is burned and there is nothing left to
+          // opt out of.
+          unsubscribeToken = null
         } else {
-          // Token exists but is already used—email should have been caught by suppression check above.
-          // This is a safety fallback; log and skip sending.
+          // Marketing template, token already used—email should have been
+          // caught by the suppression check above. Safety fallback; log and
+          // skip sending.
           console.warn('Unsubscribe token already used but email not suppressed', {
             email_redacted: redactEmail(normalizedEmail),
           })
