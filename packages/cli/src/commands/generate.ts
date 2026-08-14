@@ -25,7 +25,7 @@ import { newRunId, reportRun, classifyError } from '../generate/telemetry.js'
 import { countUserRows, guardMessage, ROW_LIMIT } from '../generate/guard.js'
 import { E_DB_NOT_EMPTY, E_FK_CYCLE } from '../exit-codes.js'
 import { fingerprint } from '../generate/fingerprint.js'
-import { readCachedLicense } from '../license.js'
+import { currentLicense } from '../license.js'
 import { createOpenAiProvider, createAnthropicProvider } from '../generate/providers/index.js'
 import type { Provider } from '../generate/providers/index.js'
 import { createSimulatedProvider } from '../generate/simulate.js'
@@ -176,7 +176,8 @@ export function registerGenerate(program: Command): void {
         process.exit(1)
       }
 
-      const license = await readCachedLicense()
+      const { license, note: licenseNote } = await currentLicense()
+      if (licenseNote) console.log(pc.yellow(`! ${licenseNote}`))
       const isPaid = license?.valid && (license.plan === 'pro' || license.plan === 'team')
       const requestedRows = Number(opts.rows)
       const rowsPerTable =

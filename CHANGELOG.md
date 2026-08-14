@@ -4,6 +4,16 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [Unreleased]
+
+### Fixed
+
+- **The 24-hour license grace is now enforced, not just marketed.** The pricing page has always said a paid verdict is cached for 24 hours and then fails closed; the expiry email says a revoked license "will expire within 24 hours". Neither was true: `satus generate` read the cache with no TTL check, and `satus activate` never persisted the key — so nothing could ever re-verify, and a canceled subscription kept paid caps forever. Activation now stores the key in `~/.satus/license-cache.json`, `generate` re-verifies any verdict older than 24 hours, and a verdict that cannot be refreshed (offline past the grace window, server error, or a keyless cache written by an older CLI) falls back to Free caps with a printed explanation. `satus whoami` notes when the cache is stale. Nine tests pin the contract.
+
+### Backward compatibility
+
+- A cache written by <= 0.3.9 contains no key. The first `generate` after its 24-hour window prints a one-line notice and applies Free caps; running `satus activate <key>` once restores paid caps and stores the key for future re-verification.
+
 ## [0.3.9] — 2026-08-11
 
 ### Fixed
