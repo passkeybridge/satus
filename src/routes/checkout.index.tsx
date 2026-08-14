@@ -16,10 +16,12 @@ const SITE_URL = "https://satus.sh";
 
 // Display catalog mirrors the server whitelist. Kept here purely for the
 // page header—the server is what actually authorizes a price.
+// Team is not listed: it is waitlist-only until launch, and the server
+// whitelist refuses its lookup_key. The component below routes that price
+// to the waitlist instead of mounting a checkout that would fail.
 const TIER_LABELS: Record<string, { name: string; price: string }> = {
   satus_pro_monthly: { name: "satus.sh—Pro", price: "$19 / month" },
   satus_pro_yearly: { name: "satus.sh—Pro (annual)", price: "$190 / year" },
-  satus_team_seat_monthly: { name: "satus.sh—Team", price: "$49 / seat / month" },
 };
 
 export const Route = createFileRoute("/checkout/")({
@@ -42,6 +44,47 @@ export const Route = createFileRoute("/checkout/")({
 function CheckoutPage() {
   const { price, qty } = Route.useSearch();
   const tier = price ? TIER_LABELS[price] : undefined;
+
+  // Team exists in Stripe but opens by waitlist, not checkout. Anyone who
+  // reaches this URL (old link, guessed query) gets the honest state and
+  // the same intake path as the pricing page.
+  if (price === "satus_team_seat_monthly") {
+    return (
+      <main className="satus-fade min-h-dvh bg-[var(--paper)] px-6 py-16 text-[var(--ink)]">
+        <div className="mx-auto w-full max-w-[640px]">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--mute)]">
+            <span className="text-[var(--signal)]">§07</span>
+            <span className="mx-3 text-[var(--hairline)]">|</span>
+            <span>Checkout</span>
+          </div>
+          <h1 className="mt-5 font-mono text-[28px] font-medium leading-[1.2] tracking-tight md:text-[34px]">
+            team opens by waitlist.
+          </h1>
+          <hr className="mt-6" />
+          <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
+            The Team tier ($49 / seat / month) isn&rsquo;t purchasable yet —
+            it launches when ten organizations have asked for it. Join the
+            waitlist and you&rsquo;ll get one email when it ships. Pro is
+            live today.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a
+              href="/pricing#waitlist"
+              className="inline-flex h-10 items-center whitespace-nowrap bg-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--paper)] transition-colors hover:bg-[var(--signal)]"
+            >
+              join the waitlist
+            </a>
+            <Link
+              to="/pricing"
+              className="inline-flex h-10 items-center whitespace-nowrap border border-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+            >
+              view pricing
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   // No price, or a price not in our display catalog—render a graceful
   // bounce-back rather than mount an empty checkout form. The server

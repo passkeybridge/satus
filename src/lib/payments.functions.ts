@@ -17,10 +17,15 @@ import { createStripeClient, type StripeEnv } from "@/lib/stripe.server";
 // Whitelist of price IDs we ship to customers. The server refuses anything
 // else so a crafted ?price=... query string can't open checkout for an
 // arbitrary Stripe price in the account.
+//
+// satus_team_seat_monthly is deliberately absent: /pricing sells Team as
+// waitlist-only until ten organizations ask for it, and several of its
+// listed features are still marked "planned". Selling seats for an unbuilt
+// tier via a crafted URL would contradict the published story. Re-add the
+// lookup_key here (and the tier in checkout.index.tsx) when Team launches.
 const ALLOWED_PRICE_IDS = new Set<string>([
   "satus_pro_monthly",
   "satus_pro_yearly",
-  "satus_team_seat_monthly",
 ]);
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
