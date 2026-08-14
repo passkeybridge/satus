@@ -99,21 +99,29 @@ async function enqueueTransactionalEmail(args: {
 
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   if (session.mode !== 'subscription') return
+
+  // Past this point the customer has paid. Every missing precondition and
+  // failed write throws so the POST handler returns 500 (Stripe retries
+  // for ~3 days) and ops gets the alert — a silent return here is a buyer
+  // with a receipt and no license, and nobody would know.
   const subscriptionId: string | undefined = session.subscription
-  if (!subscriptionId) return
+  if (!subscriptionId) {
+    throw new Error(`subscription-mode session ${session.id} has no subscription id`)
+  }
 
   const email: string | undefined =
     session.customer_details?.email ?? session.customer_email ?? undefined
   if (!email) {
-    console.error('[payments-webhook] no email on session', session.id)
-    return
+    throw new Error(`no email on session ${session.id}; license cannot be delivered`)
   }
 
   const customerId: string | undefined =
     typeof session.customer === 'string'
       ? session.customer
       : session.customer?.id
-  if (!customerId) return
+  if (!customerId) {
+    throw new Error(`no customer id on session ${session.id}`)
+  }
 
   const stripe = createStripeClient(env)
   const sub = await stripe.subscriptions.retrieve(subscriptionId)
@@ -154,8 +162,9 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
     )
 
   if (error) {
-    console.error('[payments-webhook] license upsert failed', error)
-    return
+    // Idempotent on retry: the upsert keys on stripe_subscription_id and
+    // the existing-key lookup above reuses an already-issued key.
+    throw new Error(`license upsert failed: ${error.message}`)
   }
 
   await enqueueTransactionalEmail({
@@ -352,8 +361,10 @@ async function handleChargeRefunded(charge: any, env: StripeEnv) {
     .eq('environment', env)
 
   if (error) {
-    console.error('[payments-webhook] refund revoke failed', error)
-    return
+    // Same contract as the other write failures: 500 for Stripe's retry
+    // schedule plus the ops alert. Retries are safe — the revoked_at guard
+    // above short-circuits once the write lands.
+    throw new Error(`refund revoke failed: ${error.message}`)
   }
 
   if (existing.email) {
