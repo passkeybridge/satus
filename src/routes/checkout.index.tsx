@@ -8,7 +8,9 @@
  * Returns the buyer to /checkout/success?session_id=… on completion.
  */
 
+import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { track } from "@vercel/analytics";
 import { StripeEmbeddedCheckout } from "@/components/site/StripeEmbeddedCheckout";
 
 
@@ -44,6 +46,13 @@ export const Route = createFileRoute("/checkout/")({
 function CheckoutPage() {
   const { price, qty } = Route.useSearch();
   const tier = price ? TIER_LABELS[price] : undefined;
+
+  // A mounted checkout with a valid tier is the reached-payment step of
+  // the funnel; before this event existed the step was unmeasurable.
+  // (Unconditional hook — the early returns below come after it.)
+  useEffect(() => {
+    if (price && TIER_LABELS[price]) track("checkout_start", { price });
+  }, [price]);
 
   // Team exists in Stripe but opens by waitlist, not checkout. Anyone who
   // reaches this URL (old link, guessed query) gets the honest state and

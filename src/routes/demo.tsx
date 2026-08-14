@@ -20,6 +20,7 @@
  */
 import { useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { track } from "@vercel/analytics";
 
 import { PageShell } from "@/components/site/chrome";
 import { Prose, Section, type SectionMeta } from "@/components/site/primitives";
@@ -248,7 +249,13 @@ export const Route = createFileRoute("/demo")({
           "Paste CREATE TABLE statements, get realistic rows that respect your foreign keys. Real Postgres in the browser.",
       },
       { property: "og:url", content: SITE_URL + "/demo" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: SITE_URL + "/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:image", content: SITE_URL + "/og-image.png" },
     ],
+    links: [{ rel: "canonical", href: SITE_URL + "/demo" }],
   }),
 });
 
@@ -559,9 +566,11 @@ function DemoPage() {
 
       setResults(tableResults);
       setPhase("done");
+      track("demo_run", { profile, outcome: "done" });
     } catch (e) {
       setError((e as Error).message);
       setPhase("error");
+      track("demo_run", { profile, outcome: "error" });
     } finally {
       running.current = false;
     }

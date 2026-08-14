@@ -14,6 +14,7 @@
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { track } from "@vercel/analytics";
 import { useState } from "react";
 import { PageShell } from "@/components/site/chrome";
 import { Mono, Prose, Section, type SectionMeta } from "@/components/site/primitives";
@@ -178,6 +179,7 @@ function InstallLine() {
           navigator.clipboard.writeText(cmd);
           setCopied(true);
           setTimeout(() => setCopied(false), 1400);
+          track("install_copy");
         }}
         className="border-l border-[var(--ink)] px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--mute)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
         aria-label="Copy install command"

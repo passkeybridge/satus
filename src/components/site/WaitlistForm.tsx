@@ -11,6 +11,7 @@
  */
 
 import { useState, type FormEvent } from "react";
+import { track } from "@vercel/analytics";
 
 type Tier = "pro" | "team";
 type Status = "idle" | "submitting" | "ok" | "dup" | "error" | "rate_limited";
@@ -45,6 +46,7 @@ export function WaitlistForm({ defaultTier = "pro" }: { defaultTier?: Tier }) {
       setStatus("ok");
       setEmail("");
       setNote("");
+      track("waitlist_signup", { tier });
     } catch {
       setStatus("error");
     }
