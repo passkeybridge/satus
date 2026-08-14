@@ -10,6 +10,8 @@
 
 ## Status
 
+`v0.3.10` — released 2026-08-14. Enforces the 24-hour license grace as documented: `satus activate` now stores the key locally, `satus generate` re-verifies any cached verdict older than 24 hours, and a verdict that cannot be refreshed falls back to Free-tier caps with a printed reason. Caches written by older versions carry no key; run `satus activate <key>` once to restore paid caps.
+
 `v0.3.9` — released 2026-08-11. Exposes `force` and `truncate` on the GitHub Action, which had no way to bypass the new safety guard, and makes an unbreakable FK cycle exit `10` (`E_FK_CYCLE`) as the docs have always specified.
 
 `v0.3.8` — released 2026-08-11. Adds the production-database safety guard described below: `satus generate` now refuses to run against a database already holding more than 10,000 rows, exiting `11` without writing anything. The guard had been documented on satus.sh since v0.3.x but was never implemented; this release makes the documentation true. `--force` bypasses it.

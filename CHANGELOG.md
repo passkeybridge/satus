@@ -4,7 +4,7 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
-## [Unreleased]
+## [0.3.10] — 2026-08-14
 
 ### Fixed
 
