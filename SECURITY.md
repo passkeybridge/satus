@@ -2,6 +2,8 @@
 
 We take the security of satus.sh and its users seriously. This document
 describes how to report vulnerabilities and what to expect in response.
+It is mirrored at <https://satus.sh/security>; if the two ever disagree,
+this file is canonical.
 
 ## Reporting a vulnerability
 
@@ -36,7 +38,7 @@ respond.
 
 In scope:
 
-- The satus CLI (`satus` package on npm and Homebrew).
+- The satus CLI (`@passkeybridge/satus` on npm).
 - The satus.sh marketing site and license-verification API
   (`/api/public/license/verify`, `/api/public/payments/webhook`).
 - License-delivery emails sent from PasskeyBridge LLC infrastructure.

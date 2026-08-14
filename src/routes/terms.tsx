@@ -108,7 +108,7 @@ function TermsPage() {
             against databases you control. The Service consists of:
           </p>
           <ul className="ml-5 list-disc space-y-1">
-            <li>The satus CLI binary, distributed via npm and Homebrew.</li>
+            <li>The satus CLI binary, distributed via npm.</li>
             <li>The satus.sh marketing site, blog, and documentation.</li>
             <li>A license-verification API at <code>/api/public/license/verify</code>.</li>
             <li>A transactional email that delivers your license key after purchase.</li>
@@ -174,7 +174,7 @@ function TermsPage() {
         id="billing"
         n="05"
         label="Billing"
-        title={<>annual licenses. stripe processed. refundable for 14 days.</>}
+        title={<>monthly or annual. stripe processed. refundable for 14 days.</>}
       >
         <Prose>
           <p>
@@ -311,7 +311,8 @@ function TermsPage() {
             >
               support@satus.sh
             </a>{" "}
-            with your order ID. (A self-service Stripe customer portal is on the roadmap.)
+            with your order ID, or self-serve through the Stripe billing portal linked from your
+            license-delivery email.
             PasskeyBridge may terminate or suspend your license immediately for material breach of
             these terms, fraudulent payment, or use that poses a security risk to other users.
           </p>

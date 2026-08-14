@@ -202,7 +202,7 @@ function SecurityPage() {
           <ul className="ml-5 list-disc space-y-1">
             <li>
               The satus CLI—the <code>satus</code> binary distributed on npm
-              and Homebrew.
+              as <code>@passkeybridge/satus</code>.
             </li>
             <li>
               The satus.sh marketing site and the license-verification API

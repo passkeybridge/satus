@@ -102,12 +102,13 @@ const LicenseDeliveryEmail = ({
           activate the CLI
         </Heading>
         <Text style={paragraph}>
-          Install the binary, then export the key as an environment variable:
+          Install the CLI, then activate it with your key. The last command
+          confirms which plan is active:
         </Text>
         <Section style={codeBlock}>
           <Text style={codeLine}>npm i -g @passkeybridge/satus</Text>
-          <Text style={codeLine}>export SATUS_LICENSE_KEY={'"'}{licenseKey}{'"'}</Text>
-          <Text style={codeLine}>satus init</Text>
+          <Text style={codeLine}>satus activate {licenseKey}</Text>
+          <Text style={codeLine}>satus whoami</Text>
         </Section>
 
         <Heading as="h2" style={h2}>

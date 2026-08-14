@@ -108,7 +108,7 @@ Correctness release. Five defects, four of which failed silently — the run rep
 
 - No CLI flags added, removed, or renamed. No telemetry schema changes. `satus.config.json` from 0.3.x continues to work unchanged.
 
-## [0.3.3] — 2026-07-15
+## [0.3.3] — 2026-07-14
 
 
 ### Added

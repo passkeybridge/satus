@@ -81,7 +81,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Is there a free trial on Pro?",
-    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with no time limit. All three built-in profiles (saas, ecommerce, b2b) are available on every tier. Pro lifts the row and table caps and adds priority triage and a 14-day offline license grace. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
+    a: "No. The Free tier is the trial: the same CLI binary, capped at 25 rows per table across 5 tables, with no time limit. All three built-in profiles (saas, ecommerce, b2b) are available on every tier. Pro lifts the row and table caps and adds priority triage and a 24-hour offline license grace. If those don't earn $19 a month, you should stay on Free. The source is published for inspection under a proprietary license; commercial use is governed by the license you activate.",
   },
   {
     q: "What's the refund policy?",

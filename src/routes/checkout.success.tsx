@@ -44,7 +44,7 @@ function CheckoutSuccessPage() {
         <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
           Stripe has confirmed the charge. Your license key is on its way to
           the email you entered at checkout, sent from{" "}
-          <span className="font-mono">noreply@notify.satus.sh</span>. If it
+          <span className="font-mono">noreply@mail.satus.sh</span>. If it
           hasn't arrived in a few minutes, check spam, then email{" "}
           <a
             href="mailto:support@satus.sh"

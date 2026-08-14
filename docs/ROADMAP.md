@@ -15,7 +15,7 @@ products die politely.
 - [x] E2E audit: license plan-contract bug fixed and live-verified;
       site docs corrected to the real CLI interface
 - [x] Real-LLM end-to-end run verified (Anthropic + OpenAI paths)
-- [ ] v0.3.6 via the tag-push pipeline (ANTHROPIC_BASE_URL fix)
+- [x] v0.3.6 via the tag-push pipeline (ANTHROPIC_BASE_URL fix)
 
 ## Phase 1 — Become discoverable and frictionless (Aug–Sep 2026)
 

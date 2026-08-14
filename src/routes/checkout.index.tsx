@@ -126,8 +126,8 @@ function CheckoutPage() {
         </div>
 
         <p className="mt-8 max-w-[60ch] font-mono text-[11px] text-[var(--mute)]">
-          billed by PasskeyBridge LLC. cancel any time, refunds pro-rated.
-          card data never touches our servers.
+          billed by PasskeyBridge LLC. cancel any time; full refund within
+          14 days of first purchase. card data never touches our servers.
         </p>
       </div>
     </main>

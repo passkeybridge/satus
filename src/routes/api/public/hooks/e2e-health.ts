@@ -1,9 +1,10 @@
 /**
  * Daily E2E health check.
  *
- * Triggered by pg_cron twice daily (0800 ET, 2000 ET). Exercises the
- * four production-critical subsystems and emails support@satus.sh via
- * Resend only on failure. Every run is recorded in `e2e_health_log`.
+ * Triggered by pg_cron once daily (06:00 UTC, migration 20260805131900).
+ * Exercises the four production-critical subsystems and emails
+ * support@satus.sh via Resend only on failure. Every run is recorded in
+ * `e2e_health_log`.
  *
  * Public route by necessity (pg_cron → net.http_post). No auth header
  * required, but the handler is cheap and idempotent. Each run also
