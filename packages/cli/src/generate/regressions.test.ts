@@ -18,6 +18,7 @@ import { validateTable } from './validate.js'
 import { planRun } from './runner.js'
 import { synthesizePkRows, createSimulatedProvider } from './simulate.js'
 import { classifyError } from './telemetry.js'
+import { INTROSPECT_SQL } from './introspect.js'
 import { createAnthropicProvider } from './providers/anthropic.js'
 import { createOpenAiProvider } from './providers/openai.js'
 import type { Provider } from './providers/types.js'
@@ -300,5 +301,73 @@ describe('regression: telemetry error classification leaks nothing', () => {
     for (const s of samples) {
       expect(classifyError(s)).toMatch(/^[a-zA-Z0-9_]+$/)
     }
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Bug 6 — primary keys and unique columns vanished for read-only roles.
+ *
+ * v_fks read pg_catalog precisely because information_schema is
+ * privilege-filtered, but v_pks and v_uniques still went through
+ * information_schema.table_constraints, whose predicate is:
+ *
+ *   pg_has_role(relowner, 'USAGE')
+ *   OR has_table_privilege(INSERT, UPDATE, DELETE, TRUNCATE,
+ *                          REFERENCES, TRIGGER)
+ *   OR has_any_column_privilege(INSERT, UPDATE, REFERENCES)
+ *
+ * SELECT is absent from that list. Verified on PostgreSQL 16.13: running
+ * the shipped query as a role holding only SELECT returned 3 tables and
+ * 10 columns but 0 primary keys and 0 uniques, while pg_catalog returned
+ * all of them. Nothing raised — the run would simply have proceeded with
+ * an empty PK for every table, silently disabling updateBrokenEdge and
+ * the unique-column validator.
+ *
+ * This is a shape assertion rather than a live-DB test: the defect was
+ * which catalog the SQL reads, so that is what gets pinned.
+ * ------------------------------------------------------------------ */
+describe('regression: constraint introspection does not use information_schema', () => {
+  const ctes = ['v_pks', 'v_uniques', 'v_fks_raw']
+
+  function bodyOf(cte: string): string {
+    const start = INTROSPECT_SQL.indexOf(`${cte} as (`)
+    expect(start, `${cte} should exist in INTROSPECT_SQL`).toBeGreaterThan(-1)
+    // Walk to the matching close paren so we read only this CTE.
+    let depth = 0
+    let i = INTROSPECT_SQL.indexOf('(', start)
+    const from = i
+    for (; i < INTROSPECT_SQL.length; i++) {
+      if (INTROSPECT_SQL[i] === '(') depth++
+      else if (INTROSPECT_SQL[i] === ')') {
+        depth--
+        if (depth === 0) break
+      }
+    }
+    // Strip `--` comments: these CTEs explain in prose which catalog they
+    // avoid, and the assertion below is about the SQL, not the commentary.
+    return INTROSPECT_SQL.slice(from, i)
+      .split('\n')
+      .map((line) => line.replace(/--.*$/, ''))
+      .join('\n')
+  }
+
+  for (const cte of ctes) {
+    it(`${cte} reads pg_catalog, not information_schema`, () => {
+      const body = bodyOf(cte)
+      expect(body).not.toContain('information_schema')
+      expect(body).toContain('pg_constraint')
+    })
+  }
+
+  it('still reads columns from information_schema.columns', () => {
+    // columns is filtered by *column* privilege, which does accept SELECT,
+    // so it is correct there and the fix should not have touched it.
+    expect(bodyOf('v_columns')).toContain('information_schema.columns')
+  })
+
+  it('only single-column unique constraints are reported', () => {
+    // Multi-column uniques are an explicit v0.x limitation; the pg_catalog
+    // rewrite must not silently start reporting them as single-column.
+    expect(bodyOf('v_uniques')).toContain('cardinality(con.conkey) = 1')
   })
 })

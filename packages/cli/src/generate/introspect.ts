@@ -78,15 +78,41 @@ export interface IntrospectedSchema {
 // v0.2 wraps the five lookups in CTEs and aggregates each into a
 // JSONB array, returning one row with five keys. The server still
 // executes the same five scans, but the client pays one round-trip
-// instead of five. On a hot local socket the win is small (~5%);
-// on a remote DB it scales linearly with round-trip time.
+// instead of five.
 //
-// FK introspection deliberately uses pg_catalog rather than
-// information_schema.constraint_column_usage, which is
-// privilege-filtered: a role that can read the table but not the
-// parent table sees zero FK rows, silently breaking the topo sort.
-// pg_catalog returns FK metadata for any role that can see the
-// table.
+// This is a latency trade, not a free win, and on a local socket it
+// is a net loss. Measured on PostgreSQL 16.13 over loopback TCP
+// (median of 250 runs, interleaved):
+//
+//                      3 tables / 10 cols    70 tables / 488 cols
+//   one CTE query           10.62 ms                22.16 ms
+//   five queries             6.38 ms                17.23 ms
+//   extra server work        4.24 ms                 4.93 ms
+//
+// The jsonb_agg wrapping costs roughly 4-5 ms regardless of schema
+// size, while a loopback round-trip costs ~0.09 ms, so batching only
+// pays once round-trip time exceeds ~1.1-1.2 ms. That covers every managed
+// Postgres we target (Supabase, Neon, RDS) and no local socket. See the
+// remote measurement in the v0.2.0 release notes: 378 ms of wire time
+// became 43 ms against pooled Supabase.
+//
+// Constraint introspection (FKs, PKs, uniques) deliberately uses
+// pg_catalog rather than information_schema. The information_schema
+// constraint views are privilege-filtered, and the filters are stricter
+// than they look:
+//
+//   constraint_column_usage  pg_has_role(tblowner, 'USAGE'), owner only.
+//                            No grant of any kind makes it visible.
+//   table_constraints        accepts INSERT/UPDATE/DELETE/TRUNCATE/
+//   referential_constraints  REFERENCES/TRIGGER but *not* SELECT.
+//
+// So a read-only role sees zero rows from all three, and a role holding
+// only SELECT would report every table as having no primary key, no
+// unique columns, and no foreign keys. That fails silently: the topo
+// sort still runs, it just runs on an empty edge set.
+//
+// pg_catalog has no such filter. Verified on PostgreSQL 16.13; see the
+// three-role transcript in the 2026-08-21 blog post.
 //
 // FK rows also surface condeferrable / condeferred so the runner
 // can decide whether a topo-cycle is breakable via
@@ -104,7 +130,7 @@ export interface IntrospectedSchema {
 // pg_partition_root() to re-attribute any FK declared on a partition
 // child back to the topmost partitioned ancestor. Duplicate FK rows
 // (same parent, same column pair) are collapsed with GROUP BY.
-const INTROSPECT_SQL = `
+export const INTROSPECT_SQL = `
   with
   v_tables as (
     select c.relname as table_name
@@ -126,14 +152,24 @@ const INTROSPECT_SQL = `
     order by table_name, ordinal_position
   ),
   v_pks as (
-    select kcu.table_name, kcu.column_name, kcu.ordinal_position
-    from information_schema.table_constraints tc
-    join information_schema.key_column_usage kcu
-      on tc.constraint_schema = kcu.constraint_schema
-     and tc.constraint_name   = kcu.constraint_name
-    where tc.table_schema = $1
-      and tc.constraint_type = 'PRIMARY KEY'
-    order by kcu.table_name, kcu.ordinal_position
+    -- pg_catalog, not information_schema.table_constraints, for the same
+    -- privilege reason as v_fks below: that view's predicate accepts
+    -- INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER but *not* SELECT,
+    -- so a read-only role gets zero rows and every table silently reports
+    -- an empty primary key. Verified on PostgreSQL 16.13.
+    select
+      cls.relname as table_name,
+      att.attname as column_name,
+      ck.ord      as ordinal_position
+    from pg_constraint con
+    join pg_class cls     on cls.oid = con.conrelid
+    join pg_namespace ns  on ns.oid = cls.relnamespace
+    join lateral unnest(con.conkey) with ordinality as ck(attnum, ord) on true
+    join pg_attribute att on att.attrelid = cls.oid and att.attnum = ck.attnum
+    where con.contype = 'p'
+      and ns.nspname = $1
+      and not cls.relispartition
+    order by cls.relname, ck.ord
   ),
   v_fks_raw as (
     -- Attribute the FK to the partition root when the constraint is
@@ -178,18 +214,20 @@ const INTROSPECT_SQL = `
     -- Single-column unique constraints only. Multi-col uniques require
     -- coordinated generation across columns; we skip them in v0.x to
     -- keep the failure surface small.
-    select kcu.table_name, kcu.column_name
-    from information_schema.table_constraints tc
-    join information_schema.key_column_usage kcu
-      on tc.constraint_schema = kcu.constraint_schema
-     and tc.constraint_name   = kcu.constraint_name
-    where tc.table_schema = $1
-      and tc.constraint_type = 'UNIQUE'
-      and (
-        select count(*) from information_schema.key_column_usage k2
-        where k2.constraint_schema = tc.constraint_schema
-          and k2.constraint_name   = tc.constraint_name
-      ) = 1
+    --
+    -- pg_catalog for the same privilege reason as v_pks. As before, this
+    -- sees UNIQUE *constraints* only, not bare CREATE UNIQUE INDEX.
+    select
+      cls.relname as table_name,
+      att.attname as column_name
+    from pg_constraint con
+    join pg_class cls     on cls.oid = con.conrelid
+    join pg_namespace ns  on ns.oid = cls.relnamespace
+    join pg_attribute att on att.attrelid = cls.oid and att.attnum = con.conkey[1]
+    where con.contype = 'u'
+      and cardinality(con.conkey) = 1
+      and ns.nspname = $1
+      and not cls.relispartition
   )
   select
     coalesce((select jsonb_agg(to_jsonb(v_tables.*))  from v_tables),  '[]'::jsonb) as tables,
