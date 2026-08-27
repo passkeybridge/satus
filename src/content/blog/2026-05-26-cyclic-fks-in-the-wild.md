@@ -68,6 +68,16 @@ prefer to defer the column that:
 
 The tiebreaker matters more than it sounds. Determinism means two runs against the same schema produce the same insert order, which means the same fixture, which means CI is reproducible.
 
+> **Correction (2026-08-28).** Only rule 1 is real. Verified against the shipped
+> binary on PostgreSQL 16.13: a `NOT NULL` column with a `DEFAULT` is not
+> treated as deferrable and the run exits `10` instead; downstream foreign-key
+> count is never computed; and the tiebreaker selects the alphabetically
+> *earlier* key, not the later one. The rest of this post, including the
+> two-pass algorithm above and the argument against disabling constraints,
+> matches the code. Full detail, with the experiments, in a companion post
+> published 2026-08-28:
+> [The cycle-breaking heuristic we documented and never shipped](/blog/the-cycle-breaking-heuristic-we-never-shipped).
+
 ### The three production patterns, scored
 
 The patterns from the opening, with how each one is resolved:

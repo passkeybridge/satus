@@ -40,10 +40,20 @@ The launch sequence, each post paired with a channel moment:
    privilege setups, partition re-attribution. (r/PostgreSQL)
 4. "Breaking FK cycles without lying to your database" — Kahn's
    algorithm + nullable back-edges + back-patching. (lobste.rs)
+   **Shipped 2026-08-28 as "The cycle-breaking heuristic we documented
+   and never shipped."** Retitled: the mechanism was already covered in
+   the 2026-05-26 post, so writing the planned piece would have restated
+   it. Running the heuristic against the shipped binary showed three of
+   its four published rules do not exist, and that became the post.
 5. "Structured output from Claude without a JSON parser" — tool-forcing
    for typed rows; OpenAI json_schema vs Anthropic tool_choice. (dev.to)
+   **Shipped 2026-09-04 under the planned title.**
 6. "What a $0.03 seed run looks like" — token accounting, the --max-cost
    guardrail design, why cost estimates are guardrails not accounting.
+   **Shipped 2026-09-11 as "Cost estimates are guardrails, not
+   accounting."** Retitled: our own telemetry puts a 125-row run at
+   $0.00067, not $0.03, so the planned headline asserted a figure the
+   data contradicts. The estimate/actual gap became the subject.
 7. Show HN launch post + README polish week (no blog post; the README
    is the post).
 8. "Free tier, priced honestly" — why 25 rows/5 tables, what changes.
