@@ -27,6 +27,15 @@ database we do not own. Breaking any of it silently corrupts a user's data.
 - **Soft FK cycles** are broken by leaving a nullable back-edge `NULL` and
   back-patching it via `updateBrokenEdge` **inside the same transaction**.
 
+## Telemetry is off unless the user turns it on
+
+`reportRun` sends nothing unless `configureTelemetry` latched it on, and the
+latch initialises to `false` so a path that forgets to configure sends
+nothing rather than everything. `DO_NOT_TRACK` wins over every other
+signal. satus.sh/security and /privacy both state this as a promise; through
+v0.3.10 the code did not keep it. Do not make the run record unconditional
+again, and do not "fix" the default to true.
+
 ## v0.x limits — keep them stated
 
 Multi-column `UNIQUE` constraints are not enforced during generation.
