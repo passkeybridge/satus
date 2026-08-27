@@ -55,6 +55,20 @@ const RULES = {
     typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)
       ? null
       : "date must be ISO YYYY-MM-DD",
+  /* Optional. Absent means publish immediately, so undefined passes. */
+  publishAt: (v) => {
+    if (v === undefined) return null;
+    if (
+      typeof v !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})$/.test(v)
+    ) {
+      return "publishAt must be ISO 8601 with an explicit offset, e.g. 2026-08-28T09:00:00-04:00";
+    }
+    if (Number.isNaN(Date.parse(v))) {
+      return `publishAt is not a parseable instant: ${v}`;
+    }
+    return null;
+  },
 };
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
@@ -99,6 +113,16 @@ for (const file of files) {
     const err = check(fm[field]);
     if (err) failures.push(`${file}: ${err}`);
   }
+  /* `date` drives sort order and every rendered byline; `publishAt` drives
+   * visibility. Letting them disagree means a post appears on one day and
+   * claims another, and sorts by the claim. The publishAt string carries the
+   * author's own local date in its first ten characters, so comparing the
+   * prefix is the whole check. */
+  if (fm.publishAt && fm.date && fm.publishAt.slice(0, 10) !== fm.date) {
+    failures.push(
+      `${file}: date (${fm.date}) and publishAt (${fm.publishAt.slice(0, 10)}) are different days`,
+    );
+  }
   /* A duplicate slug silently shadows a post in getPostBySlug. */
   if (fm.slug) {
     if (seenSlugs.has(fm.slug)) {
@@ -107,7 +131,12 @@ for (const file of files) {
     seenSlugs.set(fm.slug, file);
   }
   if (listMode) {
-    console.log(`  ok  ${file}  desc=${(fm.description ?? "").length}  slug=${fm.slug}`);
+    const when = fm.publishAt
+      ? `embargoed until ${fm.publishAt}`
+      : "live on deploy";
+    console.log(
+      `  ok  ${file}  desc=${(fm.description ?? "").length}  slug=${fm.slug}  ${when}`,
+    );
   }
 }
 
