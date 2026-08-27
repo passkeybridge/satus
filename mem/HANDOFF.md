@@ -44,10 +44,13 @@ none
 
 - The docs-vs-code audit. Run `node scripts/validate-docs.mjs` instead of
   re-checking flags, exit codes, caps, profiles, models, or versions.
-- Removing Lovable. Finished 2026-08-27 across the build config, the email
-  route paths, the Postgres dispatch functions, the Resend webhook, and all
-  prose. `grep -ri lovable` over the tracked tree returns nothing; the
-  package does not reinstall from the lockfile.
+- Purging the old app-builder platform this project started on. Finished
+  2026-08-27 across the build config (vite.config.ts is now hand-written),
+  the email route paths (`/api/internal/email/*`), the two Postgres
+  dispatch functions, the Resend webhook, and all prose. The vendor's name
+  appears nowhere in the tracked tree and its package does not reinstall
+  from the lockfile. If you find a trace, it is a leftover, not a
+  dependency.
 - Re-running the failed `v0.3.8` tag workflow. Red because a tag runs the
   workflow at its own commit, which predates the fix. Permanent, harmless.
 - Hunting for the cycle-breaking heuristic's missing rules. Three of the
