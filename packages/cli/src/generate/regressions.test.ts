@@ -11,13 +11,19 @@
  * the fix; what is asserted here is the CLI-side logic that decides what
  * SQL gets built.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import type { Column, Table } from './introspect.js'
 import { buildRowSchema } from './schema.js'
 import { validateTable } from './validate.js'
 import { planRun } from './runner.js'
 import { synthesizePkRows, createSimulatedProvider } from './simulate.js'
-import { classifyError } from './telemetry.js'
+import {
+  classifyError,
+  telemetryEnabled,
+  configureTelemetry,
+  isTelemetryEnabled,
+  reportRun,
+} from './telemetry.js'
 import { INTROSPECT_SQL } from './introspect.js'
 import { createAnthropicProvider } from './providers/anthropic.js'
 import { createOpenAiProvider } from './providers/openai.js'
@@ -369,5 +375,111 @@ describe('regression: constraint introspection does not use information_schema',
     // Multi-column uniques are an explicit v0.x limitation; the pg_catalog
     // rewrite must not silently start reporting them as single-column.
     expect(bodyOf('v_uniques')).toContain('cardinality(con.conkey) = 1')
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * Bug 7 — run telemetry was on unconditionally.
+ *
+ * satus.sh/security has said "Telemetry. Off by default" since the page
+ * went up. `reportRun` was called at the end of every `satus generate`
+ * with no config key, env var, or flag able to stop it. The payload was
+ * already minimal and the two sensitive extras (schema fingerprint, argv
+ * shape) were already gated behind `share_failure_fingerprints`, so
+ * nothing identifying ever left a user's machine — but the published
+ * sentence described behaviour the CLI did not have.
+ *
+ * v0.3.11 makes the run record opt-in. These tests pin the precedence
+ * rules, and especially the default, because the failure mode is silent:
+ * a regression here sends data while a page promises it does not.
+ * ------------------------------------------------------------------ */
+describe('regression: run telemetry is opt-in', () => {
+  const saved = {
+    DO_NOT_TRACK: process.env.DO_NOT_TRACK,
+    SATUS_TELEMETRY: process.env.SATUS_TELEMETRY,
+  }
+  function env(vars: Record<string, string | undefined>) {
+    for (const k of ['DO_NOT_TRACK', 'SATUS_TELEMETRY']) delete process.env[k]
+    for (const [k, v] of Object.entries(vars)) if (v !== undefined) process.env[k] = v
+  }
+  afterEach(() => {
+    for (const [k, v] of Object.entries(saved)) {
+      if (v === undefined) delete process.env[k]
+      else process.env[k] = v
+    }
+  })
+
+  it('is off when nothing is configured', () => {
+    env({})
+    expect(telemetryEnabled(undefined)).toBe(false)
+    expect(telemetryEnabled(false)).toBe(false)
+  })
+
+  it('is on only when the config key is explicitly true', () => {
+    env({})
+    expect(telemetryEnabled(true)).toBe(true)
+  })
+
+  it('lets SATUS_TELEMETRY override the config in both directions', () => {
+    env({ SATUS_TELEMETRY: '1' })
+    expect(telemetryEnabled(false)).toBe(true)
+    env({ SATUS_TELEMETRY: '0' })
+    expect(telemetryEnabled(true)).toBe(false)
+  })
+
+  it('accepts the usual truthy spellings and treats blank as unset', () => {
+    for (const on of ['1', 'true', 'YES', 'On']) {
+      env({ SATUS_TELEMETRY: on })
+      expect(telemetryEnabled(false), `${on} should enable`).toBe(true)
+    }
+    // Blank must fall through to config rather than reading as "off",
+    // otherwise `SATUS_TELEMETRY= satus generate` silently disables an
+    // opt-in the user actually made.
+    env({ SATUS_TELEMETRY: '  ' })
+    expect(telemetryEnabled(true)).toBe(true)
+  })
+
+  it('lets DO_NOT_TRACK win over every other signal', () => {
+    env({ DO_NOT_TRACK: '1', SATUS_TELEMETRY: '1' })
+    expect(telemetryEnabled(true)).toBe(false)
+  })
+
+  it('starts disabled in a freshly loaded module', async () => {
+    // The latch must be off at import time, before anything configures it.
+    // Asserting this needs a pristine module: every other test in this file
+    // has already called configureTelemetry, so the live binding no longer
+    // reflects the initial value. resetModules + dynamic import gives a new
+    // instance whose `enabled` is whatever the source initialises it to.
+    env({})
+    vi.resetModules()
+    const fresh = await import('./telemetry.js')
+    expect(fresh.isTelemetryEnabled()).toBe(false)
+  })
+
+  it('sends nothing until configureTelemetry has run', async () => {
+    // Fail closed: a code path that never configures must not report.
+    // reportRun swallows everything, so assert on the latch and on fetch
+    // never being reached.
+    env({})
+    const calls: unknown[] = []
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (...args: unknown[]) => {
+      calls.push(args)
+      return Promise.resolve(new Response('{}')) as never
+    }
+    try {
+      configureTelemetry(false)
+      expect(isTelemetryEnabled()).toBe(false)
+      await reportRun('run-id', { status: 'success' })
+      expect(calls).toHaveLength(0)
+
+      configureTelemetry(true)
+      expect(isTelemetryEnabled()).toBe(true)
+      await reportRun('run-id', { status: 'success' })
+      expect(calls).toHaveLength(1)
+    } finally {
+      globalThis.fetch = originalFetch
+      configureTelemetry(false)
+    }
   })
 })

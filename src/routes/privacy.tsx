@@ -129,8 +129,15 @@ function PrivacyPage() {
             metadata against your key.
           </p>
           <p>
-            <strong>Run telemetry.</strong> When <code>satus generate</code> finishes it posts one
-            record to <code>/api/public/cli/run</code>. As of CLI v0.3.7 that record contains a
+            <strong>Run telemetry.</strong> Off unless you turn it on. As of CLI v0.3.11 nothing is
+            sent unless <code>telemetry.enabled</code> is <code>true</code> in{" "}
+            <code>satus.config.json</code> or <code>SATUS_TELEMETRY=1</code> is set;{" "}
+            <code>DO_NOT_TRACK=1</code> overrides both and always wins. <code>satus init</code> asks,
+            and defaults to no.
+          </p>
+          <p>
+            When it <em>is</em> enabled, a finished <code>satus generate</code> posts one record to{" "}
+            <code>/api/public/cli/run</code>. As of CLI v0.3.7 that record contains a
             random run UUID, the CLI version, the provider and model name, the profile name, the{" "}
             <em>number</em> of tables touched, the total row count, the token totals, the estimated
             spend, the duration, and—on failure—a fixed-vocabulary error class such as{" "}
@@ -146,6 +153,15 @@ function PrivacyPage() {
             them from any payload an older CLI still sends, so the promise holds regardless of
             which version is installed. The only records ever collected under the old behaviour
             were our own release-test runs.
+          </p>
+          <p className="text-[var(--mute)]">
+            Separately: through CLI v0.3.10 the run record was sent unconditionally, with no way to
+            turn it off, while our security page said telemetry was off by default. Only the
+            optional failure-fingerprint sharing was ever gated. Nothing identifying was collected
+            in that window—the payload was already the minimal one described above, and all twelve
+            records in the table are our own release-test runs—but the published sentence described
+            behaviour the CLI did not have. v0.3.11 makes the run record opt-in, which is what the
+            page always claimed.
           </p>
           <p>
             <strong>Web analytics.</strong> The marketing site uses Ahrefs Web Analytics, a

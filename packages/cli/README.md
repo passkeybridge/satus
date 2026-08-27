@@ -10,6 +10,8 @@
 
 ## Status
 
+`v0.3.11` — released 2026-08-27. Two corrections, both cases of shipped behaviour not matching a published claim. Run telemetry is now opt-in (`telemetry.enabled`, `SATUS_TELEMETRY=1`, `DO_NOT_TRACK=1` wins), which is what satus.sh/security has always promised and the CLI did not do. And primary keys and unique constraints are read from `pg_catalog` instead of `information_schema`, so a role holding only `SELECT` no longer introspects every table as having no primary key — which made `--dry-run` return a false green as a CI gate.
+
 `v0.3.10` — released 2026-08-14. Enforces the 24-hour license grace as documented: `satus activate` now stores the key locally, `satus generate` re-verifies any cached verdict older than 24 hours, and a verdict that cannot be refreshed falls back to Free-tier caps with a printed reason. Caches written by older versions carry no key; run `satus activate <key>` once to restore paid caps.
 
 `v0.3.9` — released 2026-08-11. Exposes `force` and `truncate` on the GitHub Action, which had no way to bypass the new safety guard, and makes an unbreakable FK cycle exit `10` (`E_FK_CYCLE`) as the docs have always specified.
@@ -147,14 +149,33 @@ Both cost numbers you see for a run — the `--dry-run` estimate and the live me
 
 `satus` never sends your schema, your data, or your column names to satus.sh. LLM calls go directly from your machine to your provider with your key.
 
-Two requests reach satus.sh:
+Two requests can reach satus.sh:
 
-- **License verify** — sends your license key and nothing else.
-- **Run telemetry**, posted once when `satus generate` finishes. It carries a random run UUID, the CLI version, provider, model, profile, the *number* of tables touched, total rows, token totals, estimated spend, duration, and — on failure — a fixed-vocabulary error class (`pg_23505`, `provider_http_429`, `budget_exceeded`, …). No table names, no column names, no schema name, no row data, no raw error text. Failures swallow silently and never break a run.
+- **License verify** — sends your license key and nothing else. Only on paid tiers; Free never contacts the license server.
+- **Run telemetry** — **off by default since v0.3.11.** Nothing is sent unless you opt in.
+
+Enable the run record with either:
+
+```jsonc
+// satus.config.json
+{ "telemetry": { "enabled": true } }
+```
+
+```bash
+SATUS_TELEMETRY=1 satus generate
+```
+
+`DO_NOT_TRACK=1` overrides both and always wins. `satus init` asks, and defaults to no.
+
+When enabled, one record is posted as `satus generate` finishes. It carries a random run UUID, the CLI version, provider, model, profile, the *number* of tables touched, total rows, token totals, estimated spend, duration, and — on failure — a fixed-vocabulary error class (`pg_23505`, `provider_http_429`, `budget_exceeded`, …). No table names, no column names, no schema name, no row data, no raw error text. Failures swallow silently and never break a run.
+
+`telemetry.share_failure_fingerprints` is a second, narrower opt-in on top: it adds a SHA-256 of the normalised schema shape and the first validator rule that fired. It does nothing unless `telemetry.enabled` is also true.
 
 The exact payload is defined by `RunTelemetry` in `packages/cli/src/generate/telemetry.ts`, and that file's header treats this section as its specification.
 
 > **Correction (v0.3.7).** CLI versions 0.2.0–0.3.6 also sent the list of table names, the target schema name, and the raw error message — and a Postgres unique-violation message embeds the offending row value. That contradicted this section as written. v0.3.7 stops sending all three, and the ingest endpoint discards them from any payload an older CLI still sends. The only runs ever recorded under the old behaviour were our own release tests.
+
+> **Correction (v0.3.11).** Through v0.3.10 the run record was sent unconditionally, with no config key, environment variable, or flag able to stop it, while satus.sh/security said telemetry was off by default. Only the failure-fingerprint sharing was ever gated. The payload was already the minimal one described above, so nothing identifying was collected, and all twelve records in the table are our own release-test runs — but the published claim described behaviour the CLI did not have. v0.3.11 makes the run record opt-in.
 
 ## Development
 

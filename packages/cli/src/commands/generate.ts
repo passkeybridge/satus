@@ -21,7 +21,7 @@ import { introspect } from '../generate/introspect.js'
 import { topoSort } from '../generate/dag.js'
 import { runGenerate, planRun } from '../generate/runner.js'
 import { truncate } from '../generate/writer.js'
-import { newRunId, reportRun, classifyError } from '../generate/telemetry.js'
+import { newRunId, reportRun, classifyError, configureTelemetry } from '../generate/telemetry.js'
 import { countUserRows, guardMessage, ROW_LIMIT } from '../generate/guard.js'
 import { E_DB_NOT_EMPTY, E_FK_CYCLE } from '../exit-codes.js'
 import { fingerprint } from '../generate/fingerprint.js'
@@ -250,6 +250,12 @@ export function registerGenerate(program: Command): void {
         const shareFp = cfg?.telemetry?.share_failure_fingerprints === true
         const schemaFingerprint = shareFp ? fingerprint(schema) : undefined
         const invocation = shareFp ? invocationSequence() : undefined
+
+        // v0.3.11: latch the run-record switch before anything can report.
+        // Off unless the user opted in via satus.config.json or
+        // SATUS_TELEMETRY; DO_NOT_TRACK overrides both. Every reportRun
+        // call below is a no-op until this says otherwise.
+        configureTelemetry(cfg?.telemetry?.enabled)
 
 
         const sort = topoSort(schema.tables)

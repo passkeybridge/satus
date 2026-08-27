@@ -4,6 +4,18 @@ All notable changes to `@passkeybridge/satus` are documented here. The format fo
 
 The CLI tarball ships from `packages/cli/` under `@passkeybridge/satus`. The marketing site at <https://satus.sh> bumps the version chip in the same release.
 
+## [0.3.11] — 2026-08-27
+
+### Fixed
+
+- **Run telemetry is opt-in, which is what the privacy page always said.** <https://satus.sh/security> has stated "Telemetry. Off by default" since the page went up. That was true of `telemetry.share_failure_fingerprints`, and false of the run record: `reportRun` was called unconditionally at the end of every `satus generate`, with no config key, environment variable, or flag able to stop it. Nothing identifying was ever collected — the payload has been the minimal one since v0.3.7, and all twelve records in the table are our own release-test runs — but the published claim described behaviour the CLI did not have. The run record is now off unless `telemetry.enabled` is `true` in `satus.config.json` or `SATUS_TELEMETRY=1` is exported. `DO_NOT_TRACK=1` overrides both and always wins. `satus init` asks, and defaults to no. The switch is latched once at startup and initialised to off, so a path that never configures it sends nothing rather than everything; seven tests pin the precedence rules and the default.
+
+- **Primary keys and unique constraints are read from `pg_catalog`.** `v_fks` moved to the catalogs in v0.2.0 precisely because `information_schema` is privilege-filtered, but `v_pks` and `v_uniques` still went through `information_schema.table_constraints`, whose predicate accepts `INSERT`/`UPDATE`/`DELETE`/`TRUNCATE`/`REFERENCES`/`TRIGGER` but not `SELECT`. A role holding only `SELECT` therefore introspected every table as having no primary key and no unique columns, silently. That path is reachable: `--dry-run` writes nothing, so a read-only credential is the natural thing to give a CI job, and `uniqueColumns` is what gates the validator's `unique_duplicate` finding. Verified on PostgreSQL 16.13 against a `varchar(4) unique` column: v0.3.10 as a read-only role reported "no validation findings" and exited `0` where it should have reported four errors and exited `2`. Five tests pin which catalog each CTE reads.
+
+### Notes
+
+- Anthropic shipped structured outputs (`output_config.format`) after this provider was written, and the supported-model list includes the `claude-haiku-4-5` family we default to. We have not migrated; tool-use forcing works and costs no parsing. The stale comment asserting no such API exists has been corrected. Separately, the OpenAI provider sets `strict: true` and the Anthropic one sets no equivalent, so those tool calls are schema-shaped rather than schema-guaranteed. Both are recorded as outstanding work.
+
 ## [0.3.10] — 2026-08-14
 
 ### Fixed

@@ -47,9 +47,19 @@ export const ConfigSchema = z.object({
    */
   telemetry: z
     .object({
+      /**
+       * v0.3.11. Master switch for the run record. Off by default, which
+       * is what satus.sh/security has always promised and what the CLI
+       * did not do until this release: `reportRun` was called
+       * unconditionally at the end of every `satus generate`.
+       *
+       * `SATUS_TELEMETRY=1` enables it without a config file, for CI.
+       * `DO_NOT_TRACK=1` overrides both and wins outright.
+       */
+      enabled: z.boolean().default(false),
       share_failure_fingerprints: z.boolean().default(false),
     })
-    .default({ share_failure_fingerprints: false }),
+    .default({ enabled: false, share_failure_fingerprints: false }),
 })
 
 export type SatusConfig = z.infer<typeof ConfigSchema>

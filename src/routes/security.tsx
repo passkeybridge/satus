@@ -260,8 +260,20 @@ function SecurityPage() {
               the connection string or the data it returns.
             </li>
             <li>
-              <strong>Telemetry.</strong> Off by default. No automatic schema
-              uploads, no command-line argument collection.
+              <strong>Telemetry.</strong> Off by default, as of CLI v0.3.11.
+              Nothing is sent unless <code>telemetry.enabled</code> is set in{" "}
+              <code>satus.config.json</code> or <code>SATUS_TELEMETRY=1</code> is
+              exported, and <code>DO_NOT_TRACK=1</code> overrides both. No
+              automatic schema uploads, no command-line argument collection. See
+              the{" "}
+              <a
+                href="/privacy"
+                className="underline decoration-[var(--signal)] underline-offset-4"
+              >
+                privacy policy
+              </a>{" "}
+              for what an enabled run record contains, and for what this page
+              got wrong before v0.3.11.
             </li>
             <li>
               <strong>License records.</strong> Email address, Stripe customer
