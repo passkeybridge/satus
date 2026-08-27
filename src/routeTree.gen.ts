@@ -33,10 +33,7 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicWaitlistRouteImport } from './routes/api/public/waitlist'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
 import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
@@ -167,28 +164,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicWaitlistRoute = ApiPublicWaitlistRouteImport.update({
   id: '/api/public/waitlist',
   path: '/api/public/waitlist',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -265,7 +245,6 @@ export interface FileRoutesByFullPath {
   '/checkout/': typeof CheckoutIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/internal/email/suppression': typeof ApiInternalEmailSuppressionRoute
   '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -273,8 +252,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/internal/email/queue/process': typeof ApiInternalEmailQueueProcessRoute
   '/api/internal/email/transactional/send': typeof ApiInternalEmailTransactionalSendRoute
 }
@@ -304,7 +281,6 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutIndexRoute
   '/docs': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/internal/email/suppression': typeof ApiInternalEmailSuppressionRoute
   '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -312,8 +288,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/internal/email/queue/process': typeof ApiInternalEmailQueueProcessRoute
   '/api/internal/email/transactional/send': typeof ApiInternalEmailTransactionalSendRoute
 }
@@ -344,7 +318,6 @@ export interface FileRoutesById {
   '/checkout/': typeof CheckoutIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/api/public/waitlist': typeof ApiPublicWaitlistRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/internal/email/suppression': typeof ApiInternalEmailSuppressionRoute
   '/api/public/billing/portal': typeof ApiPublicBillingPortalRoute
   '/api/public/cli/run': typeof ApiPublicCliRunRoute
@@ -352,8 +325,6 @@ export interface FileRoutesById {
   '/api/public/hooks/e2e-health': typeof ApiPublicHooksE2eHealthRoute
   '/api/public/license/verify': typeof ApiPublicLicenseVerifyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/internal/email/queue/process': typeof ApiInternalEmailQueueProcessRoute
   '/api/internal/email/transactional/send': typeof ApiInternalEmailTransactionalSendRoute
 }
@@ -385,7 +356,6 @@ export interface FileRouteTypes {
     | '/checkout/'
     | '/docs/'
     | '/api/public/waitlist'
-    | '/lovable/email/suppression'
     | '/api/internal/email/suppression'
     | '/api/public/billing/portal'
     | '/api/public/cli/run'
@@ -393,8 +363,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/send'
     | '/api/internal/email/queue/process'
     | '/api/internal/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
@@ -424,7 +392,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/docs'
     | '/api/public/waitlist'
-    | '/lovable/email/suppression'
     | '/api/internal/email/suppression'
     | '/api/public/billing/portal'
     | '/api/public/cli/run'
@@ -432,8 +399,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/send'
     | '/api/internal/email/queue/process'
     | '/api/internal/email/transactional/send'
   id:
@@ -463,7 +428,6 @@ export interface FileRouteTypes {
     | '/checkout/'
     | '/docs/'
     | '/api/public/waitlist'
-    | '/lovable/email/suppression'
     | '/api/internal/email/suppression'
     | '/api/public/billing/portal'
     | '/api/public/cli/run'
@@ -471,8 +435,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/e2e-health'
     | '/api/public/license/verify'
     | '/api/public/payments/webhook'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/send'
     | '/api/internal/email/queue/process'
     | '/api/internal/email/transactional/send'
   fileRoutesById: FileRoutesById
@@ -503,7 +465,6 @@ export interface RootRouteChildren {
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   ApiPublicWaitlistRoute: typeof ApiPublicWaitlistRoute
-  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiInternalEmailSuppressionRoute: typeof ApiInternalEmailSuppressionRoute
   ApiPublicBillingPortalRoute: typeof ApiPublicBillingPortalRoute
   ApiPublicCliRunRoute: typeof ApiPublicCliRunRoute
@@ -511,8 +472,6 @@ export interface RootRouteChildren {
   ApiPublicHooksE2eHealthRoute: typeof ApiPublicHooksE2eHealthRoute
   ApiPublicLicenseVerifyRoute: typeof ApiPublicLicenseVerifyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
-  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
-  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiInternalEmailQueueProcessRoute: typeof ApiInternalEmailQueueProcessRoute
   ApiInternalEmailTransactionalSendRoute: typeof ApiInternalEmailTransactionalSendRoute
 }
@@ -687,32 +646,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/waitlist': {
       id: '/api/public/waitlist'
       path: '/api/public/waitlist'
       fullPath: '/api/public/waitlist'
       preLoaderRoute: typeof ApiPublicWaitlistRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/webhook': {
@@ -807,7 +745,6 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutIndexRoute: CheckoutIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   ApiPublicWaitlistRoute: ApiPublicWaitlistRoute,
-  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiInternalEmailSuppressionRoute: ApiInternalEmailSuppressionRoute,
   ApiPublicBillingPortalRoute: ApiPublicBillingPortalRoute,
   ApiPublicCliRunRoute: ApiPublicCliRunRoute,
@@ -815,8 +752,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksE2eHealthRoute: ApiPublicHooksE2eHealthRoute,
   ApiPublicLicenseVerifyRoute: ApiPublicLicenseVerifyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
-  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiInternalEmailQueueProcessRoute: ApiInternalEmailQueueProcessRoute,
   ApiInternalEmailTransactionalSendRoute:
     ApiInternalEmailTransactionalSendRoute,

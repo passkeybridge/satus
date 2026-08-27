@@ -137,17 +137,14 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 /**
- * Crawler hint for lovable-managed hosts.
+ * On preview hostnames.
  *
- * In practice, `satus.lovable.app` 302-redirects to `satus.sh` at Lovable's
- * edge before a crawler can index it, and the `id-preview--*.lovable.app`
- * URL is auth-gated. Combined with the per-leaf `rel=canonical` pointing
- * at https://satus.sh, ranking signals already consolidate to the canonical
- * domain. We intentionally do NOT inject a hostname-conditional noindex
- * here: doing so would require pulling `@tanstack/react-start/server` into
- * the root route, which the import-protection plugin blocks, and the
- * conditional adds no measurable SEO value over the existing redirect +
- * canonical setup.
+ * Vercel preview deployments serve the same routes on a *.vercel.app host.
+ * We deliberately do NOT inject a hostname-conditional noindex here: it
+ * would require pulling `@tanstack/react-start/server` into the root route,
+ * which the import-protection plugin blocks, and the per-leaf
+ * `rel=canonical` pointing at https://satus.sh already consolidates ranking
+ * signals on the canonical domain.
  */
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({

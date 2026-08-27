@@ -1,11 +1,11 @@
 /**
  * Vite config.
  *
- * This used to be three lines wrapping `@lovable.dev/vite-tanstack-config`,
- * a vendor package that assembled the plugin list for us. We left that
- * platform in August 2026, so the last thing it still owned was our build.
- * Everything it configured is spelled out below, using the same public
- * plugins it called; the pieces it added that were specific to its own
+ * This used to be three lines wrapping a vendor package that assembled the
+ * plugin list for us. That vendor was the app builder this project started
+ * on; we left the platform in August 2026, and its build wrapper was the
+ * last thing it still owned. Everything it configured is spelled out below,
+ * using the same public plugins it called. The pieces specific to its own
  * sandbox (an HMR gate, a dev-server bridge, an assets proxy, build-error
  * diagnostics, and a forced host/port) are gone rather than reimplemented,
  * because none of them ran outside that sandbox.

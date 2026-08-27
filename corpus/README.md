@@ -22,7 +22,7 @@ allowed in `/blog` posts — see `mem://content/post-rules` and
 ## Running
 
 Requires a local Postgres reachable at `PGHOST=/tmp PGPORT=5599 PGUSER=pg`
-(or override via env). The Lovable sandbox ships PG 17; the script asserts
+(or override via env). The script asserts
 the major version it ran against.
 
 ```bash

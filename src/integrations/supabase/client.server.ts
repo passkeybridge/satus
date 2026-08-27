@@ -1,8 +1,6 @@
 // Server-side Supabase client with service role key - bypasses RLS.
 //
-// This file was originally scaffolded by Lovable and carried a "do not edit"
-// banner. Nothing generates it any more, so the banner is gone and the file
-// is ordinary source: edit it like anything else.
+// Ordinary source: nothing generates this file, edit it like anything else.
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
 import { createClient } from '@supabase/supabase-js';

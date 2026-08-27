@@ -1,9 +1,9 @@
 /**
  * Stripe webhook handler—license fulfillment.
  *
- * Lives under /api/public/* so Lovable's published-site auth wrapper lets
- * Stripe POST in. Security is enforced in-handler via HMAC verification of
- * the `stripe-signature` header (verifyWebhook in stripe.server.ts).
+ * Lives under /api/public/* because Stripe posts here unauthenticated.
+ * Security is enforced in-handler via HMAC verification of the
+ * `stripe-signature` header (verifyWebhook in stripe.server.ts).
  *
  * Events handled:
  *   - checkout.session.completed       → issue license, enqueue email

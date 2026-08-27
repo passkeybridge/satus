@@ -30,11 +30,14 @@
 
 The launch sequence, each post paired with a channel moment:
 
-1. "We migrated satus.sh off the app builder that built it" — the
-   Lovable→independent stack story. (HN)
-2. "We audited our own marketing against our own CLI" — the August
-   audit: the plan-mapping bug, the invented flags, what we fixed.
-   Radical honesty as positioning. (HN, newsletter #1)
+1. ~~The migration-off-the-app-builder story.~~ **Cut 2026-08-27.** That
+   platform is behind us and we do not trade on the association. The last
+   traces of it left the codebase the same day.
+2. ~~"We audited our own marketing against our own CLI."~~ **Cut
+   2026-08-27** as an article. The audit is standing practice, not a
+   piece: it now runs as the `validate-docs` build gate, and each
+   individual finding gets written up where it belongs, in the release
+   notes or the post that uncovered it.
 3. "Introspecting a Postgres schema in one round-trip" — the CTE
    catalog query, why information_schema lies about FKs under RLS-ish
    privilege setups, partition re-attribution. (r/PostgreSQL)

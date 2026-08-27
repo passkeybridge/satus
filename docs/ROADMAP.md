@@ -11,7 +11,7 @@ products die politely.
 
 ## Phase 0 — Ship the truth (done / this week)
 
-- [x] Lovable independence migration (hosting, DB, Stripe, Resend, npm)
+- [x] Platform independence migration (hosting, DB, Stripe, Resend, npm)
 - [x] E2E audit: license plan-contract bug fixed and live-verified;
       site docs corrected to the real CLI interface
 - [x] Real-LLM end-to-end run verified (Anthropic + OpenAI paths)

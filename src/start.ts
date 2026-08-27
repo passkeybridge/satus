@@ -7,12 +7,8 @@ const errorMiddleware = createMiddleware().server(async ({ next, pathname }) => 
   /* Machine endpoints opt out of the HTML error page: their callers are
    * Postgres (pg_net), Resend's webhook sender, and our own Stripe handler,
    * all of which want a status code and a JSON body rather than a rendered
-   * 500. `/lovable/` is the retired spelling, still listed only until the
-   * external callers are repointed off it in this same session. */
-  if (
-    pathname.startsWith("/api/internal/") ||
-    pathname.startsWith("/lovable/")
-  ) {
+   * 500. */
+  if (pathname.startsWith("/api/internal/")) {
     return await next();
   }
 

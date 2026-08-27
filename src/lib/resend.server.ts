@@ -1,9 +1,8 @@
 /**
  * Direct Resend client (server-only).
  *
- * Replaces the Lovable email gateway (`@lovable.dev/email-js` /
- * `connector-gateway.lovable.dev/resend`). Talks straight to
- * `api.resend.com` with our own `RESEND_API_KEY`.
+ * Talks straight to `api.resend.com` with our own `RESEND_API_KEY`, with no
+ * gateway in between.
  *
  * Error contract: failures throw `ResendAPIError` carrying `status` and
  * `retryAfterSeconds` so the queue processor's rate-limit (429) and
