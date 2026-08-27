@@ -24,10 +24,6 @@ none
 
 ## Flags
 
-- **`v0.3.10` and `v0.3.11` are published to npm with no git tag.** Tag
-  pushes 403 through this environment's proxy; branch pushes are fine, and
-  the GitHub MCP has no tag-creation tool. Must be done from a machine with
-  direct GitHub access. See `mem/followups/untagged-published-releases.md`.
 - **`NPM_PUBLISH_TOKEN` expires 2026-10-12.** Releases fail at the publish
   step once it lapses. A one-shot reminder was scheduled for 2026-10-01;
   whether that trigger still exists cannot be verified from the repo.
@@ -68,8 +64,16 @@ none
 
 ## Next
 
-1. Push `v0.3.10` and `v0.3.11` tags from a machine with GitHub access.
-2. Decide the three `(planned)` Team features and the support SLA — see
+1. **A business decision, not an engineering one.** Three Team features on
+   `/pricing` — shared team profiles, CI mode, audit log — are marked
+   `(planned)` and do not exist in the CLI. Build them, drop them, or leave
+   them labelled. Same call on whether to define a real support SLA;
+   `/compare` once advertised one that was never published anywhere and now
+   describes priority triage instead. See
    `mem/followups/prose-claims-have-no-automated-check.md`.
-3. Content plan resumes at Q3 item 9 onward; items 1 and 2 were cut and
-   items 3–8 are written or deliberately skipped.
+2. Content plan resumes at Q3 item 9 onward. Items 1 and 2 were cut, items
+   3-8 are written or deliberately skipped, and four posts are scheduled
+   through 2026-09-18.
+3. Per-release habit, not a task: read the load-bearing doc pages next to
+   the code they describe. `validate-docs` cannot check sentences, and
+   every prose defect found this month was found by reading.

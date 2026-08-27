@@ -1,6 +1,10 @@
 # Published npm versions with no git tag
 
-**Status:** open as of 2026-08-27, and now two versions deep
+**Status:** RESOLVED 2026-08-27. `v0.3.10` and `v0.3.11` were pushed
+from a machine with direct GitHub access and both point at the right
+commits (`9e47b64`, `8e17aa9`). Kept for the constraint it documents: tag
+pushes 403 from the sandbox, so every future release needs this same
+hand-off step.
 **Effort:** minutes
 
 `@passkeybridge/satus@0.3.10` (published 2026-08-14 from `9e47b64`) and

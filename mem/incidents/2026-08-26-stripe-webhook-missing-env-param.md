@@ -38,7 +38,9 @@ endpoint already used.
   valid `env` there is no signing secret to check against) — its presence
   only decides whether a human is worth waking. Verified locally: two
   requests, both 400, both logged, but only the signed one reached the
-  alert path.
+  alert path. Re-verified in production after deploy by clearing the day's
+  dedup row: three unsigned probes produced zero alert rows, then one probe
+  carrying a `stripe-signature` header produced exactly one.
 
 - **`revoked_at` is now cleared on reactivation.** `handleSubscriptionUpdated`
   nulls it when Stripe reports `active` or `trialing`. Deliberately not
