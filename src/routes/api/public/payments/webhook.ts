@@ -75,7 +75,7 @@ async function enqueueTransactionalEmail(args: {
   templateData: Record<string, unknown>
 }) {
   const origin = process.env.PUBLIC_SITE_URL ?? 'https://satus.sh'
-  const res = await fetch(`${origin}/lovable/email/transactional/send`, {
+  const res = await fetch(`${origin}/api/internal/email/transactional/send`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
