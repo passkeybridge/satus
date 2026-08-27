@@ -3,13 +3,27 @@
  * (no SDK dep). Override the endpoint with `ANTHROPIC_BASE_URL` to
  * point at a proxy or test server.
  *
- * Structured output: Anthropic does not support OpenAI-style
- * `response_format: json_schema`. We use **tool-use forcing**:
+ * Structured output: we use **tool-use forcing**:
  *   - Register a single tool whose `input_schema` is our row schema.
  *   - Set `tool_choice: { type: 'tool', name: 'emit_rows' }` so the
  *     model is required to emit a `tool_use` content block.
  *   - The first `tool_use` block's `input` is the already-parsed object;
  *     no JSON string parsing on our side.
+ *
+ * This comment used to assert that Anthropic had no OpenAI-style
+ * `response_format: json_schema` equivalent. That was true when the
+ * provider was written and is no longer: structured outputs now exist as
+ * `output_config: { format: { type: 'json_schema', schema } }`, and the
+ * supported-model list includes the `claude-haiku-4-5` family we default
+ * to. We have not migrated. Tool forcing works and costs us no parsing;
+ * switching would mean re-verifying the --max-cost accounting and the
+ * truncation path against a response shape we have never measured.
+ *
+ * Known gap: the OpenAI provider sets `strict: true` and this one sets no
+ * equivalent, so tool calls here are schema-shaped rather than
+ * schema-guaranteed. Anthropic supports strict tool use; opting in is
+ * outstanding work, and until then validate.ts is what catches the
+ * difference.
  *
  * Cost tracking: per-response `usage.input_tokens` / `usage.output_tokens`
  * is converted to a USD estimate with a small built-in price table. The
