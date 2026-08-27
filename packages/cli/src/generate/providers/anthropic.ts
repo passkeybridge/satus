@@ -19,11 +19,28 @@
  * switching would mean re-verifying the --max-cost accounting and the
  * truncation path against a response shape we have never measured.
  *
- * Known gap: the OpenAI provider sets `strict: true` and this one sets no
- * equivalent, so tool calls here are schema-shaped rather than
- * schema-guaranteed. Anthropic supports strict tool use; opting in is
- * outstanding work, and until then validate.ts is what catches the
- * difference.
+ * On `strict: true`. The OpenAI provider sets it and this one does not, so
+ * tool calls here are schema-shaped rather than schema-guaranteed. That
+ * asymmetry is deliberate, not a TODO: Anthropic's strict mode compiles the
+ * schema into a sampling grammar and accepts only a subset of JSON Schema,
+ * returning 400 on anything outside it. Our row schema (see schema.ts) uses
+ * four things that subset excludes:
+ *
+ *   maxLength                on every string column
+ *   maxItems                 pins the batch to exactly N rows
+ *   minItems: N              only 0 and 1 are allowed
+ *   {"type":["string","null"]}  nullable columns; unions are not supported
+ *
+ * So enabling it here would not tighten anything, it would fail every
+ * request. Opting in means emitting a second, weaker schema for this
+ * provider with those constraints stripped into the field descriptions
+ * (which is what the official SDKs do on your behalf; we call fetch
+ * directly, so nothing strips them for us). That trade is worth making only
+ * if we see the model violate the schema in practice, and validate.ts has
+ * not caught it doing so.
+ *
+ * OpenAI is unaffected: its structured-output mode accepts all four, which
+ * is why `strict: true` works there today.
  *
  * Cost tracking: per-response `usage.input_tokens` / `usage.output_tokens`
  * is converted to a USD estimate with a small built-in price table. The

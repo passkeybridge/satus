@@ -35,10 +35,13 @@ none
   frontmatter puts them live at 09:00 America/New_York on 2026-08-28,
   09-04, 09-11 and 09-18. They are on `main` and invisible until then.
   Two of them describe the v0.3.11 telemetry change as done, which it is.
-- **Anthropic tool calls are schema-shaped, not schema-guaranteed.** The
-  OpenAI provider sets `strict: true`; the Anthropic one sets no
-  equivalent although the API now supports it. `validate.ts` catches the
-  difference before any write. Not urgent, genuinely outstanding.
+- **Do not "fix" the missing `strict: true` on the Anthropic tool.**
+  Closed 2026-08-27 with a reason, not left open. Anthropic's strict mode
+  accepts only a JSON Schema subset and 400s on the rest; our row schema
+  uses four excluded things (`maxLength`, `maxItems`, `minItems > 1`, and
+  `{"type":["string","null"]}` for nullable columns). Enabling it would
+  fail every request rather than tighten anything. The reasoning is in the
+  provider's header comment.
 
 ## Do not redo
 

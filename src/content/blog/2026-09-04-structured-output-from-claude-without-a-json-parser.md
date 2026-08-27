@@ -98,7 +98,22 @@ Same 842 input and 1310 output tokens through both, priced from the same per-mod
 
 The practical distinction is where the boundary of "this might fail" sits. On the OpenAI path a malformed body is caught by our `JSON.parse` and surfaces as a parse error. On the Anthropic path there is no parse to fail, so the equivalent failure is structural: no `tool_use` block came back at all. That is why the error names `stop_reason`. When this fires in practice it is almost always `max_tokens`, meaning the model was cut off mid-tool-call, and the fix is a smaller `--batch-size` rather than anything about schemas.
 
-There is a second asymmetry, and this one is ours rather than the APIs'. Look again at the two request bodies: the OpenAI side sets `strict: true`, and the Anthropic side sets no equivalent. Anthropic supports [strict tool use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use), which guarantees a tool call matches the declared schema, and we do not opt into it. So the honest description of our current state is that one provider is schema-guaranteed and the other is schema-shaped: forcing the call guarantees we get a `tool_use` block, not that its `input` satisfies every constraint in `input_schema`. In practice our downstream validator catches the difference, because it re-checks generated rows against the live database metadata before anything is written. But relying on the validator for something the API will now enforce is a weaker design than it needs to be, and setting `strict` is on the list.
+There is a second asymmetry, and this one is ours rather than the APIs'. Look again at the two request bodies: the OpenAI side sets `strict: true`, and the Anthropic side sets no equivalent. So one provider is schema-guaranteed and the other is schema-shaped: forcing the call guarantees we get a `tool_use` block, not that its `input` satisfies every constraint in `input_schema`.
+
+Anthropic does support [strict tool use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use), so the obvious conclusion is that we are leaving a guarantee on the table. We assumed that too, right up until we read what strict mode actually accepts.
+
+It compiles your schema into a sampling grammar, which means it only accepts [a subset of JSON Schema](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) and returns a 400 on anything outside it. Our row schema uses four things in that excluded set:
+
+```text
+  maxLength                     on every string column
+  maxItems                      pins a batch to exactly N rows
+  minItems: N                   only 0 and 1 are permitted
+  {"type": ["string", "null"]}  nullable columns; unions unsupported
+```
+
+Turning `strict: true` on would not tighten anything. It would fail every request we make. The official SDKs paper over this by stripping unsupported constraints out of the schema and appending them to the field descriptions as prose; we call `fetch` directly, so nothing strips them for us.
+
+That reframes the asymmetry entirely. It is not laziness on our side, it is the price of sending a genuinely constrained schema: OpenAI's structured outputs accept all four keywords, Anthropic's grammar compiler does not. Opting in would mean maintaining a second, weaker schema for one provider, and trading real constraints for a guarantee that the constraints are followed. We would take that trade if we ever saw the model violate the schema in practice. The validator that re-checks every generated row against live database metadata has not caught it doing so.
 
 ## The option that appeared after we built this
 

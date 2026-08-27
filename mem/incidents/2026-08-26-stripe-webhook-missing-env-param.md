@@ -28,19 +28,26 @@ purchase would have taken the money and issued nothing.
 URL corrected to `...?env=live`, matching the convention the sibling
 endpoint already used.
 
-## Still open
+## Follow-ups, both closed 2026-08-27
 
-Two things found while diagnosing, neither fixed:
+- **The alert fired before authentication.** The `env` check runs ahead of
+  signature verification on a public URL, so any stranger POSTing there
+  emailed ops. Now gated on the request carrying a `stripe-signature`
+  header: Stripe sets it on every delivery including a misconfigured one, a
+  scanner has no reason to, and the header is not verified here (without a
+  valid `env` there is no signing secret to check against) — its presence
+  only decides whether a human is worth waking. Verified locally: two
+  requests, both 400, both logged, but only the signed one reached the
+  alert path.
 
-- **The alert fires before authentication.** The `env` check runs ahead of
-  signature verification, so any unauthenticated POST to the public URL
-  emails ops (deduped per day). The signature-failure branch deliberately
-  stays silent for exactly this reason. It was a true positive this time;
-  it is still a spam vector.
-- **`revoked_at` is never cleared on reactivation.** `handleSubscriptionUpdated`
-  writes status, plan, period and cancel flag but not `revoked_at`; only
-  `handleCheckoutCompleted` nulls it. `verify.ts` checks `revoked_at`
-  *first*. So a subscription that is revoked and later goes active again
-  reports `valid: false, reason: 'revoked'` while billing continues. Row
-  `53644c88` is in that state right now — internal, but on a real customer
-  it reads as "paid and locked out".
+- **`revoked_at` is now cleared on reactivation.** `handleSubscriptionUpdated`
+  nulls it when Stripe reports `active` or `trialing`. Deliberately not
+  `past_due` — a payment is failing then, which is not the moment to reverse
+  a revocation. The one row stuck in "paid and locked out"
+  (`53644c88`, internal) was repaired to match Stripe, and all three checks
+  `verify.ts` performs now pass for it.
+
+Also worth recording: after the `?env=live` fix, that subscription's
+renewal webhook landed correctly. `current_period_end` advanced from
+2026-08-26 to 2026-09-26 on its own, which is the cleanest proof the
+endpoint repair worked.

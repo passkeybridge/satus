@@ -197,10 +197,31 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
   // on every one.
   const { data: existing } = await supabaseAdmin
     .from('licenses')
-    .select('email, cancel_at_period_end, license_key')
+    .select('email, cancel_at_period_end, license_key, revoked_at')
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
     .maybeSingle()
+
+  /**
+   * Un-revoke on reactivation.
+   *
+   * `revoked_at` is set by subscription.deleted and by charge.refunded, and
+   * until now nothing ever cleared it except a brand-new checkout. That left
+   * a trap: a subscription that is revoked and later becomes live again
+   * without a new Checkout Session — a recovered `past_due`, a reactivation
+   * from the billing portal, a refunded charge on a subscription that keeps
+   * running — kept a license that `verify.ts` rejects. And it rejects it
+   * *first*, before status or period, so the response is
+   * `{ valid: false, reason: 'revoked' }` while Stripe bills the customer
+   * every month. "Paid and locked out" is the worst failure this file has.
+   *
+   * Only `active` and `trialing` clear it. Deliberately not `past_due`:
+   * that means a payment is currently failing, which is not the moment to
+   * reverse a revocation. The 24-hour verdict cache means a customer sees
+   * this within a day of Stripe reporting them live again.
+   */
+  const reactivated =
+    subscription.status === 'active' || subscription.status === 'trialing'
 
   const { error: updateErr } = await supabaseAdmin
     .from('licenses')
@@ -211,6 +232,7 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
         ? new Date(periodEnd * 1000).toISOString()
         : null,
       cancel_at_period_end: cancelAtPeriodEnd,
+      ...(reactivated ? { revoked_at: null } : {}),
     })
     .eq('stripe_subscription_id', subscription.id)
     .eq('environment', env)
@@ -219,6 +241,14 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
     // Throw so the POST handler returns 500 and Stripe retries—silent
     // 200s here cause license state to drift from Stripe's source of truth.
     throw new Error(`license update failed: ${updateErr.message}`)
+  }
+
+  // Rare and worth seeing in the log when it happens: a license that was
+  // rejecting every verify is now serving again.
+  if (reactivated && existing?.revoked_at) {
+    console.log(
+      `[payments-webhook] un-revoked ${subscription.id} (${env}): status=${subscription.status}, was revoked ${existing.revoked_at}`,
+    )
   }
 
   if (
@@ -385,20 +415,37 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
       POST: async ({ request }) => {
         const rawEnv = new URL(request.url).searchParams.get('env')
         if (rawEnv !== 'sandbox' && rawEnv !== 'live') {
-          // 400 (not 200) so a misconfigured Stripe webhook URL surfaces
-          // in Stripe's delivery dashboard instead of being silently ACK'd.
-          // Stripe will NOT retry a 400, so we also alert ops directly —
-          // dedup is per-day so a probing loop can't flood the inbox.
+          // 400 (not 200) so a misconfigured Stripe webhook URL surfaces in
+          // Stripe's delivery dashboard instead of being silently ACK'd.
+          // Stripe does not retry a 400, so a real misconfiguration also
+          // needs to reach a human.
           console.error('[payments-webhook] invalid env query', rawEnv)
-          await notifyWebhookFailure({
-            eventId: null,
-            eventType: 'env-query-invalid',
-            environment: 'unknown',
-            error: new Error(
-              `Webhook called with invalid env query parameter: ${JSON.stringify(rawEnv)}. ` +
-                `Expected 'sandbox' or 'live'. Check the Stripe webhook endpoint URL.`,
-            ),
-          })
+
+          // ...but only if it plausibly came from Stripe. This check runs
+          // before signature verification, on a public URL, so anything on
+          // the internet can reach it — and until now anything that did sent
+          // ops an email. That is the exact spam vector the signature-failure
+          // branch below stays silent to avoid, and we had it wide open one
+          // branch earlier.
+          //
+          // `stripe-signature` is the discriminator: Stripe sets it on every
+          // delivery including a misconfigured one, and a scanner posting to
+          // a URL it found has no reason to. We do not verify it here (we
+          // cannot — without a valid `env` there is no signing secret to
+          // check against); its presence alone decides whether a human is
+          // worth waking. A forged header can still trigger one email a day,
+          // which is what the dedup key is for.
+          if (request.headers.get('stripe-signature')) {
+            await notifyWebhookFailure({
+              eventId: null,
+              eventType: 'env-query-invalid',
+              environment: 'unknown',
+              error: new Error(
+                `Webhook called with invalid env query parameter: ${JSON.stringify(rawEnv)}. ` +
+                  `Expected 'sandbox' or 'live'. Check the Stripe webhook endpoint URL.`,
+              ),
+            })
+          }
           return new Response('Missing or invalid env query parameter', { status: 400 })
         }
         const env: StripeEnv = rawEnv
