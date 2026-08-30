@@ -43,3 +43,24 @@ Both rules are mutation-tested.
 `/blog` and `/blog/<slug>` reflect the embargo immediately. `/blog/rss.xml`
 and `/sitemap.xml` send `Cache-Control: public, max-age=3600`, so they can
 lag by up to an hour.
+
+## Verified in production
+
+First real firing: `2026-08-28-the-cycle-breaking-heuristic-we-never-shipped`
+went live at its slot with no deploy in between, which is the whole point of
+filtering per request. Checked 2026-08-30 on all four surfaces at once:
+
+| Surface | Live post | Three embargoed |
+| --- | --- | --- |
+| `/blog` | listed | absent |
+| `/blog/<slug>` | 200 | 404 |
+| `/blog/rss.xml` | present | absent (40 items = 43 − 3) |
+| `/sitemap.xml` | present | absent |
+
+RSS and sitemap enumerate through `getAllPosts()`, so they inherit the
+filter rather than reimplementing it. That is load-bearing: a future feed
+or index that reads `POSTS` directly would leak every embargoed draft.
+
+Note the route path. The file is `src/routes/blog.rss[.]xml.ts`, where `.`
+separates segments and `[.]` escapes a literal dot, so the feed is at
+`/blog/rss.xml`. `/blog.rss.xml` is not an alias; it 404s.
