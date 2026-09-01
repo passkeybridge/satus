@@ -80,7 +80,7 @@ export const Route = createFileRoute("/compare")({
 function ComparePage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/compare">
-      <Section
+      <Section heading="h1"
         id="framing"
         n="01"
         label="Framing"

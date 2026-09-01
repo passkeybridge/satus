@@ -141,7 +141,7 @@ function TableRow({ cells, header }: { cells: string[]; header?: boolean }) {
 function GitHubActionPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/docs/github-action">
-      <Section id="overview" n="01" label="Overview" title={<>satus in one composite action.</>}>
+      <Section heading="h1" id="overview" n="01" label="Overview" title={<>satus in one composite action.</>}>
         <Prose>
           <p>
             <code>passkeybridge/satus/packages/action@main</code> runs{" "}

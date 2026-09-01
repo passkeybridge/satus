@@ -144,7 +144,7 @@ export const Route = createFileRoute("/pricing")({
 function PricingPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/pricing">
-      <Section
+      <Section heading="h1"
         id="tiers"
         n="04"
         label="Tiers"

@@ -105,7 +105,7 @@ export const Route = createFileRoute("/quickstart")({
 function QuickstartPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/quickstart">
-      <Section
+      <Section heading="h1"
         id="install"
         n="01"
         label="Install"
