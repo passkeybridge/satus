@@ -192,7 +192,7 @@ function TroubleshootingPage() {
 
   return (
     <PageShell sections={SECTIONS} currentPath="/docs/troubleshooting">
-      <Section
+      <Section heading="h1"
         id="install"
         n="01"
         label="Install & setup"

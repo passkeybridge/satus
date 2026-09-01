@@ -139,8 +139,10 @@ export const Route = createFileRoute("/profiles")({
 function ProfilesPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/profiles">
-      {PROFILES.map((p) => (
+      {PROFILES.map((p, i) => (
         <Section
+          // Only the first profile opens the document; the rest are siblings.
+          heading={i === 0 ? "h1" : "h2"}
           key={p.id}
           id={p.id}
           n={p.n}

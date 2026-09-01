@@ -30,14 +30,28 @@ export function Section({
   n,
   label,
   title,
+  heading = "h2",
   children,
 }: {
   id: string;
   n: string;
   label: string;
   title: ReactNode;
+  /**
+   * Every page here is a stack of Sections, so with h2 hardcoded thirteen
+   * pages shipped with no h1 at all -- the entire marketing and docs surface,
+   * everything except the blog posts and the legal/checkout routes, which
+   * build their own headings.
+   *
+   * Pass "h1" on the FIRST Section of a page and leave the rest alone. The
+   * class list is identical either way, so this changes the document outline
+   * and nothing visual. `section-headings.test.ts` fails a route that ends up
+   * with none or more than one.
+   */
+  heading?: "h1" | "h2";
   children: ReactNode;
 }) {
+  const Heading = heading;
   return (
     <section
       id={id}
@@ -48,9 +62,9 @@ export function Section({
         <span className="mx-3 text-[var(--hairline)]">|</span>
         <span>{label}</span>
       </div>
-      <h2 className="mt-5 font-mono text-[26px] font-medium leading-[1.2] tracking-tight text-[var(--ink)] md:text-[32px]">
+      <Heading className="mt-5 font-mono text-[26px] font-medium leading-[1.2] tracking-tight text-[var(--ink)] md:text-[32px]">
         {title}
-      </h2>
+      </Heading>
       <hr className="mt-6" />
       <div className="mt-8">{children}</div>
     </section>
