@@ -42,8 +42,7 @@ export const Route = createFileRoute("/compare")({
       { property: "og:title", content: "satus vs Snaplet, Tonic, faker" },
       {
         property: "og:description",
-        content:
-          "Where Snaplet, Tonic, and faker each shine, and where satus is the better fit.",
+        content: "Where Snaplet, Tonic, and faker each shine, and where satus is the better fit.",
       },
       { property: "og:url", content: SITE_URL + "/compare" },
       { property: "og:type", content: "article" },
@@ -80,24 +79,18 @@ export const Route = createFileRoute("/compare")({
 function ComparePage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/compare">
-      <Section
-        id="framing"
-        n="01"
-        label="Framing"
-        title={<>different tools. different jobs.</>}
-      >
+      <Section id="framing" n="01" label="Framing" title={<>different tools. different jobs.</>}>
         <Prose>
           <p>
-            satus is a seeding CLI: point it at a Postgres schema, get
-            relationally coherent rows. That's a narrow job. The three tools on
-            this page show up in the same Google searches but solve adjacent
-            problems—production-data anonymization, generic value generation,
-            full data platforms. The right pick depends on what you actually
-            need, not on which has the longer feature list.
+            satus is a seeding CLI: point it at a Postgres schema, get relationally coherent rows.
+            That's a narrow job. The three tools on this page show up in the same Google searches
+            but solve adjacent problems—production-data anonymization, generic value generation,
+            full data platforms. The right pick depends on what you actually need, not on which has
+            the longer feature list.
           </p>
           <p>
-            We link to each vendor's own documentation as the source of truth.
-            If you spot a stale or incorrect characterization, email{" "}
+            We link to each vendor's own documentation as the source of truth. If you spot a stale
+            or incorrect characterization, email{" "}
             <a
               href="mailto:support@satus.sh?subject=Compare%20page%20correction"
               className="underline decoration-[var(--signal)] underline-offset-4"
@@ -121,9 +114,9 @@ function ComparePage() {
       >
         <Prose>
           <p>
-            <strong>Snaplet</strong> built the original "seed from your schema"
-            category. In August 2024 the company shut down its hosted service
-            and open-sourced its tooling; the Seed library now lives at{" "}
+            <strong>Snaplet</strong> built the original "seed from your schema" category. In August
+            2024 the company shut down its hosted service and open-sourced its tooling; the Seed
+            library now lives at{" "}
             <a
               href="https://github.com/supabase-community/seed"
               target="_blank"
@@ -141,9 +134,8 @@ function ComparePage() {
             >
               announcement
             </a>
-            ). If you want an MIT-licensed library that embeds directly in your
-            codebase and you're comfortable with a community-maintained
-            cadence, Seed is a reasonable choice.
+            ). If you want an MIT-licensed library that embeds directly in your codebase and you're
+            comfortable with a community-maintained cadence, Seed is a reasonable choice.
           </p>
         </Prose>
 
@@ -162,12 +154,7 @@ function ComparePage() {
         />
       </Section>
 
-      <Section
-        id="vs-tonic"
-        n="03"
-        label="vs Tonic.ai"
-        title={<>different problem entirely.</>}
-      >
+      <Section id="vs-tonic" n="03" label="vs Tonic.ai" title={<>different problem entirely.</>}>
         <Prose>
           <p>
             <strong>
@@ -180,10 +167,9 @@ function ComparePage() {
                 Tonic.ai
               </a>
             </strong>{" "}
-            is a data-platform company. Their core product anonymizes and
-            subsets production data for use in lower environments—a different
-            job from generating data from scratch. If you have production data
-            you need to share with QA without leaking PII, Tonic is built for
+            is a data-platform company. Their core product anonymizes and subsets production data
+            for use in lower environments—a different job from generating data from scratch. If you
+            have production data you need to share with QA without leaking PII, Tonic is built for
             that.
           </p>
         </Prose>
@@ -221,10 +207,9 @@ function ComparePage() {
                 faker.js
               </a>
             </strong>{" "}
-            (and its Python and Ruby cousins) is the original field-level
-            value generator: <code>faker.person.firstName()</code>,{" "}
-            <code>faker.commerce.productName()</code>. It does not know that a{" "}
-            <code>customer_id</code> on <code>orders</code> must exist in{" "}
+            (and its Python and Ruby cousins) is the original field-level value generator:{" "}
+            <code>faker.person.firstName()</code>, <code>faker.commerce.productName()</code>. It
+            does not know that a <code>customer_id</code> on <code>orders</code> must exist in{" "}
             <code>customers</code>. Wiring relational integrity is left to you.
           </p>
         </Prose>
@@ -251,10 +236,7 @@ function ComparePage() {
         title={<>three honest no-fits.</>}
       >
         <Prose>
-          <p>
-            We'd rather lose the sale than waste your week. Skip satus if any
-            of these apply:
-          </p>
+          <p>We'd rather lose the sale than waste your week. Skip satus if any of these apply:</p>
         </Prose>
 
         <ul className="mt-8 max-w-[760px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
@@ -340,10 +322,7 @@ function Column({
       </div>
       <ul className="mt-3 space-y-3">
         {items.map((item) => (
-          <li
-            key={item}
-            className="flex gap-3 text-[14px] leading-[1.55] text-[var(--ink)]/85"
-          >
+          <li key={item} className="flex gap-3 text-[14px] leading-[1.55] text-[var(--ink)]/85">
             <span
               aria-hidden
               className={`mt-[0.55em] inline-block h-px w-3 shrink-0 ${
@@ -362,9 +341,7 @@ function NoFit({ title, body }: { title: string; body: string }) {
   return (
     <li className="py-6">
       <div className="font-mono text-[14px] font-medium text-[var(--ink)]">{title}</div>
-      <p className="mt-2 max-w-[62ch] text-[14.5px] leading-[1.6] text-[var(--ink)]/80">
-        {body}
-      </p>
+      <p className="mt-2 max-w-[62ch] text-[14.5px] leading-[1.6] text-[var(--ink)]/80">{body}</p>
     </li>
   );
 }

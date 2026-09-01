@@ -94,7 +94,12 @@ export const Route = createFileRoute("/quickstart")({
           "@type": "BreadcrumbList",
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL + "/" },
-            { "@type": "ListItem", position: 2, name: "Quickstart", item: SITE_URL + "/quickstart" },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Quickstart",
+              item: SITE_URL + "/quickstart",
+            },
           ],
         }),
       },
@@ -105,16 +110,11 @@ export const Route = createFileRoute("/quickstart")({
 function QuickstartPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/quickstart">
-      <Section
-        id="install"
-        n="01"
-        label="Install"
-        title={<>one global binary. node 20+.</>}
-      >
+      <Section id="install" n="01" label="Install" title={<>one global binary. node 20+.</>}>
         <Prose>
           <p>
-            satus ships as a single Node binary. We test on Node 20 and 22 across macOS and
-            Linux. Windows is supported via WSL2.
+            satus ships as a single Node binary. We test on Node 20 and 22 across macOS and Linux.
+            Windows is supported via WSL2.
           </p>
         </Prose>
         <Terminal>
@@ -140,11 +140,10 @@ function QuickstartPage() {
             table across 5 tables; a Pro or Team key (<code>satus activate</code>) removes the caps.
           </p>
           <p>
-            Pick one provider: export <code>OPENAI_API_KEY</code> or{" "}
-            <code>ANTHROPIC_API_KEY</code>. If both are set, pass{" "}
-            <code>--provider openai|anthropic</code> on{" "}
-            <code>satus generate</code>—auto-detect deliberately refuses to
-            guess so a misplaced key never spends on the wrong invoice.
+            Pick one provider: export <code>OPENAI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code>.
+            If both are set, pass <code>--provider openai|anthropic</code> on{" "}
+            <code>satus generate</code>—auto-detect deliberately refuses to guess so a misplaced key
+            never spends on the wrong invoice.
           </p>
         </Prose>
         <Terminal>
@@ -168,9 +167,9 @@ function QuickstartPage() {
           <p>
             <code>--dry-run</code> runs the full pipeline offline—introspect, FK-sort, simulate,
             validate—without calling the model or writing a row. It prints a per-table cost
-            estimate, then runs the relational validator against simulated output and exits
-            non-zero on findings, so it works as a CI gate. Add <code>--json</code> for a
-            machine-readable report.
+            estimate, then runs the relational validator against simulated output and exits non-zero
+            on findings, so it works as a CI gate. Add <code>--json</code> for a machine-readable
+            report.
           </p>
         </Prose>
         <Terminal>
@@ -181,12 +180,7 @@ function QuickstartPage() {
         </Terminal>
       </Section>
 
-      <Section
-        id="ship"
-        n="04"
-        label="Ship"
-        title={<>one transaction. all-or-nothing.</>}
-      >
+      <Section id="ship" n="04" label="Ship" title={<>one transaction. all-or-nothing.</>}>
         <Prose>
           <p>
             <code>satus generate</code> runs inside a single Postgres transaction. If any insert
@@ -207,8 +201,8 @@ function QuickstartPage() {
       >
         <Prose>
           <p>
-            Most issues fall into three buckets. If you hit something we haven&rsquo;t listed,
-            open an issue with the stack trace and the offending <code>CREATE TABLE</code>{" "}
+            Most issues fall into three buckets. If you hit something we haven&rsquo;t listed, open
+            an issue with the stack trace and the offending <code>CREATE TABLE</code>{" "}
             statement—schema reproduction is the #1 thing we triage.
           </p>
         </Prose>
@@ -284,9 +278,7 @@ function Issue({ code, title, body }: { code: string; title: string; body: strin
       </div>
       <div>
         <div className="font-mono text-[14px] font-medium text-[var(--ink)]">{title}</div>
-        <p className="mt-2 max-w-[62ch] text-[14.5px] leading-[1.6] text-[var(--ink)]/80">
-          {body}
-        </p>
+        <p className="mt-2 max-w-[62ch] text-[14.5px] leading-[1.6] text-[var(--ink)]/80">{body}</p>
       </div>
     </li>
   );

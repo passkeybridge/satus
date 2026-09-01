@@ -26,51 +26,54 @@
  * This is enough to cluster failure modes ("all schemas that mix citext
  * with an int4 FK") without ever needing to know which schema was which.
  */
-import { createHash } from 'node:crypto'
-import type { IntrospectedSchema } from './introspect.js'
+import { createHash } from "node:crypto";
+import type { IntrospectedSchema } from "./introspect.js";
 
 interface NormalizedTable {
   /** Sorted, comma-joined list of udt names. Never the column names. */
-  cols: string
+  cols: string;
   /** Number of columns in the primary key. */
-  pkArity: number
+  pkArity: number;
   /** Number of single-column unique constraints. */
-  uniques: number
+  uniques: number;
 }
 
 interface NormalizedFk {
-  from: number
-  to: number
+  from: number;
+  to: number;
 }
 
 interface Normalized {
-  tables: NormalizedTable[]
-  fks: NormalizedFk[]
+  tables: NormalizedTable[];
+  fks: NormalizedFk[];
 }
 
 export function normalize(schema: IntrospectedSchema): Normalized {
   // Sort tables by name so the position index is deterministic.
-  const sortedTables = [...schema.tables].sort((a, b) => a.name.localeCompare(b.name))
-  const indexByName = new Map(sortedTables.map((t, i) => [t.name, i]))
+  const sortedTables = [...schema.tables].sort((a, b) => a.name.localeCompare(b.name));
+  const indexByName = new Map(sortedTables.map((t, i) => [t.name, i]));
 
   const tables: NormalizedTable[] = sortedTables.map((t) => ({
-    cols: [...t.columns].map((c) => c.udtName.toLowerCase()).sort().join(','),
+    cols: [...t.columns]
+      .map((c) => c.udtName.toLowerCase())
+      .sort()
+      .join(","),
     pkArity: t.primaryKey.length,
     uniques: t.uniqueColumns.size,
-  }))
+  }));
 
-  const fks: NormalizedFk[] = []
+  const fks: NormalizedFk[] = [];
   for (const t of sortedTables) {
-    const from = indexByName.get(t.name)!
+    const from = indexByName.get(t.name)!;
     for (const fk of t.foreignKeys) {
-      const to = indexByName.get(fk.refTable)
-      if (to === undefined) continue // cross-schema FK; skip rather than leak name
-      fks.push({ from, to })
+      const to = indexByName.get(fk.refTable);
+      if (to === undefined) continue; // cross-schema FK; skip rather than leak name
+      fks.push({ from, to });
     }
   }
-  fks.sort((a, b) => (a.from - b.from) || (a.to - b.to))
+  fks.sort((a, b) => a.from - b.from || a.to - b.to);
 
-  return { tables, fks }
+  return { tables, fks };
 }
 
 /**
@@ -79,7 +82,7 @@ export function normalize(schema: IntrospectedSchema): Normalized {
  * renames that don't change structural shape.
  */
 export function fingerprint(schema: IntrospectedSchema): string {
-  const normalized = normalize(schema)
-  const canonical = JSON.stringify(normalized)
-  return createHash('sha256').update(canonical).digest('hex')
+  const normalized = normalize(schema);
+  const canonical = JSON.stringify(normalized);
+  return createHash("sha256").update(canonical).digest("hex");
 }

@@ -5,9 +5,9 @@
  * end-to-end via the runner; here we test the validator in isolation
  * with hand-built rows so failure modes are unambiguous.
  */
-import { describe, it, expect } from 'vitest'
-import { validateTable, groupFindings } from './validate.js'
-import type { Table, Column } from './introspect.js'
+import { describe, it, expect } from "vitest";
+import { validateTable, groupFindings } from "./validate.js";
+import type { Table, Column } from "./introspect.js";
 
 function col(name: string, udt: string, opts: Partial<Column> = {}): Column {
   return {
@@ -24,125 +24,124 @@ function col(name: string, udt: string, opts: Partial<Column> = {}): Column {
     isIdentity: false,
     identityGeneration: null,
     ...opts,
-  }
+  };
 }
 
 function tbl(name: string, columns: Column[], extra: Partial<Table> = {}): Table {
   return {
-    schema: 'public',
+    schema: "public",
     name,
-    primaryKey: extra.primaryKey ?? ['id'],
+    primaryKey: extra.primaryKey ?? ["id"],
     columns,
     foreignKeys: extra.foreignKeys ?? [],
     uniqueColumns: extra.uniqueColumns ?? new Set<string>(),
-  }
+  };
 }
 
-describe('validateTable', () => {
-  it('flags NOT NULL violations and skips nullable nulls', () => {
-    const table = tbl('users', [
-      col('id', 'int4'),
-      col('email', 'text'),
-      col('nickname', 'text', { isNullable: true }),
-    ])
+describe("validateTable", () => {
+  it("flags NOT NULL violations and skips nullable nulls", () => {
+    const table = tbl("users", [
+      col("id", "int4"),
+      col("email", "text"),
+      col("nickname", "text", { isNullable: true }),
+    ]);
     const findings = validateTable(table, {
       rows: [
         { id: 1, email: null, nickname: null },
-        { id: 2, email: 'a@b.test', nickname: 'ok' },
+        { id: 2, email: "a@b.test", nickname: "ok" },
       ],
       pkPool: new Map(),
-    })
-    const errors = findings.filter((f) => f.severity === 'error')
-    expect(errors).toHaveLength(1)
-    expect(errors[0]).toMatchObject({ rule: 'not_null', column: 'email', row: 0 })
-  })
+    });
+    const errors = findings.filter((f) => f.severity === "error");
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({ rule: "not_null", column: "email", row: 0 });
+  });
 
-  it('flags type mismatches and int overflow', () => {
-    const table = tbl('events', [
-      col('id', 'int4'),
-      col('count', 'int2'),
-      col('active', 'bool'),
-    ])
+  it("flags type mismatches and int overflow", () => {
+    const table = tbl("events", [col("id", "int4"), col("count", "int2"), col("active", "bool")]);
     const findings = validateTable(table, {
-      rows: [
-        { id: 1, count: 99_999, active: 'yes' },
+      rows: [{ id: 1, count: 99_999, active: "yes" }],
+      pkPool: new Map(),
+    });
+    const rules = findings.map((f) => f.rule).sort();
+    expect(rules).toContain("int_overflow");
+    expect(rules).toContain("type_mismatch");
+  });
+
+  it("flags varchar length overflow", () => {
+    const table = tbl("posts", [col("id", "int4"), col("title", "varchar", { charMaxLength: 5 })]);
+    const findings = validateTable(table, {
+      rows: [{ id: 1, title: "too long for varchar(5)" }],
+      pkPool: new Map(),
+    });
+    expect(findings.some((f) => f.rule === "length_overflow")).toBe(true);
+  });
+
+  it("flags missing FK parents and accepts injected ones", () => {
+    const orgs = tbl("organizations", [col("id", "uuid")], { primaryKey: ["id"] });
+    const users = tbl("users", [col("id", "uuid"), col("org_id", "uuid")], {
+      foreignKeys: [
+        {
+          column: "org_id",
+          refSchema: "public",
+          refTable: "organizations",
+          refColumn: "id",
+          deferrable: false,
+          initiallyDeferred: false,
+        },
       ],
-      pkPool: new Map(),
-    })
-    const rules = findings.map((f) => f.rule).sort()
-    expect(rules).toContain('int_overflow')
-    expect(rules).toContain('type_mismatch')
-  })
-
-  it('flags varchar length overflow', () => {
-    const table = tbl('posts', [col('id', 'int4'), col('title', 'varchar', { charMaxLength: 5 })])
-    const findings = validateTable(table, {
-      rows: [{ id: 1, title: 'too long for varchar(5)' }],
-      pkPool: new Map(),
-    })
-    expect(findings.some((f) => f.rule === 'length_overflow')).toBe(true)
-  })
-
-  it('flags missing FK parents and accepts injected ones', () => {
-    const orgs = tbl('organizations', [col('id', 'uuid')], { primaryKey: ['id'] })
-    const users = tbl('users', [
-      col('id', 'uuid'),
-      col('org_id', 'uuid'),
-    ], {
-      foreignKeys: [{
-        column: 'org_id',
-        refSchema: 'public',
-        refTable: 'organizations',
-        refColumn: 'id',
-        deferrable: false,
-        initiallyDeferred: false,
-      }],
-    })
-    void orgs
+    });
+    void orgs;
     const pkPool = new Map<string, Array<Record<string, unknown>>>([
-      ['organizations', [{ id: '00000000-0000-4000-8000-000000000001' }]],
-    ])
+      ["organizations", [{ id: "00000000-0000-4000-8000-000000000001" }]],
+    ]);
     const findings = validateTable(users, {
       rows: [
-        { id: '00000000-0000-4000-8000-000000000001', org_id: '00000000-0000-4000-8000-000000000001' },
-        { id: '00000000-0000-4000-8000-000000000002', org_id: '00000000-0000-4000-8000-deadbeefdead' },
+        {
+          id: "00000000-0000-4000-8000-000000000001",
+          org_id: "00000000-0000-4000-8000-000000000001",
+        },
+        {
+          id: "00000000-0000-4000-8000-000000000002",
+          org_id: "00000000-0000-4000-8000-deadbeefdead",
+        },
       ],
       pkPool,
-    })
-    const fkErrors = findings.filter((f) => f.rule === 'fk_missing_parent')
-    expect(fkErrors).toHaveLength(1)
-    expect(fkErrors[0]).toMatchObject({ row: 1, column: 'org_id' })
-  })
+    });
+    const fkErrors = findings.filter((f) => f.rule === "fk_missing_parent");
+    expect(fkErrors).toHaveLength(1);
+    expect(fkErrors[0]).toMatchObject({ row: 1, column: "org_id" });
+  });
 
-  it('flags single-column UNIQUE duplicates within a batch', () => {
-    const table = tbl('users', [col('id', 'int4'), col('email', 'text')], {
-      uniqueColumns: new Set(['email']),
-    })
+  it("flags single-column UNIQUE duplicates within a batch", () => {
+    const table = tbl("users", [col("id", "int4"), col("email", "text")], {
+      uniqueColumns: new Set(["email"]),
+    });
     const findings = validateTable(table, {
       rows: [
-        { id: 1, email: 'a@b.test' },
-        { id: 2, email: 'a@b.test' },
+        { id: 1, email: "a@b.test" },
+        { id: 2, email: "a@b.test" },
       ],
       pkPool: new Map(),
-    })
-    const uniqErrors = findings.filter((f) => f.rule === 'unique_duplicate')
-    expect(uniqErrors).toHaveLength(1)
-    expect(uniqErrors[0]?.row).toBe(1)
-  })
+    });
+    const uniqErrors = findings.filter((f) => f.rule === "unique_duplicate");
+    expect(uniqErrors).toHaveLength(1);
+    expect(uniqErrors[0]?.row).toBe(1);
+  });
 
-  it('rejects malformed UUIDs', () => {
-    const table = tbl('docs', [col('id', 'uuid')])
+  it("rejects malformed UUIDs", () => {
+    const table = tbl("docs", [col("id", "uuid")]);
     const findings = validateTable(table, {
-      rows: [{ id: 'not-a-uuid' }],
+      rows: [{ id: "not-a-uuid" }],
       pkPool: new Map(),
-    })
-    expect(findings.some((f) => f.rule === 'uuid_format')).toBe(true)
-  })
-})
+    });
+    expect(findings.some((f) => f.rule === "uuid_format")).toBe(true);
+  });
+});
 
-describe('groupFindings', () => {
-  it('compacts duplicate findings into a single group with sample rows', () => {
-    const table = tbl('logs', [col('id', 'int4'), col('payload', 'text')])
+describe("groupFindings", () => {
+  it("compacts duplicate findings into a single group with sample rows", () => {
+    const table = tbl("logs", [col("id", "int4"), col("payload", "text")]);
     const findings = validateTable(table, {
       rows: [
         { id: 1, payload: null },
@@ -151,10 +150,10 @@ describe('groupFindings', () => {
         { id: 4, payload: null },
       ],
       pkPool: new Map(),
-    })
-    const groups = groupFindings(findings)
-    const nullGroup = groups.find((g) => g.rule === 'not_null')
-    expect(nullGroup?.count).toBe(4)
-    expect(nullGroup?.sampleRows).toEqual([0, 1, 2])
-  })
-})
+    });
+    const groups = groupFindings(findings);
+    const nullGroup = groups.find((g) => g.rule === "not_null");
+    expect(nullGroup?.count).toBe(4);
+    expect(nullGroup?.sampleRows).toEqual([0, 1, 2]);
+  });
+});

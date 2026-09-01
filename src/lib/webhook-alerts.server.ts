@@ -26,31 +26,31 @@
  * point — Stripe must still see our 500 so it retries.
  */
 
-import { supabaseAdmin } from '@/integrations/supabase/client.server'
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const RESEND_API_URL = 'https://api.resend.com'
+const RESEND_API_URL = "https://api.resend.com";
 
 /**
  * Visible "From:" address. `mail.satus.sh` is verified in our Resend
  * account. Override with ALERTS_FROM_EMAIL if the sender identity changes.
  */
-const FROM = process.env.ALERTS_FROM_EMAIL ?? 'satus alerts <alerts@mail.satus.sh>'
+const FROM = process.env.ALERTS_FROM_EMAIL ?? "satus alerts <alerts@mail.satus.sh>";
 
 /** Where the alert lands. Defaults to the founder-facing support inbox. */
-const TO = process.env.ALERTS_TO_EMAIL ?? 'support@satus.sh'
+const TO = process.env.ALERTS_TO_EMAIL ?? "support@satus.sh";
 
 export interface WebhookFailureArgs {
   /**
    * Stripe event id (`evt_...`). Pass null for pre-verify failures (env
    * query invalid, etc.) — a synthetic per-day key will be used instead.
    */
-  eventId: string | null
+  eventId: string | null;
   /** Stripe event type, or a short label for pre-verify cases. */
-  eventType: string
+  eventType: string;
   /** 'sandbox' | 'live' so we can tell test noise from real revenue at a glance. */
-  environment: 'sandbox' | 'live' | 'unknown'
+  environment: "sandbox" | "live" | "unknown";
   /** The thrown error (or any value caught). Strings are coerced safely. */
-  error: unknown
+  error: unknown;
 }
 
 /**
@@ -59,50 +59,48 @@ export interface WebhookFailureArgs {
  * Swallows DB errors so we degrade to "alert anyway" rather than "stay silent".
  */
 async function claimDedupKey(args: {
-  eventId: string
-  eventType: string
-  environment: string
-  errorMessage: string
+  eventId: string;
+  eventType: string;
+  environment: string;
+  errorMessage: string;
 }): Promise<boolean> {
   try {
-    const { error } = await supabaseAdmin
-      .from('webhook_alerts_sent')
-      .insert({
-        event_id: args.eventId,
-        event_type: args.eventType,
-        environment: args.environment,
-        error_message: args.errorMessage,
-      })
+    const { error } = await supabaseAdmin.from("webhook_alerts_sent").insert({
+      event_id: args.eventId,
+      event_type: args.eventType,
+      environment: args.environment,
+      error_message: args.errorMessage,
+    });
 
-    if (!error) return true
+    if (!error) return true;
 
     // 23505 = unique_violation = a previous attempt already inserted.
     // Anything else is unexpected; log it and fall through to "alert
     // anyway" so we don't silently lose the signal.
-    const code = (error as { code?: string }).code
-    if (code === '23505') return false
+    const code = (error as { code?: string }).code;
+    if (code === "23505") return false;
 
-    console.error('[webhook-alerts] dedup insert failed, will alert anyway', error)
-    return true
+    console.error("[webhook-alerts] dedup insert failed, will alert anyway", error);
+    return true;
   } catch (err) {
-    console.error('[webhook-alerts] dedup threw, will alert anyway', err)
-    return true
+    console.error("[webhook-alerts] dedup threw, will alert anyway", err);
+    return true;
   }
 }
 
 function toMessage(err: unknown): string {
-  if (err instanceof Error) return err.message
-  if (typeof err === 'string') return err
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
   try {
-    return JSON.stringify(err)
+    return JSON.stringify(err);
   } catch {
-    return String(err)
+    return String(err);
   }
 }
 
 function toStack(err: unknown): string | null {
-  if (err instanceof Error && err.stack) return err.stack
-  return null
+  if (err instanceof Error && err.stack) return err.stack;
+  return null;
 }
 
 /**
@@ -111,14 +109,14 @@ function toStack(err: unknown): string | null {
  * forwarders, and survives copy/paste into a ticket.
  */
 function renderEmail(args: WebhookFailureArgs & { dedupKey: string }) {
-  const subject = `[satus][${args.environment}] Stripe webhook failed: ${args.eventType}`
-  const message = toMessage(args.error)
-  const stack = toStack(args.error)
+  const subject = `[satus][${args.environment}] Stripe webhook failed: ${args.eventType}`;
+  const message = toMessage(args.error);
+  const stack = toStack(args.error);
 
   const lines = [
     `Stripe webhook handler returned an error.`,
     ``,
-    `event id     : ${args.eventId ?? '(pre-verify, none)'}`,
+    `event id     : ${args.eventId ?? "(pre-verify, none)"}`,
     `event type   : ${args.eventType}`,
     `environment  : ${args.environment}`,
     `dedup key    : ${args.dedupKey}`,
@@ -127,21 +125,21 @@ function renderEmail(args: WebhookFailureArgs & { dedupKey: string }) {
     `error message:`,
     message,
     ``,
-  ]
+  ];
   if (stack) {
-    lines.push('stack trace:', stack, '')
+    lines.push("stack trace:", stack, "");
   }
   lines.push(
     `What to check:`,
-    `  - Stripe dashboard -> Developers -> Events -> ${args.eventId ?? '(n/a)'}`,
+    `  - Stripe dashboard -> Developers -> Events -> ${args.eventId ?? "(n/a)"}`,
     `  - public.licenses for the affected subscription`,
     `  - Recent migrations / deploys that might have broken the handler`,
     ``,
     `Stripe will keep retrying 5xx responses for up to 3 days. A retry-storm`,
     `for this same event will NOT trigger a second email — dedup key above`,
     `was claimed in public.webhook_alerts_sent.`,
-  )
-  return { subject, text: lines.join('\n') }
+  );
+  return { subject, text: lines.join("\n") };
 }
 
 /**
@@ -151,34 +149,34 @@ function renderEmail(args: WebhookFailureArgs & { dedupKey: string }) {
  */
 export async function notifyWebhookFailure(args: WebhookFailureArgs): Promise<void> {
   try {
-    const resendKey = process.env.RESEND_API_KEY
+    const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) {
-      console.error('[webhook-alerts] missing RESEND_API_KEY; skipping alert')
-      return
+      console.error("[webhook-alerts] missing RESEND_API_KEY; skipping alert");
+      return;
     }
 
     // Pre-verify failures (no event id) collapse to one alert per env per
     // UTC day. Real Stripe events use evt_... directly.
     const dedupKey =
       args.eventId ??
-      `prelim-${args.environment}-${args.eventType}-${new Date().toISOString().slice(0, 10)}`
+      `prelim-${args.environment}-${args.eventType}-${new Date().toISOString().slice(0, 10)}`;
 
-    const errorMessage = toMessage(args.error).slice(0, 1900)
+    const errorMessage = toMessage(args.error).slice(0, 1900);
 
     const owned = await claimDedupKey({
       eventId: dedupKey,
       eventType: args.eventType,
       environment: args.environment,
       errorMessage,
-    })
-    if (!owned) return // already alerted on this event
+    });
+    if (!owned) return; // already alerted on this event
 
-    const { subject, text } = renderEmail({ ...args, dedupKey })
+    const { subject, text } = renderEmail({ ...args, dedupKey });
 
     const res = await fetch(`${RESEND_API_URL}/emails`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${resendKey}`,
       },
       body: JSON.stringify({
@@ -187,14 +185,14 @@ export async function notifyWebhookFailure(args: WebhookFailureArgs): Promise<vo
         subject,
         text,
       }),
-    })
+    });
 
     if (!res.ok) {
-      const body = await res.text().catch(() => '')
-      console.error('[webhook-alerts] resend non-2xx', res.status, body.slice(0, 500))
+      const body = await res.text().catch(() => "");
+      console.error("[webhook-alerts] resend non-2xx", res.status, body.slice(0, 500));
     }
   } catch (err) {
     // Never let alerting throw into the webhook response path.
-    console.error('[webhook-alerts] unexpected failure', err)
+    console.error("[webhook-alerts] unexpected failure", err);
   }
 }

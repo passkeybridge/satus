@@ -166,7 +166,12 @@ export const Route = createFileRoute("/docs/troubleshooting")({
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL + "/" },
             { "@type": "ListItem", position: 2, name: "Docs", item: SITE_URL + "/docs" },
-            { "@type": "ListItem", position: 3, name: "Troubleshooting", item: SITE_URL + "/docs/troubleshooting" },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: "Troubleshooting",
+              item: SITE_URL + "/docs/troubleshooting",
+            },
           ],
         }),
       },
@@ -200,42 +205,29 @@ function TroubleshootingPage() {
       >
         <Prose>
           <p>
-            Three things that go wrong on the first run: a stale PATH after the
-            global install, an unsupported Node version, and confusion about
-            which commands need credentials.
+            Three things that go wrong on the first run: a stale PATH after the global install, an
+            unsupported Node version, and confusion about which commands need credentials.
           </p>
         </Prose>
         <FaqList items={groupFor("install")} />
       </Section>
 
-      <Section
-        id="schema"
-        n="02"
-        label="Schema errors"
-        title={<>the planner refused to write.</>}
-      >
+      <Section id="schema" n="02" label="Schema errors" title={<>the planner refused to write.</>}>
         <Prose>
           <p>
-            The planner reads <code>pg_catalog</code> before any insert. When
-            it sees something it can&rsquo;t resolve safely it exits with a
-            named code and writes nothing. Every error below is recoverable
-            without database surgery.
+            The planner reads <code>pg_catalog</code> before any insert. When it sees something it
+            can&rsquo;t resolve safely it exits with a named code and writes nothing. Every error
+            below is recoverable without database surgery.
           </p>
         </Prose>
         <FaqList items={groupFor("schema")} />
       </Section>
 
-      <Section
-        id="llm"
-        n="03"
-        label="LLM provider"
-        title={<>your key. your bill. your retries.</>}
-      >
+      <Section id="llm" n="03" label="LLM provider" title={<>your key. your bill. your retries.</>}>
         <Prose>
           <p>
-            satus calls OpenAI directly from your machine. Authentication and
-            rate-limit errors come straight from the provider; we map them to
-            stable exit codes so CI can branch on them.
+            satus calls OpenAI directly from your machine. Authentication and rate-limit errors come
+            straight from the provider; we map them to stable exit codes so CI can branch on them.
           </p>
         </Prose>
         <FaqList items={groupFor("llm")} />
@@ -249,10 +241,9 @@ function TroubleshootingPage() {
       >
         <Prose>
           <p>
-            <code>satus generate</code> runs inside a single Postgres
-            transaction. Most &ldquo;is my database corrupted?&rdquo; questions
-            have the same answer: no, the transaction rolled back. The
-            mechanics are covered in{" "}
+            <code>satus generate</code> runs inside a single Postgres transaction. Most &ldquo;is my
+            database corrupted?&rdquo; questions have the same answer: no, the transaction rolled
+            back. The mechanics are covered in{" "}
             <a
               href="/docs/how-it-works#transaction"
               className="underline decoration-[var(--signal)] underline-offset-4"
@@ -273,10 +264,9 @@ function TroubleshootingPage() {
       >
         <Prose>
           <p>
-            Free runs uncapped time-wise but caps each run at 25 rows per
-            table across 5 tables; license-keyed activation lifts those caps
-            and applies to Pro and Team. The CLI verifies once, caches for
-            24 hours, and works offline within that window.
+            Free runs uncapped time-wise but caps each run at 25 rows per table across 5 tables;
+            license-keyed activation lifts those caps and applies to Pro and Team. The CLI verifies
+            once, caches for 24 hours, and works offline within that window.
           </p>
         </Prose>
         <FaqList items={groupFor("license")} />
@@ -290,16 +280,14 @@ function TroubleshootingPage() {
       >
         <Prose>
           <p>
-            If nothing above matches, the fastest path to a fix is a GitHub
-            issue with three things: the full stack trace (or the named exit
-            code), the offending <code>CREATE TABLE</code> statement(s), and
-            the satus version (<code>satus --version</code>). Schema
-            reproduction is the single thing we triage hardest—the more
-            faithful your repro, the faster the fix.
+            If nothing above matches, the fastest path to a fix is a GitHub issue with three things:
+            the full stack trace (or the named exit code), the offending <code>CREATE TABLE</code>{" "}
+            statement(s), and the satus version (<code>satus --version</code>). Schema reproduction
+            is the single thing we triage hardest—the more faithful your repro, the faster the fix.
           </p>
           <p>
-            For private questions (procurement, security disclosures, anything
-            you don&rsquo;t want on a public tracker), email{" "}
+            For private questions (procurement, security disclosures, anything you don&rsquo;t want
+            on a public tracker), email{" "}
             <a
               href="mailto:support@satus.sh"
               className="underline decoration-[var(--signal)] underline-offset-4"

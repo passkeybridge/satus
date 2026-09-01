@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
 // Standalone vitest config. The repo root runs TanStack Start under Vite,
 // which fights to inject its router plugin into any vitest invocation it
@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config'
 // to defaults so `npm test` inside packages/cli stays hermetic.
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.ts'],
-    environment: 'node',
+    include: ["src/**/*.test.ts"],
+    environment: "node",
   },
-})
+});

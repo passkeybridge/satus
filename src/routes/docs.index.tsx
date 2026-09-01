@@ -34,8 +34,7 @@ export const Route = createFileRoute("/docs/")({
       { property: "og:title", content: "Docs—satus" },
       {
         property: "og:description",
-        content:
-          "Quickstart, CLI reference, profile catalogue, concepts. Everything in one place.",
+        content: "Quickstart, CLI reference, profile catalogue, concepts. Everything in one place.",
       },
       { property: "og:url", content: SITE_URL + "/docs" },
       { property: "og:type", content: "website" },
@@ -82,10 +81,9 @@ function DocsPage() {
       >
         <Prose>
           <p>
-            satus is a CLI. It introspects your Postgres schema, reasons about
-            foreign keys, and writes seed data that respects every relationship.
-            If you've never run it, walk through these two pages—about ten
-            minutes end-to-end—before anything else.
+            satus is a CLI. It introspects your Postgres schema, reasons about foreign keys, and
+            writes seed data that respects every relationship. If you've never run it, walk through
+            these two pages—about ten minutes end-to-end—before anything else.
           </p>
         </Prose>
 
@@ -105,16 +103,11 @@ function DocsPage() {
         </CardGrid>
       </Section>
 
-      <Section
-        id="reference"
-        n="02"
-        label="Reference"
-        title={<>every flag, every exit code.</>}
-      >
+      <Section id="reference" n="02" label="Reference" title={<>every flag, every exit code.</>}>
         <Prose>
           <p>
-            One page per surface. The reference is exhaustive and stable across
-            the 0.1.x line—bookmark it.
+            One page per surface. The reference is exhaustive and stable across the 0.1.x
+            line—bookmark it.
           </p>
         </Prose>
 
@@ -146,18 +139,12 @@ function DocsPage() {
         </CardGrid>
       </Section>
 
-      <Section
-        id="concepts"
-        n="03"
-        label="Concepts"
-        title={<>why it works the way it does.</>}
-      >
+      <Section id="concepts" n="03" label="Concepts" title={<>why it works the way it does.</>}>
         <Prose>
           <p>
-            Long-form posts that explain the design decisions—the FK-cycle
-            planner, the safety guard, the one-transaction guarantee. Read these
-            when you want to understand the <em>why</em>, not just the{" "}
-            <em>how</em>.
+            Long-form posts that explain the design decisions—the FK-cycle planner, the safety
+            guard, the one-transaction guarantee. Read these when you want to understand the{" "}
+            <em>why</em>, not just the <em>how</em>.
           </p>
         </Prose>
 
@@ -177,12 +164,7 @@ function DocsPage() {
         </CardGrid>
       </Section>
 
-      <Section
-        id="support"
-        n="04"
-        label="Support"
-        title={<>one inbox. one repo.</>}
-      >
+      <Section id="support" n="04" label="Support" title={<>one inbox. one repo.</>}>
         <Prose>
           <p>
             Hit an error code? Start with{" "}
@@ -195,8 +177,8 @@ function DocsPage() {
             —every exit code, every common failure mode, with the fix.
           </p>
           <p>
-            File bugs and feature requests against the public repo. For private
-            questions—invoices, procurement, security—write to{" "}
+            File bugs and feature requests against the public repo. For private questions—invoices,
+            procurement, security—write to{" "}
             <a
               href="mailto:support@satus.sh"
               className="underline decoration-[var(--signal)] underline-offset-4"
@@ -207,10 +189,7 @@ function DocsPage() {
           </p>
           <p>
             Reporting a vulnerability? See our{" "}
-            <a
-              href="/security"
-              className="underline decoration-[var(--signal)] underline-offset-4"
-            >
+            <a href="/security" className="underline decoration-[var(--signal)] underline-offset-4">
               security policy
             </a>{" "}
             for scope, the embargo timeline, and safe harbor.

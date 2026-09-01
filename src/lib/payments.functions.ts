@@ -23,19 +23,11 @@ import { createStripeClient, type StripeEnv } from "@/lib/stripe.server";
 // listed features are still marked "planned". Selling seats for an unbuilt
 // tier via a crafted URL would contradict the published story. Re-add the
 // lookup_key here (and the tier in checkout.index.tsx) when Team launches.
-const ALLOWED_PRICE_IDS = new Set<string>([
-  "satus_pro_monthly",
-  "satus_pro_yearly",
-]);
+const ALLOWED_PRICE_IDS = new Set<string>(["satus_pro_monthly", "satus_pro_yearly"]);
 
 export const createCheckoutSession = createServerFn({ method: "POST" })
   .inputValidator(
-    (data: {
-      priceId: string;
-      quantity?: number;
-      returnUrl: string;
-      environment: StripeEnv;
-    }) => {
+    (data: { priceId: string; quantity?: number; returnUrl: string; environment: StripeEnv }) => {
       if (!/^[a-zA-Z0-9_-]+$/.test(data.priceId)) {
         throw new Error("Invalid priceId");
       }

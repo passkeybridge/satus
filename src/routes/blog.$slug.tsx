@@ -32,7 +32,9 @@ export const Route = createFileRoute("/blog/$slug")({
     const { post } = loaderData;
     const url = `${SITE_URL}/blog/${post.slug}`;
     const ogImage = post.ogImage
-      ? (post.ogImage.startsWith("http") ? post.ogImage : SITE_URL + post.ogImage)
+      ? post.ogImage.startsWith("http")
+        ? post.ogImage
+        : SITE_URL + post.ogImage
       : SITE_URL + "/og-image.png";
 
     /* Article schema improves citation behavior in AI search (Perplexity,
@@ -141,10 +143,7 @@ function BlogPostPage() {
         {/* Markdown is authored in-house, so dangerouslySetInnerHTML is the
          * correct primitive here. Marked has no script-eval surface and the
          * source is committed to the repo (no user-submitted content). */}
-        <div
-          className="prose-satus mt-10"
-          dangerouslySetInnerHTML={{ __html: post.html }}
-        />
+        <div className="prose-satus mt-10" dangerouslySetInnerHTML={{ __html: post.html }} />
 
         <hr className="mt-12" />
 

@@ -12,20 +12,20 @@
  */
 
 /** Anything unclassified: bad config, connection refused, LLM or DB error. */
-export const E_GENERAL = 1
+export const E_GENERAL = 1;
 
 /** `--dry-run` completed but the relational validator reported errors. */
-export const E_VALIDATION = 2
+export const E_VALIDATION = 2;
 
 /**
  * A foreign-key cycle exists in which no edge can be broken — every column
  * on the cycle is NOT NULL with no DEFAULT and not DEFERRABLE. satus will
  * not guess which invariant to violate. Nothing was written.
  */
-export const E_FK_CYCLE = 10
+export const E_FK_CYCLE = 10;
 
 /**
  * The safety guard refused: the target database already holds more than
  * ROW_LIMIT rows. Nothing was written. See generate/guard.ts.
  */
-export const E_DB_NOT_EMPTY = 11
+export const E_DB_NOT_EMPTY = 11;

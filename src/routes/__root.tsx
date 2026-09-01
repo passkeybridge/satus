@@ -8,7 +8,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
-
 import { Analytics } from "@vercel/analytics/react";
 
 import appCss from "../styles.css?url";
@@ -65,9 +64,7 @@ function BoundaryShell({
 
 /* Reusable action buttons keep the boundary CTAs visually identical to the
  * pricing table's primary/secondary pair. */
-function PrimaryAction(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement>
-) {
+function PrimaryAction(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
@@ -76,13 +73,7 @@ function PrimaryAction(
   );
 }
 
-function SecondaryLink({
-  to,
-  children,
-}: {
-  to: string;
-  children: React.ReactNode;
-}) {
+function SecondaryLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link
       to={to}
@@ -166,8 +157,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@satusdev" },
       { property: "og:title", content: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
       { name: "twitter:title", content: "satus.sh—Realistic Postgres seed data, FK-safe CLI" },
-      { property: "og:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
-      { name: "twitter:description", content: "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try." },
+      {
+        property: "og:description",
+        content:
+          "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Realistic, FK-safe Postgres seed data. satus reads your schema, resolves dependencies, and writes inserts that load on the first try.",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

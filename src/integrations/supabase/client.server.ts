@@ -3,8 +3,8 @@
 // Ordinary source: nothing generates this file, edit it like anything else.
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
@@ -12,11 +12,11 @@ function createSupabaseAdminClient() {
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
+      ...(!SUPABASE_SERVICE_ROLE_KEY ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
     ];
     const message =
-      `Missing Supabase environment variable(s): ${missing.join(', ')}. ` +
+      `Missing Supabase environment variable(s): ${missing.join(", ")}. ` +
       `Set them in the Vercel project (Settings → Environment Variables) for ` +
       `deployments, or export them locally. SUPABASE_SERVICE_ROLE_KEY is a ` +
       `secret and is deliberately not committed, so it is expected to be ` +
@@ -30,7 +30,7 @@ function createSupabaseAdminClient() {
       storage: undefined,
       persistSession: false,
       autoRefreshToken: false,
-    }
+    },
   });
 }
 

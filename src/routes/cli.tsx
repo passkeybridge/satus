@@ -63,8 +63,7 @@ export const Route = createFileRoute("/cli")({
           "@context": "https://schema.org",
           "@type": "TechArticle",
           headline: "satus CLI reference",
-          description:
-            "Complete command-line reference for the satus seeding CLI.",
+          description: "Complete command-line reference for the satus seeding CLI.",
           url: SITE_URL + "/cli",
           inLanguage: "en",
           author: { "@type": "Organization", name: "satus.sh" },
@@ -85,19 +84,13 @@ export const Route = createFileRoute("/cli")({
 function CliPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/cli">
-      <Section
-        id="synopsis"
-        n="01"
-        label="Synopsis"
-        title={<>four verbs. one binary.</>}
-      >
+      <Section id="synopsis" n="01" label="Synopsis" title={<>four verbs. one binary.</>}>
         <Prose>
           <p>
-            The CLI exposes four subcommands—<code>init</code>,{" "}
-            <code>generate</code>, <code>activate</code>, <code>whoami</code>—and
-            two global flags. Connection strings and provider keys are read from
-            the environment by default so secrets never land in shell history;
-            equivalent overrides are documented per command below.
+            The CLI exposes four subcommands—<code>init</code>, <code>generate</code>,{" "}
+            <code>activate</code>, <code>whoami</code>—and two global flags. Connection strings and
+            provider keys are read from the environment by default so secrets never land in shell
+            history; equivalent overrides are documented per command below.
           </p>
           <p>
             New here? Walk through the{" "}
@@ -122,26 +115,19 @@ function CliPage() {
         </Terminal>
       </Section>
 
-      <Section
-        id="env"
-        n="02"
-        label="Environment"
-        title={<>one db url. one provider key.</>}
-      >
+      <Section id="env" n="02" label="Environment" title={<>one db url. one provider key.</>}>
         <Prose>
           <p>
-            satus reads its connection string and an LLM provider key from
-            the environment. Both are required for <code>generate</code>;{" "}
-            <code>init</code>, <code>activate</code>, and <code>whoami</code>{" "}
-            need neither.
+            satus reads its connection string and an LLM provider key from the environment. Both are
+            required for <code>generate</code>; <code>init</code>, <code>activate</code>, and{" "}
+            <code>whoami</code> need neither.
           </p>
           <p>
             Pick one provider per run. If both <code>OPENAI_API_KEY</code> and{" "}
-            <code>ANTHROPIC_API_KEY</code> are exported and no{" "}
-            <code>--provider</code> flag or <code>provider</code> config field
-            is set, the run aborts with a clear message — auto-detect
-            deliberately refuses to guess so a misplaced key never spends on
-            the wrong invoice.
+            <code>ANTHROPIC_API_KEY</code> are exported and no <code>--provider</code> flag or{" "}
+            <code>provider</code> config field is set, the run aborts with a clear message —
+            auto-detect deliberately refuses to guess so a misplaced key never spends on the wrong
+            invoice.
           </p>
         </Prose>
 
@@ -172,10 +158,9 @@ function CliPage() {
       >
         <Prose>
           <p>
-            Writes <code>satus.config.json</code> to the current working
-            directory. Interactive prompts ask for the connection string (blank
-            falls back to <code>$DATABASE_URL</code>), the schema, the profile,
-            and the row count. Safe to re-run; existing config is preserved
+            Writes <code>satus.config.json</code> to the current working directory. Interactive
+            prompts ask for the connection string (blank falls back to <code>$DATABASE_URL</code>),
+            the schema, the profile, and the row count. Safe to re-run; existing config is preserved
             unless <code>--force</code> is set.
           </p>
         </Prose>
@@ -184,11 +169,7 @@ function CliPage() {
           <Shell>{`satus init`}</Shell>
         </Terminal>
 
-        <FlagTable
-          rows={[
-            ["--force", "false", "Overwrite an existing satus.config.json."],
-          ]}
-        />
+        <FlagTable rows={[["--force", "false", "Overwrite an existing satus.config.json."]]} />
       </Section>
 
       <Section
@@ -199,16 +180,15 @@ function CliPage() {
       >
         <Prose>
           <p>
-            Introspects the target schema, builds the foreign-key DAG, breaks
-            any cycles whose back-edge is nullable, calls the LLM for realistic
-            rows, then writes the entire dataset inside a single Postgres
-            transaction. If any insert fails the whole run rolls back and your
-            database is left untouched.
+            Introspects the target schema, builds the foreign-key DAG, breaks any cycles whose
+            back-edge is nullable, calls the LLM for realistic rows, then writes the entire dataset
+            inside a single Postgres transaction. If any insert fails the whole run rolls back and
+            your database is left untouched.
           </p>
           <p>
-            <code>--dry-run</code> performs introspection, planning, and cost
-            estimation but skips both the LLM call and the write phase. It is
-            the right way to preview what a run would do before spending tokens.
+            <code>--dry-run</code> performs introspection, planning, and cost estimation but skips
+            both the LLM call and the write phase. It is the right way to preview what a run would
+            do before spending tokens.
           </p>
         </Prose>
 
@@ -221,21 +201,13 @@ function CliPage() {
 
         <FlagTable
           rows={[
-            [
-              "--profile <name>",
-              "from config",
-              "Reference profile. One of: saas, ecommerce, b2b.",
-            ],
+            ["--profile <name>", "from config", "Reference profile. One of: saas, ecommerce, b2b."],
             [
               "--rows <n>",
               "50",
               "Rows to generate per table. Free tier caps at 25 rows/table and 5 tables.",
             ],
-            [
-              "--batch-size <n>",
-              "25",
-              "Rows per LLM call. Lower if you hit provider rate limits.",
-            ],
+            ["--batch-size <n>", "25", "Rows per LLM call. Lower if you hit provider rate limits."],
             [
               "--max-cost <usd>",
               "1.00",
@@ -290,19 +262,12 @@ function CliPage() {
         />
       </Section>
 
-      <Section
-        id="activate"
-        n="05"
-        label="satus activate"
-        title={<>swap free for pro or team.</>}
-      >
+      <Section id="activate" n="05" label="satus activate" title={<>swap free for pro or team.</>}>
         <Prose>
           <p>
-            Validates a license key against{" "}
-            <code>https://satus.sh/api/public/license/verify</code> and writes
-            the result to the local cache (<code>~/.satus/license-cache.json</code>,
-            24-hour TTL). Until activated, generation runs under the Free tier
-            limits noted above.
+            Validates a license key against <code>https://satus.sh/api/public/license/verify</code>{" "}
+            and writes the result to the local cache (<code>~/.satus/license-cache.json</code>,
+            24-hour TTL). Until activated, generation runs under the Free tier limits noted above.
           </p>
         </Prose>
 
@@ -311,16 +276,11 @@ function CliPage() {
         </Terminal>
       </Section>
 
-      <Section
-        id="whoami"
-        n="06"
-        label="satus whoami"
-        title={<>read the cached license.</>}
-      >
+      <Section id="whoami" n="06" label="satus whoami" title={<>read the cached license.</>}>
         <Prose>
           <p>
-            Prints the currently activated tier and the email the license was
-            issued to. Reads the local cache only; no network call is made.
+            Prints the currently activated tier and the email the license was issued to. Reads the
+            local cache only; no network call is made.
           </p>
         </Prose>
 
@@ -337,27 +297,24 @@ function CliPage() {
       >
         <Prose>
           <p>
-            Every command returns <code>0</code> on success and <code>1</code>{" "}
-            on any error, with a one-line diagnostic written to stderr. Stable
-            per-failure-mode exit codes are planned for a future minor release;
-            today, scripts that need to branch on failure should match the
-            stderr message.
+            Every command returns <code>0</code> on success and <code>1</code> on any error, with a
+            one-line diagnostic written to stderr. Stable per-failure-mode exit codes are planned
+            for a future minor release; today, scripts that need to branch on failure should match
+            the stderr message.
           </p>
           <p>
-            satus never sends your schema, your data, or your column names to
-            satus.sh. The only network call to satus.sh is the license verify,
-            which sends your license key and nothing else. LLM calls go directly
-            from your machine to your provider with your key. Telemetry, when
-            you opt in, sends an anonymized run summary (table count, row
-            count, duration, exit code)—never table or column names, never
-            row data.
+            satus never sends your schema, your data, or your column names to satus.sh. The only
+            network call to satus.sh is the license verify, which sends your license key and nothing
+            else. LLM calls go directly from your machine to your provider with your key. Telemetry,
+            when you opt in, sends an anonymized run summary (table count, row count, duration, exit
+            code)—never table or column names, never row data.
           </p>
         </Prose>
 
         <p className="mt-10 max-w-[62ch] font-mono text-[12.5px] text-[var(--mute)]">
-          Reference matches the published binary at {SATUS_VERSION_TAG}{" "}
-          (released {SATUS_RELEASED_AT}). Flag defaults are stable across the
-          0.x line; new flags may be added in minor releases.
+          Reference matches the published binary at {SATUS_VERSION_TAG} (released{" "}
+          {SATUS_RELEASED_AT}). Flag defaults are stable across the 0.x line; new flags may be added
+          in minor releases.
         </p>
       </Section>
     </PageShell>

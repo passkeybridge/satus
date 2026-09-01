@@ -71,9 +71,7 @@ function PrivacyPage() {
         <h1 className="mt-5 font-mono text-[32px] font-medium leading-[1.15] tracking-tight text-[var(--ink)] md:text-[40px]">
           privacy policy.
         </h1>
-        <p className="mt-4 font-mono text-[12px] text-[var(--mute)]">
-          Effective: {EFFECTIVE_DATE}
-        </p>
+        <p className="mt-4 font-mono text-[12px] text-[var(--mute)]">Effective: {EFFECTIVE_DATE}</p>
       </header>
 
       <Section
@@ -90,14 +88,19 @@ function PrivacyPage() {
             generated, the prompts sent to your LLM, or the contents of your database.
           </p>
           <p>
-            The only personal data we collect is what passes through the satus.sh website: the
-            email address you give us to receive a license key, the billing data Stripe needs to
-            charge your card, and a small amount of aggregate web analytics. That&rsquo;s it.
+            The only personal data we collect is what passes through the satus.sh website: the email
+            address you give us to receive a license key, the billing data Stripe needs to charge
+            your card, and a small amount of aggregate web analytics. That&rsquo;s it.
           </p>
         </Prose>
       </Section>
 
-      <Section id="who" n="02" label="Who we are" title={<>passkeybridge llc, a wyoming company.</>}>
+      <Section
+        id="who"
+        n="02"
+        label="Who we are"
+        title={<>passkeybridge llc, a wyoming company.</>}
+      >
         <Prose>
           <p>
             satus.sh is operated by <strong>PasskeyBridge LLC</strong>, a Wyoming limited liability
@@ -123,8 +126,8 @@ function PrivacyPage() {
           <p>
             <strong>License telemetry.</strong> The CLI sends your license key to{" "}
             <code>/api/public/license/verify</code> to confirm it is valid. The verification request
-            includes only the license key and a generic User-Agent string. To rate-limit abuse,
-            the request IP is hashed in memory (SHA-256, truncated) for the lifetime of the Worker
+            includes only the license key and a generic User-Agent string. To rate-limit abuse, the
+            request IP is hashed in memory (SHA-256, truncated) for the lifetime of the Worker
             isolate and discarded; we do not persist your IP, your machine ID, or any project
             metadata against your key.
           </p>
@@ -132,13 +135,13 @@ function PrivacyPage() {
             <strong>Run telemetry.</strong> Off unless you turn it on. As of CLI v0.3.11 nothing is
             sent unless <code>telemetry.enabled</code> is <code>true</code> in{" "}
             <code>satus.config.json</code> or <code>SATUS_TELEMETRY=1</code> is set;{" "}
-            <code>DO_NOT_TRACK=1</code> overrides both and always wins. <code>satus init</code> asks,
-            and defaults to no.
+            <code>DO_NOT_TRACK=1</code> overrides both and always wins. <code>satus init</code>{" "}
+            asks, and defaults to no.
           </p>
           <p>
             When it <em>is</em> enabled, a finished <code>satus generate</code> posts one record to{" "}
-            <code>/api/public/cli/run</code>. As of CLI v0.3.7 that record contains a
-            random run UUID, the CLI version, the provider and model name, the profile name, the{" "}
+            <code>/api/public/cli/run</code>. As of CLI v0.3.7 that record contains a random run
+            UUID, the CLI version, the provider and model name, the profile name, the{" "}
             <em>number</em> of tables touched, the total row count, the token totals, the estimated
             spend, the duration, and—on failure—a fixed-vocabulary error class such as{" "}
             <code>pg_23505</code> or <code>provider_http_429</code>. It contains no table names, no
@@ -150,9 +153,9 @@ function PrivacyPage() {
             schema name, and the raw error message—which, for a Postgres unique violation, embeds
             the offending row value. That contradicted the promise on this page and in the CLI
             README. v0.3.7 stops sending those three fields, and the ingest endpoint now discards
-            them from any payload an older CLI still sends, so the promise holds regardless of
-            which version is installed. The only records ever collected under the old behaviour
-            were our own release-test runs.
+            them from any payload an older CLI still sends, so the promise holds regardless of which
+            version is installed. The only records ever collected under the old behaviour were our
+            own release-test runs.
           </p>
           <p className="text-[var(--mute)]">
             Separately: through CLI v0.3.10 the run record was sent unconditionally, with no way to
@@ -170,9 +173,11 @@ function PrivacyPage() {
             you across sites.
           </p>
           <p>
-            <strong>What we do <em>not</em> collect.</strong> We never receive your database schema,
-            connection string, generated rows, LLM prompts, LLM responses, or LLM API key. None of
-            those ever leave your machine.
+            <strong>
+              What we do <em>not</em> collect.
+            </strong>{" "}
+            We never receive your database schema, connection string, generated rows, LLM prompts,
+            LLM responses, or LLM API key. None of those ever leave your machine.
           </p>
         </Prose>
       </Section>
@@ -201,12 +206,7 @@ function PrivacyPage() {
         </Prose>
       </Section>
 
-      <Section
-        id="processors"
-        n="05"
-        label="Sub-processors"
-        title={<>a short, named list.</>}
-      >
+      <Section id="processors" n="05" label="Sub-processors" title={<>a short, named list.</>}>
         <Prose>
           <p>We use the following sub-processors to operate the Service:</p>
           <ul className="ml-5 list-disc space-y-1">
@@ -227,8 +227,8 @@ function PrivacyPage() {
               satus.sh.
             </li>
             <li>
-              <strong>Supabase, Inc.</strong>—database hosting for license records and
-              transactional email infrastructure.
+              <strong>Supabase, Inc.</strong>—database hosting for license records and transactional
+              email infrastructure.
             </li>
             <li>
               <strong>Ahrefs Pte. Ltd.</strong>—cookieless web analytics.
@@ -251,18 +251,13 @@ function PrivacyPage() {
           <p>
             satus.sh does not set any first-party tracking cookies. The Ahrefs analytics script is
             cookieless. Stripe&rsquo;s checkout flow may set its own cookies during a purchase
-            session to prevent fraud and complete payment; those cookies are governed by Stripe&rsquo;s
-            privacy policy.
+            session to prevent fraud and complete payment; those cookies are governed by
+            Stripe&rsquo;s privacy policy.
           </p>
         </Prose>
       </Section>
 
-      <Section
-        id="retention"
-        n="07"
-        label="Retention"
-        title={<>only as long as needed.</>}
-      >
+      <Section id="retention" n="07" label="Retention" title={<>only as long as needed.</>}>
         <Prose>
           <p>
             License records (email, license key, purchase date) are retained for the duration of
@@ -282,20 +277,15 @@ function PrivacyPage() {
         <Prose>
           <p>
             We are based in the United States and our sub-processors operate globally. Transfers of
-            personal data from the EEA, UK, or Switzerland to the United States rely on the
-            European Commission&rsquo;s Standard Contractual Clauses (SCCs) and, where applicable,
-            on Stripe&rsquo;s and Cloudflare&rsquo;s certification under the EU&ndash;U.S. Data
-            Privacy Framework.
+            personal data from the EEA, UK, or Switzerland to the United States rely on the European
+            Commission&rsquo;s Standard Contractual Clauses (SCCs) and, where applicable, on
+            Stripe&rsquo;s and Cloudflare&rsquo;s certification under the EU&ndash;U.S. Data Privacy
+            Framework.
           </p>
         </Prose>
       </Section>
 
-      <Section
-        id="rights"
-        n="09"
-        label="Your rights"
-        title={<>access, erase, port, object.</>}
-      >
+      <Section id="rights" n="09" label="Your rights" title={<>access, erase, port, object.</>}>
         <Prose>
           <p>Depending on your jurisdiction you have the right to:</p>
           <ul className="ml-5 list-disc space-y-1">
@@ -339,12 +329,7 @@ function PrivacyPage() {
         </Prose>
       </Section>
 
-      <Section
-        id="children"
-        n="10"
-        label="Children"
-        title={<>not directed at anyone under 16.</>}
-      >
+      <Section id="children" n="10" label="Children" title={<>not directed at anyone under 16.</>}>
         <Prose>
           <p>
             satus is a developer tool intended for use by adults in a professional context. We do
@@ -354,22 +339,14 @@ function PrivacyPage() {
         </Prose>
       </Section>
 
-      <Section
-        id="security"
-        n="11"
-        label="Security"
-        title={<>encrypted in transit and at rest.</>}
-      >
+      <Section id="security" n="11" label="Security" title={<>encrypted in transit and at rest.</>}>
         <Prose>
           <p>
             All traffic to satus.sh and to <code>/api/public/license/verify</code> is served over
             TLS. License records are stored in an encrypted Postgres database; payment data is held
             by Stripe (PCI-DSS Level 1). For coordinated vulnerability disclosure, scope, and the
             embargo timeline, see our{" "}
-            <a
-              href="/security"
-              className="underline decoration-[var(--signal)] underline-offset-4"
-            >
+            <a href="/security" className="underline decoration-[var(--signal)] underline-offset-4">
               security policy
             </a>
             .

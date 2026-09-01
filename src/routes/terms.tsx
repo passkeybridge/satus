@@ -72,9 +72,7 @@ function TermsPage() {
         <h1 className="mt-5 font-mono text-[32px] font-medium leading-[1.15] tracking-tight text-[var(--ink)] md:text-[40px]">
           terms of service.
         </h1>
-        <p className="mt-4 font-mono text-[12px] text-[var(--mute)]">
-          Effective: {EFFECTIVE_DATE}
-        </p>
+        <p className="mt-4 font-mono text-[12px] text-[var(--mute)]">Effective: {EFFECTIVE_DATE}</p>
       </header>
 
       <Section
@@ -87,20 +85,15 @@ function TermsPage() {
           <p>
             By installing the satus CLI, purchasing a license, or accessing the satus.sh website
             (collectively, the &ldquo;Service&rdquo;), you agree to be bound by these Terms of
-            Service. The Service is provided by{" "}
-            <strong>PasskeyBridge LLC</strong>, a Wyoming limited liability company
-            (&ldquo;PasskeyBridge,&rdquo; &ldquo;we,&rdquo; or &ldquo;us&rdquo;). If you do not
-            agree to these terms, do not install or use the Service.
+            Service. The Service is provided by <strong>PasskeyBridge LLC</strong>, a Wyoming
+            limited liability company (&ldquo;PasskeyBridge,&rdquo; &ldquo;we,&rdquo; or
+            &ldquo;us&rdquo;). If you do not agree to these terms, do not install or use the
+            Service.
           </p>
         </Prose>
       </Section>
 
-      <Section
-        id="service"
-        n="02"
-        label="Service"
-        title={<>what satus is, and what it is not.</>}
-      >
+      <Section id="service" n="02" label="Service" title={<>what satus is, and what it is not.</>}>
         <Prose>
           <p>
             satus is a command-line tool that reads the schema of a Postgres database and produces
@@ -110,7 +103,9 @@ function TermsPage() {
           <ul className="ml-5 list-disc space-y-1">
             <li>The satus CLI binary, distributed via npm.</li>
             <li>The satus.sh marketing site, blog, and documentation.</li>
-            <li>A license-verification API at <code>/api/public/license/verify</code>.</li>
+            <li>
+              A license-verification API at <code>/api/public/license/verify</code>.
+            </li>
             <li>A transactional email that delivers your license key after purchase.</li>
           </ul>
           <p>
@@ -143,12 +138,7 @@ function TermsPage() {
         </Prose>
       </Section>
 
-      <Section
-        id="byo-key"
-        n="04"
-        label="BYO key"
-        title={<>you supply your own llm api key.</>}
-      >
+      <Section id="byo-key" n="04" label="BYO key" title={<>you supply your own llm api key.</>}>
         <Prose>
           <p>
             satus requires an API key from a supported LLM provider (OpenAI or Anthropic) to
@@ -190,8 +180,8 @@ function TermsPage() {
             <strong>Refunds.</strong> We offer a full refund within 14 days of initial purchase, no
             questions asked. After 14 days the current billing period is non-refundable, except
             where required by applicable consumer-protection law; you may cancel future renewals at
-            any time and continue using the CLI until the period ends. To request a refund or
-            cancel a renewal, email{" "}
+            any time and continue using the CLI until the period ends. To request a refund or cancel
+            a renewal, email{" "}
             <a
               href="mailto:support@satus.sh"
               className="underline decoration-[var(--signal)] underline-offset-4"
@@ -236,12 +226,7 @@ function TermsPage() {
         </Prose>
       </Section>
 
-      <Section
-        id="warranty"
-        n="07"
-        label="Warranty"
-        title={<>provided &ldquo;as is.&rdquo;</>}
-      >
+      <Section id="warranty" n="07" label="Warranty" title={<>provided &ldquo;as is.&rdquo;</>}>
         <Prose>
           <p>
             THE SERVICE IS PROVIDED &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo; WITHOUT
@@ -289,19 +274,14 @@ function TermsPage() {
         <Prose>
           <p>
             You agree to indemnify, defend, and hold harmless PasskeyBridge LLC, its officers, and
-            its contractors from any claims, damages, or expenses (including reasonable attorneys&rsquo;
-            fees) arising from your use of the Service, your violation of these terms, or your
-            violation of any law or third-party right.
+            its contractors from any claims, damages, or expenses (including reasonable
+            attorneys&rsquo; fees) arising from your use of the Service, your violation of these
+            terms, or your violation of any law or third-party right.
           </p>
         </Prose>
       </Section>
 
-      <Section
-        id="termination"
-        n="10"
-        label="Termination"
-        title={<>either side may walk away.</>}
-      >
+      <Section id="termination" n="10" label="Termination" title={<>either side may walk away.</>}>
         <Prose>
           <p>
             You may terminate your license at any time by emailing{" "}
@@ -312,9 +292,9 @@ function TermsPage() {
               support@satus.sh
             </a>{" "}
             with your order ID, or self-serve through the Stripe billing portal linked from your
-            license-delivery email.
-            PasskeyBridge may terminate or suspend your license immediately for material breach of
-            these terms, fraudulent payment, or use that poses a security risk to other users.
+            license-delivery email. PasskeyBridge may terminate or suspend your license immediately
+            for material breach of these terms, fraudulent payment, or use that poses a security
+            risk to other users.
           </p>
           <p>
             On termination, your license key stops verifying and the CLI will refuse to run.

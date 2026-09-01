@@ -12,59 +12,59 @@
  * surfaces FK deferrability flags so the runner can break cycles
  * via SET CONSTRAINTS ALL DEFERRED.
  */
-import type { Client } from 'pg'
+import type { Client } from "pg";
 
 export interface Column {
-  name: string
-  dataType: string // information_schema.data_type, e.g. "text", "integer"
-  udtName: string // pg_catalog name, e.g. "int4", "uuid", "_text"
-  isNullable: boolean
-  hasDefault: boolean
-  defaultExpr: string | null
-  charMaxLength: number | null
-  numericPrecision: number | null
-  numericScale: number | null
+  name: string;
+  dataType: string; // information_schema.data_type, e.g. "text", "integer"
+  udtName: string; // pg_catalog name, e.g. "int4", "uuid", "_text"
+  isNullable: boolean;
+  hasDefault: boolean;
+  defaultExpr: string | null;
+  charMaxLength: number | null;
+  numericPrecision: number | null;
+  numericScale: number | null;
   /**
    * GENERATED ALWAYS AS (expr) STORED. Note this is *not* identity — in
    * information_schema, `is_generated` reports 'NEVER' for identity
    * columns. See `isIdentity`.
    */
-  isGenerated: boolean
+  isGenerated: boolean;
   /**
    * GENERATED ALWAYS / BY DEFAULT AS IDENTITY. Postgres reports these with
    * `column_default = NULL` and `is_generated = 'NEVER'`, so neither
    * `hasDefault` nor `isGenerated` catches them and they must be tracked
    * separately. Verified against PostgreSQL 16.13.
    */
-  isIdentity: boolean
+  isIdentity: boolean;
   /** 'ALWAYS' | 'BY DEFAULT' when isIdentity, else null. */
-  identityGeneration: string | null
+  identityGeneration: string | null;
 }
 
 export interface ForeignKey {
-  column: string
-  refSchema: string
-  refTable: string
-  refColumn: string
+  column: string;
+  refSchema: string;
+  refTable: string;
+  refColumn: string;
   /** SQL-level DEFERRABLE (vs the default NOT DEFERRABLE). */
-  deferrable: boolean
+  deferrable: boolean;
   /** DEFERRABLE INITIALLY DEFERRED. Implies deferrable=true. */
-  initiallyDeferred: boolean
+  initiallyDeferred: boolean;
 }
 
 export interface Table {
-  schema: string
-  name: string
-  columns: Column[]
-  primaryKey: string[]
-  foreignKeys: ForeignKey[]
+  schema: string;
+  name: string;
+  columns: Column[];
+  primaryKey: string[];
+  foreignKeys: ForeignKey[];
   /** Single-column unique constraints. Multi-col uniques are noted but not enforced in v0.x. */
-  uniqueColumns: Set<string>
+  uniqueColumns: Set<string>;
 }
 
 export interface IntrospectedSchema {
-  schema: string
-  tables: Table[]
+  schema: string;
+  tables: Table[];
 }
 
 // v0.2: catalog introspection collapses into a single round-trip.
@@ -235,48 +235,47 @@ export const INTROSPECT_SQL = `
     coalesce((select jsonb_agg(to_jsonb(v_pks.*))     from v_pks),     '[]'::jsonb) as pks,
     coalesce((select jsonb_agg(to_jsonb(v_fks.*))     from v_fks),     '[]'::jsonb) as fks,
     coalesce((select jsonb_agg(to_jsonb(v_uniques.*)) from v_uniques), '[]'::jsonb) as uniques
-`
-
+`;
 
 export async function introspect(
   client: Client,
   schema: string,
   exclude: string[] = [],
 ): Promise<IntrospectedSchema> {
-  const skip = new Set(exclude)
-  const res = await client.query(INTROSPECT_SQL, [schema])
+  const skip = new Set(exclude);
+  const res = await client.query(INTROSPECT_SQL, [schema]);
   const row = res.rows[0] as {
-    tables: Array<{ table_name: string }>
+    tables: Array<{ table_name: string }>;
     columns: Array<{
-      table_name: string
-      column_name: string
-      data_type: string
-      udt_name: string
-      is_nullable: string
-      column_default: string | null
-      character_maximum_length: number | null
-      numeric_precision: number | null
-      numeric_scale: number | null
-      is_generated: string
-      is_identity: string
-      identity_generation: string | null
-    }>
-    pks: Array<{ table_name: string; column_name: string }>
+      table_name: string;
+      column_name: string;
+      data_type: string;
+      udt_name: string;
+      is_nullable: string;
+      column_default: string | null;
+      character_maximum_length: number | null;
+      numeric_precision: number | null;
+      numeric_scale: number | null;
+      is_generated: string;
+      is_identity: string;
+      identity_generation: string | null;
+    }>;
+    pks: Array<{ table_name: string; column_name: string }>;
     fks: Array<{
-      table_name: string
-      column_name: string
-      ref_schema: string
-      ref_table: string
-      ref_column: string
-      is_deferrable: boolean
-      is_initially_deferred: boolean
-    }>
-    uniques: Array<{ table_name: string; column_name: string }>
-  }
+      table_name: string;
+      column_name: string;
+      ref_schema: string;
+      ref_table: string;
+      ref_column: string;
+      is_deferrable: boolean;
+      is_initially_deferred: boolean;
+    }>;
+    uniques: Array<{ table_name: string; column_name: string }>;
+  };
 
-  const tablesByName = new Map<string, Table>()
+  const tablesByName = new Map<string, Table>();
   for (const r of row.tables) {
-    if (skip.has(r.table_name)) continue
+    if (skip.has(r.table_name)) continue;
     tablesByName.set(r.table_name, {
       schema,
       name: r.table_name,
@@ -284,30 +283,30 @@ export async function introspect(
       primaryKey: [],
       foreignKeys: [],
       uniqueColumns: new Set(),
-    })
+    });
   }
 
   for (const r of row.columns) {
-    const t = tablesByName.get(r.table_name)
-    if (!t) continue
+    const t = tablesByName.get(r.table_name);
+    if (!t) continue;
     t.columns.push({
       name: r.column_name,
       dataType: r.data_type,
       udtName: r.udt_name,
-      isNullable: r.is_nullable === 'YES',
+      isNullable: r.is_nullable === "YES",
       hasDefault: r.column_default !== null,
       defaultExpr: r.column_default,
       charMaxLength: r.character_maximum_length,
       numericPrecision: r.numeric_precision,
       numericScale: r.numeric_scale,
-      isGenerated: !!r.is_generated && r.is_generated !== 'NEVER',
-      isIdentity: r.is_identity === 'YES',
+      isGenerated: !!r.is_generated && r.is_generated !== "NEVER",
+      isIdentity: r.is_identity === "YES",
       identityGeneration: r.identity_generation ?? null,
-    })
+    });
   }
 
   for (const r of row.pks) {
-    tablesByName.get(r.table_name)?.primaryKey.push(r.column_name)
+    tablesByName.get(r.table_name)?.primaryKey.push(r.column_name);
   }
 
   for (const r of row.fks) {
@@ -318,12 +317,12 @@ export async function introspect(
       refColumn: r.ref_column,
       deferrable: r.is_deferrable === true,
       initiallyDeferred: r.is_initially_deferred === true,
-    })
+    });
   }
 
   for (const r of row.uniques) {
-    tablesByName.get(r.table_name)?.uniqueColumns.add(r.column_name)
+    tablesByName.get(r.table_name)?.uniqueColumns.add(r.column_name);
   }
 
-  return { schema, tables: Array.from(tablesByName.values()) }
+  return { schema, tables: Array.from(tablesByName.values()) };
 }

@@ -68,8 +68,7 @@ export const Route = createFileRoute("/")({
           name: "satus",
           applicationCategory: "DeveloperApplication",
           operatingSystem: "macOS, Linux",
-          description:
-            "CLI that generates relationally-coherent seed data for Postgres databases.",
+          description: "CLI that generates relationally-coherent seed data for Postgres databases.",
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
           url: SITE_URL,
         }),
@@ -138,7 +137,7 @@ function Overview() {
             generate per-table → insert in a transaction) is what the CLI
             actually does. See packages/cli/src/generate/runner.ts. */}
         <pre className="mt-3 overflow-x-auto font-mono text-[12.5px] leading-[1.75] text-[var(--ink)]">
-{`$ satus generate --profile saas
+          {`$ satus generate --profile saas
   introspecting schema           14 tables · 38 FKs
   planning insert order          topological
   generating · orgs                 12 rows
@@ -147,8 +146,7 @@ function Overview() {
   generating · invoices            420 rows
   inserting (transaction)        ok
 `}
-          <span className="text-[var(--signal)]">✓</span>{" "}
-          <span>600 rows · $0.02 · 6.1s</span>
+          <span className="text-[var(--signal)]">✓</span> <span>600 rows · $0.02 · 6.1s</span>
         </pre>
       </div>
     </Section>
@@ -160,10 +158,6 @@ function InstallLine() {
   const cmd = "npm i -g @passkeybridge/satus";
   return (
     <div className="relative flex items-stretch overflow-hidden border border-[var(--ink)] bg-[var(--paper)]">
-
-
-
-
       <div className="grid w-9 place-items-center border-r border-[var(--ink)] font-mono text-[12px] text-[var(--mute)]">
         $
       </div>
@@ -253,11 +247,31 @@ function Problem() {
 /* ------------------ §02 How it works ------------------ */
 
 const STEPS = [
-  { n: "01", t: "introspect", d: "Read tables, columns, types, foreign keys, unique constraints, checks, and enums directly from pg_catalog. No annotations. No ORM plugins." },
-  { n: "02", t: "plan",       d: "Build a dependency DAG from your foreign keys and topologically sort the insert order. Parents before children, always." },
-  { n: "03", t: "generate",   d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling, never free-text." },
-  { n: "04", t: "validate",   d: "A zod schema generated from the table catches type, length, enum, unique, and invariant violations before they ever reach the database." },
-  { n: "05", t: "insert",     d: "Wrap the entire run in a single Postgres transaction. Parameterized inserts in topological order. Any failure rolls back the whole run; your database is never left half-seeded." },
+  {
+    n: "01",
+    t: "introspect",
+    d: "Read tables, columns, types, foreign keys, unique constraints, checks, and enums directly from pg_catalog. No annotations. No ORM plugins.",
+  },
+  {
+    n: "02",
+    t: "plan",
+    d: "Build a dependency DAG from your foreign keys and topologically sort the insert order. Parents before children, always.",
+  },
+  {
+    n: "03",
+    t: "generate",
+    d: "Per table, send schema, parent-row samples, and the active profile to the LLM. Receive rows as structured JSON via tool-calling, never free-text.",
+  },
+  {
+    n: "04",
+    t: "validate",
+    d: "A zod schema generated from the table catches type, length, enum, unique, and invariant violations before they ever reach the database.",
+  },
+  {
+    n: "05",
+    t: "insert",
+    d: "Wrap the entire run in a single Postgres transaction. Parameterized inserts in topological order. Any failure rolls back the whole run; your database is never left half-seeded.",
+  },
 ];
 
 function How() {
@@ -341,10 +355,7 @@ function Guarantees() {
 
       <ul className="mt-8 max-w-[860px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
         {GUARANTEES.map((g) => (
-          <li
-            key={g.k}
-            className="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[180px_1fr]"
-          >
+          <li key={g.k} className="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[180px_1fr]">
             <div>
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--signal)]">
                 guarantee
@@ -372,11 +383,26 @@ function Guarantees() {
  * right one. Each row pairs a non-goal with the better tool for that job.
  */
 const ANTI = [
-  { not: "Production data anonymization", instead: "Use pgAnonymizer or Tonic.ai. We generate fresh data; we don't redact yours." },
-  { not: "Load-testing volume (10M+ rows)", instead: "Use pgbench or a faker pipeline. LLM calls cost too much at that scale." },
-  { not: "A graphical schema editor", instead: "Your migrations are the source of truth. We read pg_catalog, we don't replace it." },
-  { not: "ML model training datasets", instead: "Use real, licensed data. Synthetic rows are a demo aid, not a training corpus." },
-  { not: "Cross-database support (MySQL, Mongo)", instead: "Postgres-only on purpose. We use pg_catalog features that don't translate." },
+  {
+    not: "Production data anonymization",
+    instead: "Use pgAnonymizer or Tonic.ai. We generate fresh data; we don't redact yours.",
+  },
+  {
+    not: "Load-testing volume (10M+ rows)",
+    instead: "Use pgbench or a faker pipeline. LLM calls cost too much at that scale.",
+  },
+  {
+    not: "A graphical schema editor",
+    instead: "Your migrations are the source of truth. We read pg_catalog, we don't replace it.",
+  },
+  {
+    not: "ML model training datasets",
+    instead: "Use real, licensed data. Synthetic rows are a demo aid, not a training corpus.",
+  },
+  {
+    not: "Cross-database support (MySQL, Mongo)",
+    instead: "Postgres-only on purpose. We use pg_catalog features that don't translate.",
+  },
 ];
 
 function AntiFeatures() {
@@ -478,8 +504,8 @@ function SampleOutput() {
     >
       <Prose>
         <p>
-          Below: one org, its subscription, and a user with a workplace email inside the same
-          org. FK values line up. Enum-shaped columns (plan, role, status) pick from plausible
+          Below: one org, its subscription, and a user with a workplace email inside the same org.
+          FK values line up. Enum-shaped columns (plan, role, status) pick from plausible
           vocabularies. Timestamps cluster in the last 18 months, not uniformly across all time.
         </p>
       </Prose>
@@ -490,9 +516,7 @@ function SampleOutput() {
             key={row.table}
             className="border-t-2 border-[var(--ink)] pt-3 font-mono text-[12px]"
           >
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
-              table
-            </div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">table</div>
             <div className="mt-1 text-[13px] font-medium text-[var(--ink)]">{row.table}</div>
             <dl className="mt-4 space-y-2">
               {row.cols.map((c) => (
@@ -508,10 +532,7 @@ function SampleOutput() {
 
       {/* Inline proof-stage CTA. Visitors who read the sample rows have
        *  signaled interest in realism—point them at the rest of the profiles. */}
-      <Link
-        to="/profiles"
-        className="link-underline mt-10 inline-flex font-mono text-[13px]"
-      >
+      <Link to="/profiles" className="link-underline mt-10 inline-flex font-mono text-[13px]">
         see all three reference profiles →
       </Link>
     </Section>
@@ -520,12 +541,24 @@ function SampleOutput() {
 
 /* ------------------ §06 Continue reading ------------------ */
 
-
-const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string; desc: string }[] = [
-  { to: "/profiles", label: "Reference profiles", desc: "Three prompt hints: saas, ecommerce, b2b." },
-  { to: "/pricing", label: "Pricing", desc: "Free, Pro, Team. Bring-your-own LLM key on every tier." },
-  { to: "/quickstart", label: "Quickstart", desc: "Zero to a seeded database in under a minute." },
-];
+const NEXT_LINKS: { to: "/profiles" | "/pricing" | "/quickstart"; label: string; desc: string }[] =
+  [
+    {
+      to: "/profiles",
+      label: "Reference profiles",
+      desc: "Three prompt hints: saas, ecommerce, b2b.",
+    },
+    {
+      to: "/pricing",
+      label: "Pricing",
+      desc: "Free, Pro, Team. Bring-your-own LLM key on every tier.",
+    },
+    {
+      to: "/quickstart",
+      label: "Quickstart",
+      desc: "Zero to a seeded database in under a minute.",
+    },
+  ];
 
 function Next() {
   return (
@@ -570,10 +603,7 @@ function Next() {
  */
 function ClosingBand() {
   return (
-    <aside
-      aria-label="Get started"
-      className="mt-20 border-y-2 border-[var(--ink)] py-8"
-    >
+    <aside aria-label="Get started" className="mt-20 border-y-2 border-[var(--ink)] py-8">
       <div className="grid grid-cols-1 items-baseline gap-x-10 gap-y-5 md:grid-cols-[1fr_auto]">
         <p className="max-w-[52ch] font-sans text-[16px] leading-[1.55] text-[var(--ink)]">
           The free tier seeds up to 25 rows per table across 5 tables&mdash;125 rows per
@@ -581,13 +611,9 @@ function ClosingBand() {
         </p>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[13px] md:justify-end">
           <Link to="/quickstart" className="link-underline text-[var(--ink)]">
-            start with the free tier{" "}
-            <span className="text-[var(--signal)]">→</span>
+            start with the free tier <span className="text-[var(--signal)]">→</span>
           </Link>
-          <Link
-            to="/pricing"
-            className="link-underline text-[var(--mute)] hover:text-[var(--ink)]"
-          >
+          <Link to="/pricing" className="link-underline text-[var(--mute)] hover:text-[var(--ink)]">
             see pricing →
           </Link>
         </div>

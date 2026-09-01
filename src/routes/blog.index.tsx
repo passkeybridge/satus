@@ -119,8 +119,8 @@ function BlogIndexPage() {
           >
             /blog/rss.xml
           </a>
-          . Add it to any reader. There are no tracking pixels in the feed
-          and no cookies on this site.
+          . Add it to any reader. There are no tracking pixels in the feed and no cookies on this
+          site.
         </p>
       </Section>
     </PageShell>

@@ -17,11 +17,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import type { SectionMeta } from "./primitives";
-import {
-  SATUS_SPEC,
-  SATUS_VERSION_TAG,
-  SATUS_RELEASED_AT,
-} from "@/lib/version";
+import { SATUS_SPEC, SATUS_VERSION_TAG, SATUS_RELEASED_AT } from "@/lib/version";
 
 /* ------------------------------------------------------------------ *
  * Route-level navigation. Defined once, used by TopBar and LeftRail. *
@@ -183,9 +179,7 @@ export function LeftRail({
   const [active, setActive] = useState<string>(sections[0]?.id ?? "");
 
   useEffect(() => {
-    const els = sections
-      .map((s) => document.getElementById(s.id))
-      .filter(Boolean) as HTMLElement[];
+    const els = sections.map((s) => document.getElementById(s.id)).filter(Boolean) as HTMLElement[];
     if (els.length === 0) return;
 
     const io = new IntersectionObserver(
@@ -195,7 +189,7 @@ export function LeftRail({
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible[0]) setActive(visible[0].target.id);
       },
-      { rootMargin: "-20% 0px -65% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+      { rootMargin: "-20% 0px -65% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
@@ -203,7 +197,6 @@ export function LeftRail({
 
   return (
     <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-[240px] shrink-0 overflow-y-auto border-r border-[var(--hairline)] py-10 pr-6 xl:block">
-
       <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--mute)]">
         On this page
       </div>
@@ -243,9 +236,7 @@ export function LeftRail({
                 <Link
                   to={item.to}
                   className={`block px-2 py-1.5 font-mono text-[12.5px] transition-colors ${
-                    isHere
-                      ? "text-[var(--ink)]/60"
-                      : "text-[var(--mute)] hover:text-[var(--ink)]"
+                    isHere ? "text-[var(--ink)]/60" : "text-[var(--mute)] hover:text-[var(--ink)]"
                   }`}
                 >
                   {item.label}

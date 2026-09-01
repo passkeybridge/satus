@@ -38,8 +38,7 @@ export const Route = createFileRoute("/recipes")({
       { property: "og:title", content: "Recipes—satus" },
       {
         property: "og:description",
-        content:
-          "Four short, copy-paste recipes covering the most common satus integrations.",
+        content: "Four short, copy-paste recipes covering the most common satus integrations.",
       },
       { property: "og:url", content: SITE_URL + "/recipes" },
       { property: "og:type", content: "article" },
@@ -80,10 +79,9 @@ function RecipesPage() {
       >
         <Prose>
           <p>
-            Supabase preview branches ship with an empty database. Run satus
-            once after the branch is created and every PR review gets a fully
-            seeded environment. The 10,000-row safety guard is harmless here:
-            preview branches start at zero.
+            Supabase preview branches ship with an empty database. Run satus once after the branch
+            is created and every PR review gets a fully seeded environment. The 10,000-row safety
+            guard is harmless here: preview branches start at zero.
           </p>
         </Prose>
 
@@ -98,10 +96,9 @@ function RecipesPage() {
         </Terminal>
 
         <Note>
-          Each run generates fresh data—the model varies values by design. If
-          a review depends on stable fixtures, keep the branch alive instead
-          of re-seeding it, or snapshot the seeded state with{" "}
-          <code>pg_dump</code>.
+          Each run generates fresh data—the model varies values by design. If a review depends on
+          stable fixtures, keep the branch alive instead of re-seeding it, or snapshot the seeded
+          state with <code>pg_dump</code>.
         </Note>
       </Section>
 
@@ -113,8 +110,8 @@ function RecipesPage() {
       >
         <Prose>
           <p>
-            The most common shape. Plan in PR jobs (no writes, free), generate
-            on merge to <code>main</code> or against ephemeral DBs.
+            The most common shape. Plan in PR jobs (no writes, free), generate on merge to{" "}
+            <code>main</code> or against ephemeral DBs.
           </p>
         </Prose>
 
@@ -140,10 +137,9 @@ function RecipesPage() {
         </Terminal>
 
         <Note>
-          <code>satus generate --dry-run --json</code> introspects but never
-          writes and never calls the model—no LLM key needed, no spend. It
-          exits non-zero when the relational validator finds errors, so it
-          works as a PR gate for schema-breaking changes.
+          <code>satus generate --dry-run --json</code> introspects but never writes and never calls
+          the model—no LLM key needed, no spend. It exits non-zero when the relational validator
+          finds errors, so it works as a PR gate for schema-breaking changes.
         </Note>
       </Section>
 
@@ -155,11 +151,10 @@ function RecipesPage() {
       >
         <Prose>
           <p>
-            Cypress, Playwright, and Vitest E2E suites need a known-good
-            database state. The pattern: seed once with{" "}
-            <code>--truncate</code>, snapshot the result with{" "}
-            <code>pg_dump</code>, and restore that fixture between suites—
-            restores are fast and byte-identical, which generation is not.
+            Cypress, Playwright, and Vitest E2E suites need a known-good database state. The
+            pattern: seed once with <code>--truncate</code>, snapshot the result with{" "}
+            <code>pg_dump</code>, and restore that fixture between suites— restores are fast and
+            byte-identical, which generation is not.
           </p>
         </Prose>
 
@@ -173,16 +168,13 @@ function RecipesPage() {
         </Terminal>
 
         <Note>
-          <code>--truncate</code> issues{" "}
-          <code>TRUNCATE ... RESTART IDENTITY</code> on the run&rsquo;s tables
-          inside the same transaction as the inserts, so sequences reset and a
-          failed run leaves the old data in place. Note the absent{" "}
-          <code>CASCADE</code>: if a table outside the run set has a foreign key
-          into one inside it, satus stops with an error rather than emptying a
-          table you never asked it to seed. Bring that table into the run set or
-          truncate it yourself. Wire this into Cypress&rsquo;s{" "}
-          <code>before(...)</code> hook or Playwright&rsquo;s{" "}
-          <code>globalSetup</code>.
+          <code>--truncate</code> issues <code>TRUNCATE ... RESTART IDENTITY</code> on the
+          run&rsquo;s tables inside the same transaction as the inserts, so sequences reset and a
+          failed run leaves the old data in place. Note the absent <code>CASCADE</code>: if a table
+          outside the run set has a foreign key into one inside it, satus stops with an error rather
+          than emptying a table you never asked it to seed. Bring that table into the run set or
+          truncate it yourself. Wire this into Cypress&rsquo;s <code>before(...)</code> hook or
+          Playwright&rsquo;s <code>globalSetup</code>.
         </Note>
       </Section>
 
@@ -194,9 +186,9 @@ function RecipesPage() {
       >
         <Prose>
           <p>
-            Neon's copy-on-write branches make per-developer or per-PR databases
-            cheap. Combine that with satus and every engineer gets their own
-            seeded database for the cost of the branch metadata.
+            Neon's copy-on-write branches make per-developer or per-PR databases cheap. Combine that
+            with satus and every engineer gets their own seeded database for the cost of the branch
+            metadata.
           </p>
         </Prose>
 
@@ -210,8 +202,8 @@ function RecipesPage() {
         </Terminal>
 
         <Note>
-          Tear the branch down on PR close. Neon charges per active branch—a
-          stale fleet of seeded branches will surprise the bill.
+          Tear the branch down on PR close. Neon charges per active branch—a stale fleet of seeded
+          branches will surprise the bill.
         </Note>
       </Section>
 

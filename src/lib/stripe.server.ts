@@ -21,9 +21,7 @@ const getEnv = (key: string): string => {
 export type StripeEnv = "sandbox" | "live";
 
 export function getStripeSecretKey(env: StripeEnv): string {
-  return env === "sandbox"
-    ? getEnv("STRIPE_SANDBOX_SECRET_KEY")
-    : getEnv("STRIPE_LIVE_SECRET_KEY");
+  return env === "sandbox" ? getEnv("STRIPE_SANDBOX_SECRET_KEY") : getEnv("STRIPE_LIVE_SECRET_KEY");
 }
 
 export function createStripeClient(env: StripeEnv): Stripe {

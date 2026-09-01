@@ -122,15 +122,7 @@ interface TableResult {
   rows: Array<Record<string, unknown>>;
 }
 
-type Phase =
-  | "idle"
-  | "engine"
-  | "ddl"
-  | "introspect"
-  | "generate"
-  | "insert"
-  | "done"
-  | "error";
+type Phase = "idle" | "engine" | "ddl" | "introspect" | "generate" | "insert" | "done" | "error";
 
 const PHASE_LABEL: Record<Phase, string> = {
   idle: "",
@@ -186,7 +178,10 @@ function topoSortDemo(tables: DemoTable[]): {
       out.get(e.from)!.push(e);
       inDeg.set(e.to, (inDeg.get(e.to) ?? 0) + 1);
     }
-    const queue = [...inDeg.entries()].filter(([, d]) => d === 0).map(([n]) => n).sort();
+    const queue = [...inDeg.entries()]
+      .filter(([, d]) => d === 0)
+      .map(([n]) => n)
+      .sort();
     const order: DemoTable[] = [];
     while (queue.length > 0) {
       const n = queue.shift()!;
@@ -492,7 +487,7 @@ function DemoPage() {
               row[col] = pickRandom(parents)[fk.refColumn];
             } else {
               const v = source[col];
-              row[col] = v !== null && typeof v === "object" ? JSON.stringify(v) : v ?? null;
+              row[col] = v !== null && typeof v === "object" ? JSON.stringify(v) : (v ?? null);
             }
           }
           if (skip) {
@@ -502,9 +497,7 @@ function DemoPage() {
           const colSql = insertCols.map(quoteIdent).join(", ");
           const params = insertCols.map((_, j) => `$${j + 1}`).join(", ");
           const returning =
-            t.primaryKey.length > 0
-              ? ` returning ${t.primaryKey.map(quoteIdent).join(", ")}`
-              : "";
+            t.primaryKey.length > 0 ? ` returning ${t.primaryKey.map(quoteIdent).join(", ")}` : "";
           const sql =
             insertCols.length > 0
               ? `insert into ${quoteIdent(t.name)} (${colSql}) values (${params})${returning}`
@@ -586,10 +579,12 @@ function DemoPage() {
       >
         <Prose>
           <p>
-            This page runs <em>real Postgres</em> (compiled to WASM) in your browser. Your DDL
-            never leaves the tab — only column names and types are sent to our server for the
-            one model call, on our API bill. Capped at {ROWS_PER_TABLE} rows across{" "}
-            {MAX_TABLES} tables; the <Link to="/quickstart" className="link-underline">CLI</Link>{" "}
+            This page runs <em>real Postgres</em> (compiled to WASM) in your browser. Your DDL never
+            leaves the tab — only column names and types are sent to our server for the one model
+            call, on our API bill. Capped at {ROWS_PER_TABLE} rows across {MAX_TABLES} tables; the{" "}
+            <Link to="/quickstart" className="link-underline">
+              CLI
+            </Link>{" "}
             has no such caps and runs against your own database with your own key.
           </p>
         </Prose>
@@ -640,9 +635,9 @@ function DemoPage() {
         {results.length === 0 ? (
           <Prose>
             <p>
-              Run the demo above. You&rsquo;ll see the FK-dependency order satus derived, any
-              cycle it broke, and the rows Postgres accepted — including anything it rejected,
-              shown honestly.
+              Run the demo above. You&rsquo;ll see the FK-dependency order satus derived, any cycle
+              it broke, and the rows Postgres accepted — including anything it rejected, shown
+              honestly.
             </p>
           </Prose>
         ) : (
@@ -655,7 +650,9 @@ function DemoPage() {
                     <br />
                     cycles&nbsp;·&nbsp;
                     {runMeta.broken
-                      .map((b) => `${b.table}.${b.column} → ${b.refTable} (deferred + back-patched)`)
+                      .map(
+                        (b) => `${b.table}.${b.column} → ${b.refTable} (deferred + back-patched)`,
+                      )
                       .join(", ")}
                   </>
                 )}
@@ -722,8 +719,8 @@ function DemoPage() {
             rate-limited key, and no partitioned-table handling. The CLI introspects your live
             database, handles partitions and deferrable constraints, wraps every run in a single
             transaction with a <code>--max-cost</code> budget, and validates offline with{" "}
-            <code>--dry-run</code>. Install it with{" "}
-            <code>npm i -g @passkeybridge/satus</code> — the free tier needs no signup.
+            <code>--dry-run</code>. Install it with <code>npm i -g @passkeybridge/satus</code> — the
+            free tier needs no signup.
           </p>
         </Prose>
         <div className="mt-6">

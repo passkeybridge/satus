@@ -33,33 +33,33 @@
  * mis-reads a restored production database as empty is worse than no
  * guard, so this counts real rows.
  */
-import type { Client } from 'pg'
+import type { Client } from "pg";
 
 /** Published threshold. Changing this changes a documented contract. */
-export const ROW_LIMIT = 10_000
+export const ROW_LIMIT = 10_000;
 
 /** Re-exported for convenience; the contract lives in ../exit-codes.ts. */
-export { E_DB_NOT_EMPTY } from '../exit-codes.js'
+export { E_DB_NOT_EMPTY } from "../exit-codes.js";
 
 /**
  * Tables per counting statement. Bounds both the SQL text length and the
  * work done before the running total gets a chance to short-circuit.
  */
-const CHUNK = 100
+const CHUNK = 100;
 
 export interface GuardResult {
   /** Rows counted. Saturates at ROW_LIMIT + 1 when the guard trips. */
-  total: number
+  total: number;
   /** True when total exceeds ROW_LIMIT. */
-  exceeded: boolean
+  exceeded: boolean;
   /** Tables the guard was able to read. */
-  tablesScanned: number
+  tablesScanned: number;
   /** Tables skipped because the role lacks SELECT on them. */
-  tablesSkipped: number
+  tablesSkipped: number;
 }
 
 function quoteIdent(s: string): string {
-  return '"' + s.replace(/"/g, '""') + '"'
+  return '"' + s.replace(/"/g, '""') + '"';
 }
 
 /**
@@ -86,42 +86,39 @@ const TABLE_LIST_SQL = `
     and n.nspname not like 'pg\\_temp%'
     and n.nspname not like 'pg\\_toast\\_temp%'
   order by n.nspname, c.relname
-`
+`;
 
 export async function countUserRows(
   client: Client,
   limit: number = ROW_LIMIT,
 ): Promise<GuardResult> {
-  const res = await client.query<{ schema_name: string; table_name: string }>(TABLE_LIST_SQL)
-  const all = res.rows
+  const res = await client.query<{ schema_name: string; table_name: string }>(TABLE_LIST_SQL);
+  const all = res.rows;
 
   // Split readable from unreadable up front, in one round trip, so a
   // permission error can never masquerade as a guard failure.
-  const readable: Array<{ schema_name: string; table_name: string }> = []
-  let tablesSkipped = 0
+  const readable: Array<{ schema_name: string; table_name: string }> = [];
+  let tablesSkipped = 0;
   if (all.length > 0) {
     const privSql =
-      'select ' +
+      "select " +
       all
-        .map(
-          (t, i) =>
-            `has_table_privilege(${`$${i + 1}`}::regclass, 'SELECT') as t${i}`,
-        )
-        .join(', ')
-    const params = all.map((t) => `${quoteIdent(t.schema_name)}.${quoteIdent(t.table_name)}`)
-    const priv = await client.query(privSql, params)
-    const row = priv.rows[0] as Record<string, boolean>
+        .map((t, i) => `has_table_privilege(${`$${i + 1}`}::regclass, 'SELECT') as t${i}`)
+        .join(", ");
+    const params = all.map((t) => `${quoteIdent(t.schema_name)}.${quoteIdent(t.table_name)}`);
+    const priv = await client.query(privSql, params);
+    const row = priv.rows[0] as Record<string, boolean>;
     all.forEach((t, i) => {
-      if (row[`t${i}`]) readable.push(t)
-      else tablesSkipped += 1
-    })
+      if (row[`t${i}`]) readable.push(t);
+      else tablesSkipped += 1;
+    });
   }
 
-  let total = 0
-  let tablesScanned = 0
+  let total = 0;
+  let tablesScanned = 0;
 
   for (let i = 0; i < readable.length; i += CHUNK) {
-    const chunk = readable.slice(i, i + CHUNK)
+    const chunk = readable.slice(i, i + CHUNK);
     // Each table contributes at most limit+1, so one chunk can never scan
     // more than CHUNK * (limit + 1) rows regardless of table size.
     const parts = chunk.map(
@@ -129,18 +126,18 @@ export async function countUserRows(
         `(select count(*) from (select 1 from ${quoteIdent(t.schema_name)}.${quoteIdent(
           t.table_name,
         )} limit ${limit + 1}) s)`,
-    )
-    const sql = `select (${parts.join(' + ')})::bigint as n`
-    const out = await client.query<{ n: string }>(sql)
-    total += Number(out.rows[0]?.n ?? 0)
-    tablesScanned += chunk.length
+    );
+    const sql = `select (${parts.join(" + ")})::bigint as n`;
+    const out = await client.query<{ n: string }>(sql);
+    total += Number(out.rows[0]?.n ?? 0);
+    tablesScanned += chunk.length;
     // Short-circuit: the answer cannot change back once we are over.
     if (total > limit) {
-      return { total, exceeded: true, tablesScanned, tablesSkipped }
+      return { total, exceeded: true, tablesScanned, tablesSkipped };
     }
   }
 
-  return { total, exceeded: total > limit, tablesScanned, tablesSkipped }
+  return { total, exceeded: total > limit, tablesScanned, tablesSkipped };
 }
 
 /**
@@ -151,7 +148,7 @@ export function guardMessage(result: GuardResult, limit: number = ROW_LIMIT): st
   const skipped =
     result.tablesSkipped > 0
       ? ` (${result.tablesSkipped} table(s) skipped — no SELECT privilege)`
-      : ''
+      : "";
   return (
     `Refusing to run: this database already holds more than ${limit.toLocaleString()} rows ` +
     `across ${result.tablesScanned} user table(s)${skipped}.\n` +
@@ -159,5 +156,5 @@ export function guardMessage(result: GuardResult, limit: number = ROW_LIMIT): st
     `  to seed. Check DATABASE_URL.\n` +
     `  If it is the right database — a staging environment with real fixtures, say — re-run\n` +
     `  with --force.`
-  )
+  );
 }

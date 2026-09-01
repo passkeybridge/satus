@@ -37,10 +37,7 @@ const BLOG_DIR = join(ROOT, "src/content/blog");
 /* Mirrors FrontmatterSchema in src/lib/blog.ts. Keep in sync. */
 const RULES = {
   slug: (v) =>
-    typeof v === "string" &&
-    v.length >= 1 &&
-    v.length <= 80 &&
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v)
+    typeof v === "string" && v.length >= 1 && v.length <= 80 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v)
       ? null
       : "slug must be kebab-case, 1-80 chars",
   title: (v) =>
@@ -52,9 +49,7 @@ const RULES = {
       ? null
       : `description must be 20-200 chars (got ${typeof v === "string" ? v.length : typeof v})`,
   date: (v) =>
-    typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)
-      ? null
-      : "date must be ISO YYYY-MM-DD",
+    typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? null : "date must be ISO YYYY-MM-DD",
   /* Optional. Absent means publish immediately, so undefined passes. */
   publishAt: (v) => {
     if (v === undefined) return null;
@@ -131,17 +126,15 @@ for (const file of files) {
     seenSlugs.set(fm.slug, file);
   }
   if (listMode) {
-    const when = fm.publishAt
-      ? `embargoed until ${fm.publishAt}`
-      : "live on deploy";
-    console.log(
-      `  ok  ${file}  desc=${(fm.description ?? "").length}  slug=${fm.slug}  ${when}`,
-    );
+    const when = fm.publishAt ? `embargoed until ${fm.publishAt}` : "live on deploy";
+    console.log(`  ok  ${file}  desc=${(fm.description ?? "").length}  slug=${fm.slug}  ${when}`);
   }
 }
 
 if (failures.length > 0) {
-  console.error(`\n✗ blog frontmatter invalid — refusing to build (${failures.length} problem(s)):\n`);
+  console.error(
+    `\n✗ blog frontmatter invalid — refusing to build (${failures.length} problem(s)):\n`,
+  );
   for (const f of failures) console.error(`    ${f}`);
   console.error(
     "\n  These rules are enforced at runtime by src/lib/blog.ts. Shipping a post\n" +

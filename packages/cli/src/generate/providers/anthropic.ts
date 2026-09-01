@@ -29,7 +29,7 @@
  * is converted to a USD estimate with a small built-in price table. The
  * estimate drives the `--max-cost` guardrail; it is not accounting.
  */
-import type { Provider, ProviderRequest, ProviderResponse } from './types.js'
+import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
 
 /**
  * Anthropic's official SDK convention for ANTHROPIC_BASE_URL excludes the
@@ -39,25 +39,25 @@ import type { Provider, ProviderRequest, ProviderResponse } from './types.js'
  * `https://api.anthropic.com` produced an unhelpful empty-body 404.
  */
 function normalizeBase(raw: string | undefined): string {
-  if (!raw) return 'https://api.anthropic.com/v1'
-  const trimmed = raw.replace(/\/+$/, '')
-  return /\/v\d+$/.test(trimmed) ? trimmed : `${trimmed}/v1`
+  if (!raw) return "https://api.anthropic.com/v1";
+  const trimmed = raw.replace(/\/+$/, "");
+  return /\/v\d+$/.test(trimmed) ? trimmed : `${trimmed}/v1`;
 }
 
-const DEFAULT_BASE = normalizeBase(process.env.ANTHROPIC_BASE_URL)
+const DEFAULT_BASE = normalizeBase(process.env.ANTHROPIC_BASE_URL);
 
 /**
  * Pinned API version. This is the long-stable Messages API surface that
  * has carried Claude 3, 3.5, 4, and 4.5 without breaking changes. Pin
  * rather than float so an unannounced default flip can't break us.
  */
-const ANTHROPIC_VERSION = '2023-06-01'
+const ANTHROPIC_VERSION = "2023-06-01";
 
 /**
  * The tool name the model is forced to call. Stable on our side; only
  * appears in the request body, never in user-facing output.
  */
-const TOOL_NAME = 'emit_rows'
+const TOOL_NAME = "emit_rows";
 
 /**
  * USD per million tokens, keyed by model-id prefix. Last verified
@@ -72,18 +72,18 @@ const TOOL_NAME = 'emit_rows'
  * dated variant such as `claude-haiku-4-5-20251001` resolves to its family.
  */
 const PRICING: Record<string, { input: number; output: number }> = {
-  'claude-fable-5': { input: 10, output: 50 },
-  'claude-opus-5': { input: 5, output: 25 },
-  'claude-opus-4-8': { input: 5, output: 25 },
-  'claude-opus-4-7': { input: 5, output: 25 },
-  'claude-opus-4-6': { input: 5, output: 25 },
+  "claude-fable-5": { input: 10, output: 50 },
+  "claude-opus-5": { input: 5, output: 25 },
+  "claude-opus-4-8": { input: 5, output: 25 },
+  "claude-opus-4-7": { input: 5, output: 25 },
+  "claude-opus-4-6": { input: 5, output: 25 },
   // Sonnet 5 carries introductory pricing of $2/$10 through 2026-08-31.
   // We quote the standard rate: over-estimating during the promo is the
   // safe direction for a budget guardrail, and it needs no expiry logic.
-  'claude-sonnet-5': { input: 3, output: 15 },
-  'claude-sonnet-4-6': { input: 3, output: 15 },
-  'claude-haiku-4-5': { input: 1, output: 5 },
-}
+  "claude-sonnet-5": { input: 3, output: 15 },
+  "claude-sonnet-4-6": { input: 3, output: 15 },
+  "claude-haiku-4-5": { input: 1, output: 5 },
+};
 
 /**
  * Applied to any model id not matched above — an id newer than this
@@ -92,7 +92,7 @@ const PRICING: Record<string, { input: number; output: number }> = {
  * cause `--max-cost` to abort early, never to overshoot silently. This is
  * a deliberate upper bound, not a claim about any particular model.
  */
-const FALLBACK_PRICE = { input: 10, output: 50 }
+const FALLBACK_PRICE = { input: 10, output: 50 };
 
 /**
  * Longest matching prefix wins, so adding a more specific id later (say
@@ -100,37 +100,37 @@ const FALLBACK_PRICE = { input: 10, output: 50 }
  * table. Object key order is not relied upon.
  */
 function priceFor(model: string) {
-  let best: { input: number; output: number } | undefined
-  let bestLen = -1
+  let best: { input: number; output: number } | undefined;
+  let bestLen = -1;
   for (const [key, price] of Object.entries(PRICING)) {
     if (model.startsWith(key) && key.length > bestLen) {
-      best = price
-      bestLen = key.length
+      best = price;
+      bestLen = key.length;
     }
   }
-  return best ?? FALLBACK_PRICE
+  return best ?? FALLBACK_PRICE;
 }
 
 export interface AnthropicProviderOptions {
-  apiKey: string
-  model: string
+  apiKey: string;
+  model: string;
 }
 
 interface AnthropicMessagesResponse {
   content: Array<
-    | { type: 'tool_use'; name: string; input: unknown }
-    | { type: 'text'; text: string }
+    | { type: "tool_use"; name: string; input: unknown }
+    | { type: "text"; text: string }
     | { type: string; [k: string]: unknown }
-  >
-  usage?: { input_tokens?: number; output_tokens?: number }
-  stop_reason?: string
+  >;
+  usage?: { input_tokens?: number; output_tokens?: number };
+  stop_reason?: string;
 }
 
 export function createAnthropicProvider(opts: AnthropicProviderOptions): Provider {
-  const { apiKey, model } = opts
-  const price = priceFor(model)
+  const { apiKey, model } = opts;
+  const price = priceFor(model);
   return {
-    id: 'anthropic',
+    id: "anthropic",
     model,
     rates: { inputPerMTok: price.input, outputPerMTok: price.output },
     async generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>> {
@@ -141,53 +141,52 @@ export function createAnthropicProvider(opts: AnthropicProviderOptions): Provide
         // batch size up and overruns, the API returns a clear error.
         max_tokens: 4096,
         system: req.system,
-        messages: [{ role: 'user', content: req.user }],
+        messages: [{ role: "user", content: req.user }],
         tools: [
           {
             name: TOOL_NAME,
-            description: 'Emit the requested structured rows.',
+            description: "Emit the requested structured rows.",
             input_schema: req.jsonSchema.schema,
           },
         ],
-        tool_choice: { type: 'tool', name: TOOL_NAME },
-      }
+        tool_choice: { type: "tool", name: TOOL_NAME },
+      };
 
       const res = await fetch(`${DEFAULT_BASE}/messages`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': ANTHROPIC_VERSION,
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": ANTHROPIC_VERSION,
         },
         body: JSON.stringify(body),
-      })
+      });
 
       if (!res.ok) {
-        const text = await res.text().catch(() => '')
-        throw new Error(`Anthropic ${res.status}: ${text.slice(0, 500)}`)
+        const text = await res.text().catch(() => "");
+        throw new Error(`Anthropic ${res.status}: ${text.slice(0, 500)}`);
       }
 
-      const payload = (await res.json()) as AnthropicMessagesResponse
+      const payload = (await res.json()) as AnthropicMessagesResponse;
 
       const toolUse = payload.content?.find(
-        (b): b is { type: 'tool_use'; name: string; input: unknown } =>
-          b.type === 'tool_use' && b.name === TOOL_NAME,
-      )
+        (b): b is { type: "tool_use"; name: string; input: unknown } =>
+          b.type === "tool_use" && b.name === TOOL_NAME,
+      );
       if (!toolUse) {
         throw new Error(
-          `Anthropic returned no '${TOOL_NAME}' tool_use block (stop_reason=${payload.stop_reason ?? 'unknown'}).`,
-        )
+          `Anthropic returned no '${TOOL_NAME}' tool_use block (stop_reason=${payload.stop_reason ?? "unknown"}).`,
+        );
       }
 
-      const parsed = toolUse.input as T
+      const parsed = toolUse.input as T;
 
-      const inputTokens = payload.usage?.input_tokens ?? 0
-      const outputTokens = payload.usage?.output_tokens ?? 0
+      const inputTokens = payload.usage?.input_tokens ?? 0;
+      const outputTokens = payload.usage?.output_tokens ?? 0;
       const usd =
-        (inputTokens / 1_000_000) * price.input +
-        (outputTokens / 1_000_000) * price.output
+        (inputTokens / 1_000_000) * price.input + (outputTokens / 1_000_000) * price.output;
 
-      return { data: parsed, usage: { inputTokens, outputTokens, usd } }
+      return { data: parsed, usage: { inputTokens, outputTokens, usd } };
     },
-  }
+  };
 }

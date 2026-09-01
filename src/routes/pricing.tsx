@@ -56,16 +56,19 @@ const TIERS = [
 
 type Cell = string | { mark: true } | null;
 const FEATURES: { label: string; row: [Cell, Cell, Cell] }[] = [
-  { label: "CLI core",                       row: [{ mark: true }, { mark: true }, { mark: true }] },
-  { label: "Bring-your-own LLM key",         row: [{ mark: true }, { mark: true }, { mark: true }] },
-  { label: "Built-in profiles (saas/ecommerce/b2b)", row: [{ mark: true }, { mark: true }, { mark: true }] },
-  { label: "Row & table caps lifted",        row: [null,            { mark: true }, { mark: true }] },
-  { label: "License, 24-hour offline grace", row: [null,            { mark: true }, { mark: true }] },
-  { label: "Priority issue triage",          row: [null,            { mark: true }, { mark: true }] },
-  { label: "Shared team profiles (planned)", row: [null,            null,            { mark: true }] },
-  { label: "CI mode (planned)",              row: [null,            null,            { mark: true }] },
-  { label: "Audit log (planned)",            row: [null,            null,            { mark: true }] },
-  { label: "Invoiced billing",               row: [null,            null,            { mark: true }] },
+  { label: "CLI core", row: [{ mark: true }, { mark: true }, { mark: true }] },
+  { label: "Bring-your-own LLM key", row: [{ mark: true }, { mark: true }, { mark: true }] },
+  {
+    label: "Built-in profiles (saas/ecommerce/b2b)",
+    row: [{ mark: true }, { mark: true }, { mark: true }],
+  },
+  { label: "Row & table caps lifted", row: [null, { mark: true }, { mark: true }] },
+  { label: "License, 24-hour offline grace", row: [null, { mark: true }, { mark: true }] },
+  { label: "Priority issue triage", row: [null, { mark: true }, { mark: true }] },
+  { label: "Shared team profiles (planned)", row: [null, null, { mark: true }] },
+  { label: "CI mode (planned)", row: [null, null, { mark: true }] },
+  { label: "Audit log (planned)", row: [null, null, { mark: true }] },
+  { label: "Invoiced billing", row: [null, null, { mark: true }] },
 ];
 
 /* FAQ entries kept as data so the rendered <dl> and the JSON-LD payload
@@ -144,21 +147,14 @@ export const Route = createFileRoute("/pricing")({
 function PricingPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/pricing">
-      <Section
-        id="tiers"
-        n="04"
-        label="Tiers"
-        title={<>honest, narrow, easy to leave.</>}
-      >
+      <Section id="tiers" n="04" label="Tiers" title={<>honest, narrow, easy to leave.</>}>
         <Prose>
           <p>Bring-your-own LLM key on every tier. We don&rsquo;t resell tokens.</p>
         </Prose>
 
         {/* Horizontal scroll on mobile is intentional—the table is denser
          *  than any 4-column layout we could honestly stack. */}
-        <p className="mt-6 font-mono text-[11px] text-[var(--mute)] md:hidden">
-          scroll table →
-        </p>
+        <p className="mt-6 font-mono text-[11px] text-[var(--mute)] md:hidden">scroll table →</p>
         <div className="mt-3 max-w-[860px] overflow-x-auto md:mt-8">
           <table className="w-full min-w-[640px] border-collapse font-mono text-[13px]">
             <thead>
@@ -247,29 +243,18 @@ function PricingPage() {
         </div>
       </Section>
 
-      <Section
-        id="waitlist"
-        n="05"
-        label="Waitlist"
-        title={<>two fields, no marketing list.</>}
-      >
+      <Section id="waitlist" n="05" label="Waitlist" title={<>two fields, no marketing list.</>}>
         <Prose>
           <p>
-            Pro is live, billable on the card above. Team opens when ten
-            organizations have asked for it. Drop your email, pick the tier,
-            and that&rsquo;s the entire ceremony. One email when your tier
-            ships; nothing else.
+            Pro is live, billable on the card above. Team opens when ten organizations have asked
+            for it. Drop your email, pick the tier, and that&rsquo;s the entire ceremony. One email
+            when your tier ships; nothing else.
           </p>
         </Prose>
         <WaitlistForm />
       </Section>
 
-      <Section
-        id="faq"
-        n="06"
-        label="FAQ"
-        title={<>questions we get before the receipt.</>}
-      >
+      <Section id="faq" n="06" label="FAQ" title={<>questions we get before the receipt.</>}>
         {/* Definition list maps cleanly onto the JSON-LD FAQPage above. */}
         <dl className="mt-2 max-w-[760px] divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
           {FAQ.map(({ q, a }) => (

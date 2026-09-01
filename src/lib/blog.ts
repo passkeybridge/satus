@@ -142,10 +142,7 @@ function parseScalar(value: string): unknown {
 }
 
 function stripQuotes(s: string): string {
-  if (
-    (s.startsWith('"') && s.endsWith('"')) ||
-    (s.startsWith("'") && s.endsWith("'"))
-  ) {
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     return s.slice(1, -1);
   }
   return s;
@@ -215,9 +212,7 @@ const POSTS: Post[] = Object.entries(modules)
     try {
       return [parsePost(path, raw)];
     } catch (err) {
-      console.error(
-        `[blog] skipping ${path}: ${err instanceof Error ? err.message : String(err)}`,
-      );
+      console.error(`[blog] skipping ${path}: ${err instanceof Error ? err.message : String(err)}`);
       return [];
     }
   })
@@ -241,9 +236,7 @@ const POSTS: Post[] = Object.entries(modules)
  * the bug.
  */
 function publicPosts(now: number = Date.now()): Post[] {
-  return POSTS.filter(
-    (p) => !p.draft && (p.publishAtMs === null || p.publishAtMs <= now),
-  );
+  return POSTS.filter((p) => !p.draft && (p.publishAtMs === null || p.publishAtMs <= now));
 }
 
 /** All published posts, newest first. */

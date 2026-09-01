@@ -13,7 +13,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { track } from "@vercel/analytics";
 import { StripeEmbeddedCheckout } from "@/components/site/StripeEmbeddedCheckout";
 
-
 const SITE_URL = "https://satus.sh";
 
 // Display catalog mirrors the server whitelist. Kept here purely for the
@@ -71,10 +70,9 @@ function CheckoutPage() {
           </h1>
           <hr className="mt-6" />
           <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
-            The Team tier ($49 / seat / month) isn&rsquo;t purchasable yet —
-            it launches when ten organizations have asked for it. Join the
-            waitlist and you&rsquo;ll get one email when it ships. Pro is
-            live today.
+            The Team tier ($49 / seat / month) isn&rsquo;t purchasable yet — it launches when ten
+            organizations have asked for it. Join the waitlist and you&rsquo;ll get one email when
+            it ships. Pro is live today.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
@@ -112,9 +110,8 @@ function CheckoutPage() {
           </h1>
           <hr className="mt-6" />
           <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
-            Checkout opens from the pricing table. Pick the tier and cadence
-            you want there and we&rsquo;ll bring you back here with the right
-            line item.
+            Checkout opens from the pricing table. Pick the tier and cadence you want there and
+            we&rsquo;ll bring you back here with the right line item.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
@@ -170,16 +167,12 @@ function CheckoutPage() {
         </div>
 
         <div className="mt-8">
-          <StripeEmbeddedCheckout
-            priceId={price}
-            quantity={qty}
-            returnUrl={returnUrl}
-          />
+          <StripeEmbeddedCheckout priceId={price} quantity={qty} returnUrl={returnUrl} />
         </div>
 
         <p className="mt-8 max-w-[60ch] font-mono text-[11px] text-[var(--mute)]">
-          billed by PasskeyBridge LLC. cancel any time; full refund within
-          14 days of first purchase. card data never touches our servers.
+          billed by PasskeyBridge LLC. cancel any time; full refund within 14 days of first
+          purchase. card data never touches our servers.
         </p>
       </div>
     </main>

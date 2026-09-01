@@ -44,7 +44,7 @@ const PROFILES: Profile[] = [
     tagline:
       "Bias generated values toward a B2B SaaS product: workplace emails, startup-style company names, plan-tier enums, and dates clustered in the last 18 months.",
     hints: [
-      "startup and company names mixing single-word brands with \"X-ly\" and \"Get-X\" patterns",
+      'startup and company names mixing single-word brands with "X-ly" and "Get-X" patterns',
       "workplace email addresses (alice@acme.com), not gmail / hotmail / personal domains",
       "plausible SaaS job titles (Engineer, PM, Designer, Head of Ops)",
       "billing-plan and feature-flag enums when the column name suggests them (free, pro, team)",
@@ -72,7 +72,7 @@ const PROFILES: Profile[] = [
       "order statuses biased toward fulfilled, with a long tail of pending and refunded",
     ],
     sample: [
-      { col: "products.title", value: "Cedar Plank Cutting Board, 18\"" },
+      { col: "products.title", value: 'Cedar Plank Cutting Board, 18"' },
       { col: "products.price", value: "$34.99" },
       { col: "customers.country", value: "DE" },
       { col: "orders.status", value: "fulfilled" },
@@ -140,13 +140,7 @@ function ProfilesPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/profiles">
       {PROFILES.map((p) => (
-        <Section
-          key={p.id}
-          id={p.id}
-          n={p.n}
-          label={p.label}
-          title={<>--profile {p.name}</>}
-        >
+        <Section key={p.id} id={p.id} n={p.n} label={p.label} title={<>--profile {p.name}</>}>
           <Prose>
             <p>{p.tagline}</p>
           </Prose>
@@ -161,7 +155,10 @@ function ProfilesPage() {
               <ul className="mt-3 space-y-2 text-[13.5px] leading-[1.55] text-[var(--ink)]/85">
                 {p.hints.map((h) => (
                   <li key={h} className="flex gap-3">
-                    <span aria-hidden className="mt-[7px] inline-block h-px w-3 shrink-0 bg-[var(--signal)]" />
+                    <span
+                      aria-hidden
+                      className="mt-[7px] inline-block h-px w-3 shrink-0 bg-[var(--signal)]"
+                    />
                     <span>{h}</span>
                   </li>
                 ))}
@@ -198,32 +195,26 @@ function ProfilesPage() {
 
           <div className="mt-8 max-w-[860px]">
             <p className="text-[13px] leading-[1.6] text-[var(--mute)]">
-              Profiles bias value choice; they don&rsquo;t define your schema. The table set,
-              column types, and FK graph come from introspecting your own database. Rows are
-              validated against your Postgres constraints before they land.
+              Profiles bias value choice; they don&rsquo;t define your schema. The table set, column
+              types, and FK graph come from introspecting your own database. Rows are validated
+              against your Postgres constraints before they land.
             </p>
           </div>
         </Section>
       ))}
 
-      <Section
-        id="byo"
-        n="04"
-        label="Bring your own"
-        title={<>no profile? no problem.</>}
-      >
+      <Section id="byo" n="04" label="Bring your own" title={<>no profile? no problem.</>}>
         <Prose>
           <p>
-            Omit <code>--profile</code> and the CLI runs with a neutral system prompt. Values
-            still respect column types, nullability, unique constraints, check constraints, and
-            foreign keys—you just don&rsquo;t get the domain-flavored biases. Useful for
-            internal schemas that don&rsquo;t map cleanly onto SaaS, e-commerce, or B2B.
+            Omit <code>--profile</code> and the CLI runs with a neutral system prompt. Values still
+            respect column types, nullability, unique constraints, check constraints, and foreign
+            keys—you just don&rsquo;t get the domain-flavored biases. Useful for internal schemas
+            that don&rsquo;t map cleanly onto SaaS, e-commerce, or B2B.
           </p>
           <p>
-            More profiles (legal, real estate, logistics, healthcare) are on the roadmap and
-            will be pinned by user demand. Open an issue with your{" "}
-            <code>CREATE TABLE</code> statements and a short description of the domain and
-            we&rsquo;ll triage.
+            More profiles (legal, real estate, logistics, healthcare) are on the roadmap and will be
+            pinned by user demand. Open an issue with your <code>CREATE TABLE</code> statements and
+            a short description of the domain and we&rsquo;ll triage.
           </p>
         </Prose>
       </Section>
