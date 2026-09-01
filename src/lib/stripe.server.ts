@@ -38,11 +38,16 @@ export function createStripeClient(env: StripeEnv): Stripe {
 /**
  * Verify a Stripe webhook signature (HMAC-SHA256 over `t.body`).
  * SDK-free so it doesn't need the gateway proxy.
+ *
+ * The return type is an assertion, not a validation: we parse the body and
+ * declare it a `Stripe.Event`. What earns the assertion is the HMAC check
+ * immediately above the parse—a body that reaches the `return` was signed
+ * with our endpoint secret, so its shape is whatever Stripe sent. Callers
+ * still get real narrowing, because `Stripe.Event` is a union discriminated
+ * on `type`. Note that Stripe renders `data` at the API version pinned to
+ * the *endpoint*, which need not be the version this client is pinned to.
  */
-export async function verifyWebhook(
-  req: Request,
-  env: StripeEnv,
-): Promise<{ type: string; data: { object: any } }> {
+export async function verifyWebhook(req: Request, env: StripeEnv): Promise<Stripe.Event> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
   const secret =

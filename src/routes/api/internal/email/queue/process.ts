@@ -1,6 +1,35 @@
 import { sendResendEmail } from '@/lib/resend.server'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
+
+/**
+ * The Supabase client this route uses, on the default (untyped) schema. It
+ * is deliberately not `SupabaseClient<Database>`: the queue lives in pgmq and
+ * is reached through `read_email_batch` / `delete_email_message` RPCs that
+ * the generated schema types do not describe.
+ *
+ * The wrapper exists so `EmailQueueClient` can be read off a non-generic
+ * function. `ReturnType<typeof createClient>` would resolve the type
+ * parameters to their constraints rather than their defaults, which is a
+ * client that accepts nothing.
+ */
+function createEmailQueueClient(url: string, serviceRoleKey: string) {
+  return createClient(url, serviceRoleKey)
+}
+
+type EmailQueueClient = ReturnType<typeof createEmailQueueClient>
+
+/**
+ * One pgmq row as `read_email_batch` returns it. `message` is the JSON
+ * payload the send route enqueued, so its fields are checked at the point of
+ * use rather than declared here.
+ */
+type QueuedEmail = {
+  msg_id: number
+  read_ct?: number | null
+  enqueued_at?: string | null
+  message: Record<string, unknown>
+}
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -36,7 +65,7 @@ function getRetryAfterSeconds(error: unknown): number {
 }
 
 async function moveToDlq(
-  supabase: SupabaseClient<any, any>,
+  supabase: EmailQueueClient,
   queue: string,
   msg: { msg_id: number; message: Record<string, unknown> },
   reason: string
@@ -88,7 +117,7 @@ export const Route = createFileRoute("/api/internal/email/queue/process")({
           return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        const supabase: SupabaseClient<any, any> = createClient(supabaseUrl, supabaseServiceKey)
+        const supabase = createEmailQueueClient(supabaseUrl, supabaseServiceKey)
 
         // 1. Check rate-limit cooldown and read queue config
         const { data: state } = await supabase
@@ -128,7 +157,7 @@ export const Route = createFileRoute("/api/internal/email/queue/process")({
           const messageIds = Array.from(
             new Set(
               messages
-                .map((msg: any) =>
+                .map((msg: QueuedEmail) =>
                   msg?.message?.message_id && typeof msg.message.message_id === 'string'
                     ? msg.message.message_id
                     : null

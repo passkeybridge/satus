@@ -20,6 +20,7 @@
  * revoked_at and skip the email if already revoked.
  */
 
+import type Stripe from 'stripe'
 import { createFileRoute } from '@tanstack/react-router'
 import {
   createStripeClient,
@@ -28,6 +29,36 @@ import {
 } from '@/lib/stripe.server'
 import { supabaseAdmin } from '@/integrations/supabase/client.server'
 import { notifyWebhookFailure } from '@/lib/webhook-alerts.server'
+
+/**
+ * Two shapes, one handler.
+ *
+ * API version `2025-03-31.basil` moved `current_period_end` off the
+ * subscription and onto each subscription item, moved `Invoice.subscription`
+ * under `parent.subscription_details`, and dropped `Charge.invoice`
+ * altogether (stripe-node 18.0.0 release notes). Our client is pinned to
+ * `2026-03-25.dahlia`, so anything we *fetch* has the new shape—but a
+ * webhook endpoint registered without an explicit `api_version` renders
+ * events at the account's default version, so an older payload can still
+ * arrive here.
+ *
+ * These aliases keep the legacy readings type-checked and labelled instead
+ * of hiding them behind `any`, which is what they were doing before.
+ */
+type InvoicePayload = Stripe.Invoice & {
+  /** Pre-basil location of `parent.subscription_details.subscription`. */
+  subscription?: string | Stripe.Subscription | null
+}
+
+type SubscriptionPayload = Stripe.Subscription & {
+  /** Pre-basil location of the field now on `items.data[].current_period_end`. */
+  current_period_end?: number | null
+}
+
+type ChargePayload = Stripe.Charge & {
+  /** Removed from `Charge` in basil; still present on pre-basil payloads. */
+  invoice?: string | InvoicePayload | null
+}
 
 const PLAN_LABELS: Record<string, string> = {
   satus_pro_monthly: 'Pro · monthly',
@@ -60,6 +91,19 @@ function isoDateOnly(ts: number | string | null | undefined): string | null {
 /** Deep link that opens a fresh Stripe Billing Portal session for this key. */
 function manageUrl(licenseKey: string): string {
   return `https://satus.sh/api/public/billing/portal?key=${encodeURIComponent(licenseKey)}`
+}
+
+/** Item first (basil and later), then the legacy top-level field. */
+function periodEndOf(sub: SubscriptionPayload): number | null {
+  return (
+    sub.items?.data?.[0]?.current_period_end ?? sub.current_period_end ?? null
+  )
+}
+
+/** Lookup key when the price has one, else the price id. */
+function planOf(sub: Stripe.Subscription): string {
+  const price = sub.items?.data?.[0]?.price
+  return price?.lookup_key ?? price?.id ?? 'unknown'
 }
 
 
@@ -97,14 +141,20 @@ async function enqueueTransactionalEmail(args: {
   }
 }
 
-async function handleCheckoutCompleted(session: any, env: StripeEnv) {
+async function handleCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+  env: StripeEnv,
+) {
   if (session.mode !== 'subscription') return
 
   // Past this point the customer has paid. Every missing precondition and
   // failed write throws so the POST handler returns 500 (Stripe retries
   // for ~3 days) and ops gets the alert — a silent return here is a buyer
   // with a receipt and no license, and nobody would know.
-  const subscriptionId: string | undefined = session.subscription
+  const subscriptionId: string | undefined =
+    typeof session.subscription === 'string'
+      ? session.subscription
+      : (session.subscription?.id ?? undefined)
   if (!subscriptionId) {
     throw new Error(`subscription-mode session ${session.id} has no subscription id`)
   }
@@ -125,13 +175,8 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
 
   const stripe = createStripeClient(env)
   const sub = await stripe.subscriptions.retrieve(subscriptionId)
-  const item = sub.items?.data?.[0]
-  const price = item?.price
-  const plan = (price?.lookup_key as string) ?? price?.id ?? 'unknown'
-  const periodEnd =
-    (item as any)?.current_period_end ??
-    (sub as any).current_period_end ??
-    null
+  const plan = planOf(sub)
+  const periodEnd = periodEndOf(sub)
 
   const { data: existing } = await supabaseAdmin
     .from('licenses')
@@ -181,13 +226,12 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
 }
 
 
-async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
-  const item = subscription.items?.data?.[0]
-  const plan = (item?.price?.lookup_key as string) ?? item?.price?.id ?? 'unknown'
-  const periodEnd =
-    (item as any)?.current_period_end ??
-    subscription.current_period_end ??
-    null
+async function handleSubscriptionUpdated(
+  subscription: SubscriptionPayload,
+  env: StripeEnv,
+) {
+  const plan = planOf(subscription)
+  const periodEnd = periodEndOf(subscription)
   const cancelAtPeriodEnd = subscription.cancel_at_period_end ?? false
 
   // Snapshot the existing row so we can detect the cancel_at_period_end
@@ -272,7 +316,10 @@ async function handleSubscriptionUpdated(subscription: any, env: StripeEnv) {
 }
 
 
-async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
+async function handleSubscriptionDeleted(
+  subscription: Stripe.Subscription,
+  env: StripeEnv,
+) {
   // Read email + plan + prior cancel_at_period_end BEFORE we mutate the row.
   // The prior flag tells us WHY this delete fired:
   //   - true  -> customer previously scheduled cancel; period now elapsed
@@ -336,27 +383,44 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
 
 
 /**
+ * Pull the subscription id out of an invoice, whichever shape it is in.
+ * `parent.subscription_details` is where basil and later put it; the
+ * top-level `subscription` is the pre-basil field. The retrieve path below
+ * always yields the former, since our client is pinned to dahlia.
+ */
+function subscriptionIdFromInvoice(invoice: InvoicePayload): string | null {
+  const sub =
+    invoice.parent?.subscription_details?.subscription ?? invoice.subscription
+  if (!sub) return null
+  return typeof sub === 'string' ? sub : (sub.id ?? null)
+}
+
+/**
  * Resolve the subscription id behind a refunded charge. Stripe puts it on
  * the invoice, not the charge—so we follow charge → invoice → subscription.
  * Returns null for one-time charges or any shape we can't trace back.
+ *
+ * Caveat worth knowing before trusting this: `Charge.invoice` is the only
+ * entry point we have, and basil removed it. On a post-basil payload there
+ * is no charge → invoice edge at all, so this returns null and the refund
+ * revokes nothing. The `no subscription` log line below is what that looks
+ * like from the outside.
  */
 async function subscriptionIdFromCharge(
-  charge: any,
+  charge: ChargePayload,
   env: StripeEnv,
 ): Promise<string | null> {
   const invoiceField = charge?.invoice
   if (!invoiceField) return null
   if (typeof invoiceField === 'object') {
-    const sub = invoiceField.subscription
-    return typeof sub === 'string' ? sub : sub?.id ?? null
+    return subscriptionIdFromInvoice(invoiceField)
   }
   const stripe = createStripeClient(env)
-  const invoice = await stripe.invoices.retrieve(invoiceField as string)
-  const sub = (invoice as any).subscription
-  return typeof sub === 'string' ? sub : sub?.id ?? null
+  const invoice = await stripe.invoices.retrieve(invoiceField)
+  return subscriptionIdFromInvoice(invoice)
 }
 
-async function handleChargeRefunded(charge: any, env: StripeEnv) {
+async function handleChargeRefunded(charge: ChargePayload, env: StripeEnv) {
   const subscriptionId = await subscriptionIdFromCharge(charge, env)
   if (!subscriptionId) {
     // One-time charge or untraceable; nothing to revoke. Logged so we
@@ -450,9 +514,9 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
         }
         const env: StripeEnv = rawEnv
 
-        let event: { type: string; data: { object: any } } & { id?: string }
+        let event: Stripe.Event
         try {
-          event = (await verifyWebhook(request, env)) as typeof event
+          event = await verifyWebhook(request, env)
         } catch (err) {
           // Signature failures are often probe traffic. Log only — alerting
           // on these would be a spam vector for anyone hitting the public
