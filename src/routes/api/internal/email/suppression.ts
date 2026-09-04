@@ -10,8 +10,20 @@ import { createFileRoute } from '@tanstack/react-router'
 // We subscribe to `email.bounced` and `email.complained`; any other event
 // type is acknowledged and ignored so the Resend-side subscription can be
 // broadened without breaking this endpoint.
+//
+// IMPORTANT: Resend webhooks are scoped to the ACCOUNT, not to a sending
+// domain. This Resend account carries nine verified domains across several
+// unrelated products, so this endpoint is delivered every bounce any of
+// them produces. Suppressions are enforced fail-closed in the send route —
+// a `bounce` blocks transactional mail too — so an unfiltered write here
+// means another product's cold-outreach bounce can silently block a satus
+// customer's license key. Everything below the sender check exists to make
+// sure only our own sends can suppress an address.
 
 const TIMESTAMP_TOLERANCE_SECONDS = 5 * 60
+
+/** Sends we own. Must stay in sync with FROM_DOMAIN in the send route. */
+const OUR_SENDER_SUFFIX = '@mail.satus.sh'
 
 interface ResendWebhookEvent {
   type: string
@@ -100,6 +112,22 @@ async function verifySvixSignature(request: Request, body: string, secret: strin
   return { ok: false, status: 401, error: 'Invalid signature' }
 }
 
+/**
+ * Did this event come from one of our own sends?
+ *
+ * `from` arrives either bare (`noreply@mail.satus.sh`) or with a display
+ * name (`satus <noreply@mail.satus.sh>`). Unparseable or absent means "not
+ * ours", which fails open on purpose: skipping a real suppression costs one
+ * email to a dead mailbox, while a wrong suppression costs a paying
+ * customer their license key.
+ */
+function isOurSender(from: unknown): boolean {
+  if (typeof from !== 'string') return false
+  const open = from.lastIndexOf('<')
+  const address = open === -1 ? from : from.slice(open + 1).replace(/>[^>]*$/, '')
+  return address.trim().toLowerCase().endsWith(OUR_SENDER_SUFFIX)
+}
+
 function mapEventToReason(eventType: string): 'bounce' | 'complaint' | null {
   switch (eventType) {
     case 'email.bounced':
@@ -156,6 +184,16 @@ export const Route = createFileRoute("/api/internal/email/suppression")({
         if (!reason) {
           // Not a suppression event—acknowledge so Resend doesn't retry.
           return Response.json({ success: true, ignored: event.type })
+        }
+
+        // Account-wide webhook: drop anything we did not send. Acknowledged
+        // with 200 so Resend does not retry an event that is simply not ours.
+        if (!isOurSender(event.data.from)) {
+          console.log('Suppression skipped—foreign sender', {
+            event_type: event.type,
+            from: typeof event.data.from === 'string' ? event.data.from : null,
+          })
+          return Response.json({ success: true, ignored: 'foreign_sender' })
         }
 
         const to = Array.isArray(event.data.to) ? event.data.to[0] : event.data.to
