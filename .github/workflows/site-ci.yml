@@ -1,0 +1,54 @@
+name: site-ci
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'packages/cli/**'
+      - 'mem/**'
+  pull_request:
+    paths-ignore:
+      - 'packages/cli/**'
+      - 'mem/**'
+
+# `packages/cli` has its own workflow (cli-ci.yml) and its own lockfile;
+# `mem/` is session notes with nothing to check.
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - run: bun install --frozen-lockfile
+
+      - name: typecheck
+        run: bunx tsc --noEmit -p tsconfig.json
+
+      # `npm test` existed for a while and nothing ran it. These cover
+      # verifyWebhook — the authentication boundary for license issuance —
+      # and are the reason this workflow exists.
+      - name: tests
+        run: bun run test
+
+      # blog frontmatter, docs-vs-code, and the one-h1-per-route gate.
+      # `bun run build` runs these too, but running them first means a
+      # content or heading mistake fails in seconds instead of after a
+      # full Vite build.
+      - name: gates
+        run: bun run validate
+
+      # `prettier/prettier` is switched off here and ONLY here. The repo
+      # carries ~4,000 pre-existing formatting errors because .prettierrc
+      # (semi, double quotes) disagrees with the source style almost
+      # everywhere. Leaving them on would make this workflow red from its
+      # first run and therefore worthless. Every other rule is enforced, so
+      # a real error — an `any`, an unused directive, a bad escape — still
+      # fails the build. Delete this flag the day the formatting is settled.
+      - name: lint
+        run: bunx eslint . --rule '{"prettier/prettier":"off"}'
+
+      - name: build
+        run: bun run build

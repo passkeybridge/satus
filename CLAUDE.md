@@ -5,6 +5,32 @@ session's state. Before this session ends, replace it, do not append. Move
 anything durable into mem/features/, mem/followups/ or mem/incidents/ first,
 and list what moved under Graduated this session. Keep it under 400 words.
 
+## Finish the job: merge and deploy
+
+Standing instruction from the owner, 2026-09-04. **Work is not done when it
+is on a branch. It is done when it is live.**
+
+Default: merge to `main` and let it deploy. Do not park finished work on a
+branch, and do not open a PR, waiting to be asked. `give-every-page-an-h1`
+sat green and unmerged for three days while the bug it fixed stayed in
+production — a finished branch nobody merged is indistinguishable from a bug
+nobody fixed.
+
+The one exception is to **ask**, and get a yes, before shipping. That is a
+question in chat, not a branch left sitting: say what the risk is and what
+you want to do. Silence is not an answer to wait on — if you did not ask,
+ship it.
+
+Before starting any session, run `git branch -r --no-merged origin/main`.
+Anything it lists is either shippable now or needs a question asked about it
+today.
+
+Ship on evidence, not hope. Whatever the change touches, verify it the way
+that change can actually fail — gates and tests green before the merge, and
+the real behaviour confirmed against production after the deploy. Verify
+against rendered output or a live response, never against the source you
+just edited.
+
 ## satus writes to someone else's database
 
 Everything below is load-bearing because a mistake is irreversible in a
