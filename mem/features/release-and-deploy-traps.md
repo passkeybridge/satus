@@ -47,3 +47,27 @@ exited `11`, wrote nothing, and offered no way to proceed. A safeguard that
 cannot be overridden in the one environment that runs unattended is worse
 than the bug it prevents. Fixed in 0.3.9. When adding a guard, add its bypass
 to the CLI *and* the action in the same release.
+
+## Pushing `main` is not deploying `main`
+
+Vercel appears to deduplicate its GitHub deployments by commit SHA. Push the
+same commit to `main` and to a working branch a couple of seconds apart and
+you can get **one** deployment, attributed to the branch, `target: null` —
+a preview. `main` advances, production does not, CI is green, and nothing
+anywhere reports a failure.
+
+Observed 2026-09-04 on `b1a31b0`: `main` moved, the only deployment for that
+SHA was the branch preview, and production stayed on `a7baead`. Harmless
+that time — the commit touched CLAUDE.md, a workflow, a validator and the
+`build` script, none of which change what the site serves — but the same
+sequence with a code change ships nothing while looking like it shipped.
+
+Two earlier commits the same day (`95772ab`, `a7baead`) *did* get both a
+production and a preview deployment from the same dual-push pattern, so this
+is timing-dependent, not deterministic. Do not rely on having got away with
+it.
+
+**Sequence that works:** push `main` alone, confirm a deployment exists for
+that SHA with `target: "production"` and state `READY`, then push the
+working branch. Checking `git push` output or the CI badge is not checking
+the deploy.

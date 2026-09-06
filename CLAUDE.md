@@ -31,6 +31,18 @@ the real behaviour confirmed against production after the deploy. Verify
 against rendered output or a live response, never against the source you
 just edited.
 
+**Pushing is not deploying. Confirm the production deployment exists.**
+Vercel appears to deduplicate by commit SHA: pushing the same commit to
+`main` and to a working branch within a few seconds can yield exactly one
+deployment, attributed to the branch, with `target: null` — a preview.
+`main` moves, production does not, and nothing reports a failure. It
+happened to `b1a31b0` on 2026-09-04.
+
+So: push `main` **alone**, confirm a deployment for that SHA exists with
+`target: "production"` and state `READY`, and only then bring the working
+branch up. A green push and a green CI run say nothing about what is
+serving traffic.
+
 ## satus writes to someone else's database
 
 Everything below is load-bearing because a mistake is irreversible in a
