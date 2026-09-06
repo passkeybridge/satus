@@ -65,7 +65,7 @@ function BlogIndexPage() {
 
   return (
     <PageShell sections={SECTIONS} currentPath={PATH}>
-      <Section id="log" n="00" label="The log" title={<>field notes from the satus team.</>}>
+      <Section heading="h1" id="log" n="00" label="The log" title={<>field notes from the satus team.</>}>
         {posts.length === 0 ? (
           <p className="font-mono text-[13px] text-[var(--mute)]">
             No posts yet. Check back shortly.

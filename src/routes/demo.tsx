@@ -578,7 +578,7 @@ function DemoPage() {
 
   return (
     <PageShell sections={SECTIONS} currentPath="/demo">
-      <Section
+      <Section heading="h1"
         id="try"
         n="01"
         label="Try it"

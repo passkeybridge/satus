@@ -85,7 +85,7 @@ export const Route = createFileRoute("/cli")({
 function CliPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/cli">
-      <Section
+      <Section heading="h1"
         id="synopsis"
         n="01"
         label="Synopsis"

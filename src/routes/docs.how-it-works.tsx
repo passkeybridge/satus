@@ -94,7 +94,7 @@ export const Route = createFileRoute("/docs/how-it-works")({
 function HowItWorksPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/docs/how-it-works">
-      <Section
+      <Section heading="h1"
         id="overview"
         n="01"
         label="Overview"

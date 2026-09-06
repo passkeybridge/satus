@@ -72,7 +72,7 @@ export const Route = createFileRoute("/recipes")({
 function RecipesPage() {
   return (
     <PageShell sections={SECTIONS} currentPath="/recipes">
-      <Section
+      <Section heading="h1"
         id="preview-branch"
         n="01"
         label="Preview branches"

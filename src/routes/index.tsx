@@ -96,7 +96,7 @@ function HomePage() {
 
 function Overview() {
   return (
-    <Section
+    <Section heading="h1"
       id="overview"
       n="00"
       label="RFC · SATUS-001"

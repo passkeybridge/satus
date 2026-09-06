@@ -4,37 +4,50 @@ Written 2026-09-04. Replace this file next session; do not append.
 
 ## State
 
-`main` is `f1ec17b`; production deployed from it 2026-08-30 and is green.
-`@passkeybridge/satus@0.3.11` is `latest` on npm and the repo agrees. 70 CLI
-tests pass, `tsc` clean, both build gates pass.
+`main` is `43712e1` and deployed. Branch and `main` are level — nothing is
+waiting to ship. `@passkeybridge/satus@0.3.11` is `latest` on npm and the
+repo agrees.
 
-Today's post went live at its 09:00 slot on all four surfaces. Two remain
-embargoed: 2026-09-11 and 09-18.
+Gates: `tsc` clean, 0 genuine lint errors, **15 site tests**, 70 CLI tests,
+both build gates. Post-deploy e2e health passed all four checks against
+production.
 
-## In flight
+Today's post went live at its 09:00 slot. Two remain embargoed: 09-11
+(written, on `main`) and 09-18.
 
-`claude/satus-migration-independence-sqhdxp` has **two commits not on
-`main`**, so neither is in production:
+## Shipped today
 
-1. `109616c` — the 23 genuine lint errors are now 0. Typing the Stripe
-   webhook against the SDK's `Event` union surfaced a real gap; see
-   `mem/followups/refund-revocation-rides-on-a-removed-field.md`.
-2. `841c3c6` — **live behaviour change, needs a deploy to take effect.**
-   The Resend suppression webhook is account-wide and was letting other
-   products' bounces block satus license keys. See
-   `mem/incidents/2026-09-04-account-wide-resend-webhook-poisoned-suppressions.md`.
+- **Stripe environment now comes from the signature.** `?env=` was a
+  required, unauthenticated query parameter gating license issuance; it
+  dropped 21 days of live events in August and test-mode events in
+  September. Whichever endpoint secret validates the body names the
+  environment now. Also removed the forgeable pre-auth alert branch and made
+  signature comparison constant-time.
+  `mem/incidents/2026-09-04-webhook-env-resolved-from-signature.md`
+- **Suppressions are scoped to our own sends.** The Resend webhook is
+  account-wide across nine domains; other products' outreach bounces were
+  suppressing satus addresses, and suppression is fail-closed for
+  transactional mail.
+  `mem/incidents/2026-09-04-account-wide-resend-webhook-poisoned-suppressions.md`
+- 23 genuine lint errors → 0.
+
+## The site has tests now
+
+`vitest.config.ts` is separate from `vite.config.ts` on purpose — the Nitro
+plugin cannot load under Vitest. `npm test`. Only
+`src/lib/stripe.server.test.ts` so far. **Not wired into CI**; there is no
+site workflow at all, only `cli-ci.yml`. That is the obvious next chore.
 
 ## Flags
 
 - **`NPM_PUBLISH_TOKEN` expires 2026-10-12.**
-- **79 poisoned suppression rows left in place** deliberately. Deleting them
-  is the owner's call; the incident note says how to identify them.
-- **`env-query-invalid` fired again 2026-09-03** (two hits 14:54, one 18:14).
-  All six live Stripe endpoints carry `?env=`, and nothing of ours posts
-  there unsigned. Unresolved because test-mode endpoints are not readable
-  from this session — check Stripe Dashboard → test mode → Webhooks for a
-  satus.sh URL missing `?env=sandbox`.
-- **~4,000 `prettier/prettier` errors** repo-wide, pre-existing. A
+- **79 poisoned suppression rows left in place** deliberately; the incident
+  note says how to identify them.
+- **Test-mode Stripe endpoint still lacks `?env=sandbox`.** Now cosmetic —
+  it resolves by signature — but worth tidying.
+- **Refund revocation rides on `Charge.invoice`,** which basil removed.
+  `mem/followups/refund-revocation-rides-on-a-removed-field.md`
+- **~4,050 `prettier/prettier` errors** repo-wide, pre-existing. A
   `format-the-codebase` branch exists from 2026-09-01.
 
 ## Do not redo
@@ -42,16 +55,10 @@ embargoed: 2026-09-11 and 09-18.
 - **`strict: true` on the Anthropic tool.** Closed with a reason.
 - **The docs-vs-code audit.** Run `node scripts/validate-docs.mjs`.
 - **Purging the app-builder platform.** Done 2026-08-27 in `3abfa27`.
-- **Re-running the red `v0.3.8` tag workflow.** Permanent and harmless.
-
-## Graduated this session
-
-- `mem/followups/refund-revocation-rides-on-a-removed-field.md`
-- `mem/incidents/2026-09-04-account-wide-resend-webhook-poisoned-suppressions.md`
 
 ## Next
 
-1. Merge and deploy the two branch commits.
-2. Still a business decision: the three `(planned)` Team features on
-   `/pricing`, and whether to define a real support SLA.
+1. A site CI workflow running `npm test` and `npm run validate`.
+2. Business decision, not engineering: the three `(planned)` Team features
+   on `/pricing`, and whether to define a real support SLA.
 3. Content plan resumes at Q3 item 9.
