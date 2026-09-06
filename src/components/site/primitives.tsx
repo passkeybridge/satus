@@ -45,8 +45,8 @@ export function Section({
    *
    * Pass "h1" on the FIRST Section of a page and leave the rest alone. The
    * class list is identical either way, so this changes the document outline
-   * and nothing visual. `section-headings.test.ts` fails a route that ends up
-   * with none or more than one.
+   * and nothing visual. `scripts/validate-headings.mjs` runs ahead of
+   * `vite build` and fails a route that ends up with none or more than one.
    */
   heading?: "h1" | "h2";
   children: ReactNode;
