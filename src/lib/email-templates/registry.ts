@@ -1,10 +1,22 @@
 import type { ComponentType } from 'react'
 
+/**
+ * The bag of values a template renders from.
+ *
+ * It reaches a component as JSON over the internal send route, so no
+ * per-template type survives the trip—the real contract is each template's
+ * own props interface, where every field is optional and defaulted. Values
+ * are strings because that is what every template renders; a caller that
+ * has nothing for a field omits it. (A `null` sent for an absent field is
+ * treated as absent too: every template guards on truthiness.)
+ */
+export type TemplateData = Record<string, string | undefined>
+
 export interface TemplateEntry {
-  component: ComponentType<any>
-  subject: string | ((data: Record<string, any>) => string)
+  component: ComponentType<TemplateData>
+  subject: string | ((data: TemplateData) => string)
   displayName?: string
-  previewData?: Record<string, any>
+  previewData?: TemplateData
   /** Fixed recipient—overrides caller-provided recipientEmail when set. */
   to?: string
   /**

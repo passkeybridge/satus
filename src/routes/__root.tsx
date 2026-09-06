@@ -111,7 +111,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   // Surface the error in the dev console so we can triage in production logs,
   // but never render error.message to users (it can leak stack-trace internals).
   if (typeof window !== "undefined") {
-    // eslint-disable-next-line no-console
     console.error("[satus] route error:", error);
   }
   const router = useRouter();

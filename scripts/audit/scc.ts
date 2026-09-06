@@ -56,7 +56,6 @@ export function findCycles(edges: Edge[]): string[][] {
         if (!indices.has(w)) {
           push(w);
         } else if (onStack.has(w)) {
-          frame.it; // no-op, keep eslint quiet
           lowlinks.set(frame.v, Math.min(lowlinks.get(frame.v)!, indices.get(w)!));
         }
       } else {

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { render } from '@react-email/components'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
-import { TEMPLATES } from '@/lib/email-templates/registry'
+import { TEMPLATES, type TemplateData } from '@/lib/email-templates/registry'
 
 // Configuration baked in at scaffold time
 const SITE_NAME = "satus"
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/api/internal/email/transactional/send")({
         let recipientEmail: string
         let idempotencyKey: string
         let messageId: string
-        let templateData: Record<string, any> = {}
+        let templateData: TemplateData = {}
         try {
           const body = await request.json()
           templateName = body.templateName || body.template_name

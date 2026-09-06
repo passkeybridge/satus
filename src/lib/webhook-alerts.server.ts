@@ -18,9 +18,13 @@
  *   - N distinct failing events => N emails (you want to see the scope),
  *   - a 30-day prune keeps the table tiny.
  *
- * For pre-verify errors (env query missing/invalid) we have no event id, so
- * we synthesize a per-day key. That bounds those alerts to one/day/env even
- * if a misconfigured caller hits the endpoint in a loop.
+ * The synthesized per-day key (used when there is no event id) is retained
+ * for any future caller that needs it, but the payments webhook no longer
+ * has a pre-verification failure to report: the environment is resolved
+ * from the signature, so a misconfigured endpoint URL costs nothing and is
+ * a log line rather than an alert. Every alert this module now sends is for
+ * a real event that failed *after* verification, which means every one of
+ * them carries an id and cannot be provoked by an unauthenticated caller.
  *
  * Never throws. Alerting that breaks the webhook response defeats the
  * point — Stripe must still see our 500 so it retries.

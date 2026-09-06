@@ -33,8 +33,9 @@ them; branch pushes work). So the normal shape is: publish via
 reproducibility. That is why the no-op branch above exists.
 
 Consequence to watch: **a published version can end up with no git tag.** It
-has happened to 0.3.6, 0.3.7, 0.3.8, 0.3.9 and (as of 2026-08-21) 0.3.10.
-Check `git ls-remote --tags origin` against `npm view @passkeybridge/satus
+has happened to 0.3.6, 0.3.7, 0.3.8, 0.3.9, 0.3.10 and 0.3.11. All are
+tagged as of 2026-08-30, but nothing enforces it, so check
+`git ls-remote --tags origin` against `npm view @passkeybridge/satus
 versions` when picking up work.
 
 ## Ship a safeguard and its override together, everywhere

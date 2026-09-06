@@ -13,7 +13,7 @@
  * on the connected Postgres; nothing is fabricated.
  */
 import { Client } from 'pg'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync, statSync } from 'node:fs'
 import { dirname } from 'node:path'
 
 const dsn = `postgres://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}`
@@ -134,7 +134,7 @@ async function main() {
 
     const baselineBytes = 32134 // v0.1.1 dist/cli.js (recorded pre-upgrade)
     const baselineSourcemapBytes = 72243
-    const newBytes = require('node:fs').statSync('packages/cli/dist/cli.js').size
+    const newBytes = statSync('packages/cli/dist/cli.js').size
 
     const out = {
       generated_at: new Date().toISOString(),

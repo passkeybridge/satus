@@ -227,7 +227,7 @@ function publicSafe(result: { status: 'pass' | 'fail'; duration_ms: number; chec
 // it is stored in e2e_health_log.triggered_by (unbounded text column).
 function sanitizeBy(raw: string | null): string {
   if (!raw) return 'manual'
-  const cleaned = raw.replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 64)
+  const cleaned = raw.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64)
   return cleaned.length > 0 ? cleaned : 'manual'
 }
 

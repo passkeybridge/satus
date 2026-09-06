@@ -1,72 +1,64 @@
 # HANDOFF
 
-Written 2026-08-27. Replace this file next session; do not append.
+Written 2026-09-04. Replace this file next session; do not append.
 
 ## State
 
-`main` is `3abfa27`, working tree clean, `@passkeybridge/satus@0.3.11` is
-`latest` on npm (published 2026-08-27 by workflow dispatch, SLSA
-provenance). Repo version constants all read `0.3.11`.
+`main` is `43712e1` and deployed. Branch and `main` are level — nothing is
+waiting to ship. `@passkeybridge/satus@0.3.11` is `latest` on npm and the
+repo agrees.
 
-70 tests pass across 6 files (`packages/cli`). Both build gates pass:
-`scripts/validate-blog.mjs` (43 posts) and `scripts/validate-docs.mjs`.
-Both run ahead of `vite build`, so a failure blocks the Vercel deploy.
+Gates: `tsc` clean, 0 genuine lint errors, **15 site tests**, 70 CLI tests,
+both build gates. Post-deploy e2e health passed all four checks against
+production.
 
-Production verified green today: site deployed from `main`, zero runtime
-errors, the published tarball reproduces both v0.3.11 fixes when installed
-from the registry.
+Today's post went live at its 09:00 slot. Two remain embargoed: 09-11
+(written, on `main`) and 09-18.
 
-Remote tags: `v0.3.3 v0.3.5 v0.3.7 v0.3.8 v0.3.9`.
+## Shipped today
 
-## In flight
+- **Stripe environment now comes from the signature.** `?env=` was a
+  required, unauthenticated query parameter gating license issuance; it
+  dropped 21 days of live events in August and test-mode events in
+  September. Whichever endpoint secret validates the body names the
+  environment now. Also removed the forgeable pre-auth alert branch and made
+  signature comparison constant-time.
+  `mem/incidents/2026-09-04-webhook-env-resolved-from-signature.md`
+- **Suppressions are scoped to our own sends.** The Resend webhook is
+  account-wide across nine domains; other products' outreach bounces were
+  suppressing satus addresses, and suppression is fail-closed for
+  transactional mail.
+  `mem/incidents/2026-09-04-account-wide-resend-webhook-poisoned-suppressions.md`
+- 23 genuine lint errors → 0.
 
-none
+## The site has tests now
+
+`vitest.config.ts` is separate from `vite.config.ts` on purpose — the Nitro
+plugin cannot load under Vitest. `npm test`. Only
+`src/lib/stripe.server.test.ts` so far. **Not wired into CI**; there is no
+site workflow at all, only `cli-ci.yml`. That is the obvious next chore.
 
 ## Flags
 
-- **`v0.3.10` and `v0.3.11` are published to npm with no git tag.** Tag
-  pushes 403 through this environment's proxy; branch pushes are fine, and
-  the GitHub MCP has no tag-creation tool. Must be done from a machine with
-  direct GitHub access. See `mem/followups/untagged-published-releases.md`.
-- **`NPM_PUBLISH_TOKEN` expires 2026-10-12.** Releases fail at the publish
-  step once it lapses. A one-shot reminder was scheduled for 2026-10-01;
-  whether that trigger still exists cannot be verified from the repo.
-- **Four blog posts are embargoed, not published.** `publishAt` in their
-  frontmatter puts them live at 09:00 America/New_York on 2026-08-28,
-  09-04, 09-11 and 09-18. They are on `main` and invisible until then.
-  Two of them describe the v0.3.11 telemetry change as done, which it is.
-- **Anthropic tool calls are schema-shaped, not schema-guaranteed.** The
-  OpenAI provider sets `strict: true`; the Anthropic one sets no
-  equivalent although the API now supports it. `validate.ts` catches the
-  difference before any write. Not urgent, genuinely outstanding.
+- **`NPM_PUBLISH_TOKEN` expires 2026-10-12.**
+- **79 poisoned suppression rows left in place** deliberately; the incident
+  note says how to identify them.
+- **Test-mode Stripe endpoint still lacks `?env=sandbox`.** Now cosmetic —
+  it resolves by signature — but worth tidying.
+- **Refund revocation rides on `Charge.invoice`,** which basil removed.
+  `mem/followups/refund-revocation-rides-on-a-removed-field.md`
+- **~4,050 `prettier/prettier` errors** repo-wide, pre-existing. A
+  `format-the-codebase` branch exists from 2026-09-01.
 
 ## Do not redo
 
-- The docs-vs-code audit. Run `node scripts/validate-docs.mjs` instead of
-  re-checking flags, exit codes, caps, profiles, models, or versions.
-- Purging the old app-builder platform this project started on. Finished
-  2026-08-27 across the build config (vite.config.ts is now hand-written),
-  the email route paths (`/api/internal/email/*`), the two Postgres
-  dispatch functions, the Resend webhook, and all prose. The vendor's name
-  appears nowhere in the tracked tree and its package does not reinstall
-  from the lockfile. If you find a trace, it is a leftover, not a
-  dependency.
-- Re-running the failed `v0.3.8` tag workflow. Red because a tag runs the
-  workflow at its own commit, which predates the fix. Permanent, harmless.
-- Hunting for the cycle-breaking heuristic's missing rules. Three of the
-  four published rules were never implemented; the code is right and the
-  May 2026 post now carries a correction.
-
-## Graduated this session
-
-- `mem/features/blog-scheduling-and-embargo.md`
-- `mem/features/telemetry-is-opt-in.md`
-- `mem/incidents/2026-08-26-stripe-webhook-missing-env-param.md`
+- **`strict: true` on the Anthropic tool.** Closed with a reason.
+- **The docs-vs-code audit.** Run `node scripts/validate-docs.mjs`.
+- **Purging the app-builder platform.** Done 2026-08-27 in `3abfa27`.
 
 ## Next
 
-1. Push `v0.3.10` and `v0.3.11` tags from a machine with GitHub access.
-2. Decide the three `(planned)` Team features and the support SLA — see
-   `mem/followups/prose-claims-have-no-automated-check.md`.
-3. Content plan resumes at Q3 item 9 onward; items 1 and 2 were cut and
-   items 3–8 are written or deliberately skipped.
+1. A site CI workflow running `npm test` and `npm run validate`.
+2. Business decision, not engineering: the three `(planned)` Team features
+   on `/pricing`, and whether to define a real support SLA.
+3. Content plan resumes at Q3 item 9.
