@@ -3,7 +3,11 @@
  *
  * Lives under /api/public/* because Stripe posts here unauthenticated.
  * Security is enforced in-handler via HMAC verification of the
- * `stripe-signature` header (verifyWebhook in stripe.server.ts).
+ * `stripe-signature` header (verifyWebhook in stripe.server.ts). That
+ * verification is also what tells us whether the event is sandbox or live:
+ * the two environments have different endpoint secrets, so the one that
+ * validates the body names the environment. `?env=` on the URL is only a
+ * hint about which secret to try first.
  *
  * Events handled:
  *   - checkout.session.completed       → issue license, enqueue email
@@ -477,52 +481,47 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // `?env=` is a hint, not a gate. It used to be required and checked
+        // here, ahead of any authentication, which made a dashboard-managed
+        // query string load-bearing for license issuance. An endpoint
+        // registered without it got a 400, and Stripe does not retry 400s.
+        // That dropped 21 days of live events in August 2026 and then did
+        // the same to test mode in September. The signature decides the
+        // environment now; see `verifyWebhook`.
         const rawEnv = new URL(request.url).searchParams.get('env')
-        if (rawEnv !== 'sandbox' && rawEnv !== 'live') {
-          // 400 (not 200) so a misconfigured Stripe webhook URL surfaces in
-          // Stripe's delivery dashboard instead of being silently ACK'd.
-          // Stripe does not retry a 400, so a real misconfiguration also
-          // needs to reach a human.
-          console.error('[payments-webhook] invalid env query', rawEnv)
-
-          // ...but only if it plausibly came from Stripe. This check runs
-          // before signature verification, on a public URL, so anything on
-          // the internet can reach it — and until now anything that did sent
-          // ops an email. That is the exact spam vector the signature-failure
-          // branch below stays silent to avoid, and we had it wide open one
-          // branch earlier.
-          //
-          // `stripe-signature` is the discriminator: Stripe sets it on every
-          // delivery including a misconfigured one, and a scanner posting to
-          // a URL it found has no reason to. We do not verify it here (we
-          // cannot — without a valid `env` there is no signing secret to
-          // check against); its presence alone decides whether a human is
-          // worth waking. A forged header can still trigger one email a day,
-          // which is what the dedup key is for.
-          if (request.headers.get('stripe-signature')) {
-            await notifyWebhookFailure({
-              eventId: null,
-              eventType: 'env-query-invalid',
-              environment: 'unknown',
-              error: new Error(
-                `Webhook called with invalid env query parameter: ${JSON.stringify(rawEnv)}. ` +
-                  `Expected 'sandbox' or 'live'. Check the Stripe webhook endpoint URL.`,
-              ),
-            })
-          }
-          return new Response('Missing or invalid env query parameter', { status: 400 })
-        }
-        const env: StripeEnv = rawEnv
+        const hint: StripeEnv | null =
+          rawEnv === 'sandbox' || rawEnv === 'live' ? rawEnv : null
 
         let event: Stripe.Event
+        let env: StripeEnv
         try {
-          event = await verifyWebhook(request, env)
+          ;({ event, env } = await verifyWebhook(request, hint))
         } catch (err) {
           // Signature failures are often probe traffic. Log only — alerting
           // on these would be a spam vector for anyone hitting the public
           // /api/public/* path with a bogus body.
           console.error('[payments-webhook] signature verification failed', err)
           return new Response('Invalid signature', { status: 400 })
+        }
+
+        // Past this line the body is signed, so everything below is Stripe.
+        if (!hint) {
+          // Resolved anyway. Worth seeing in the log so the endpoint URL
+          // eventually gets tidied, but nothing is failing, so it does not
+          // wake anyone.
+          console.warn(
+            `[payments-webhook] endpoint URL has no valid ?env= (got ${JSON.stringify(rawEnv)}); resolved ${env} from the signature`,
+          )
+        }
+
+        // The secret that verified is the authority. `livemode` disagreeing
+        // with it would mean Stripe signed a test event with the live
+        // endpoint secret or vice versa, which should be impossible—log it
+        // rather than act on it.
+        if (event.livemode !== (env === 'live')) {
+          console.warn(
+            `[payments-webhook] livemode/secret mismatch: livemode=${event.livemode} resolved=${env} event=${event.id}`,
+          )
         }
 
         try {

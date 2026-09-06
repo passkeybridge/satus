@@ -28,6 +28,12 @@ purchase would have taken the money and issued nothing.
 URL corrected to `...?env=live`, matching the convention the sibling
 endpoint already used.
 
+**Superseded 2026-09-04.** Correcting the URL fixed the instance, not the
+class, and the same bug recurred in test mode a week later. The handler no
+longer requires `?env=`: the environment is resolved from whichever endpoint
+signing secret validates the body. See
+`mem/incidents/2026-09-04-webhook-env-resolved-from-signature.md`.
+
 ## Follow-ups, both closed 2026-08-27
 
 - **The alert fired before authentication.** The `env` check runs ahead of
