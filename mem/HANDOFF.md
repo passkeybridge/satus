@@ -1,57 +1,57 @@
 # HANDOFF
 
-Written 2026-09-04. Replace this file next session; do not append.
+Written 2026-09-07. Replace this file next session; do not append.
 
 ## State
 
-`main` is `95772ab` and deployed; the branch is level with it. Nothing is
-waiting to ship. `@passkeybridge/satus@0.3.11` is `latest` on npm.
+`main` is `a0e3984`, and production is confirmed serving it —
+`dpl_5PeaBDyC4J4Ra5TuwP9gUgQuBWDb`, `target: "production"`, `READY`, alias
+list contains `satus.sh`. The branch is level. Nothing is waiting to ship;
+`git branch -r --no-merged origin/main` is empty.
+`@passkeybridge/satus@0.3.11` is `latest` on npm.
 
-Gates: `tsc` clean, 0 genuine lint errors, 15 site tests, 70 CLI tests, and
-three build validators (blog, docs, headings). Post-deploy e2e health passed
-all four checks against production.
+Gates: `tsc` clean, 0 genuine lint errors, 15 site tests, 70 CLI tests, four
+build validators (blog, docs, headings, env-files). Post-deploy e2e health
+passed all four checks against production.
 
-Today's post went live at 09:00. Two remain embargoed: 09-11 (written, on
-`main`) and 09-18.
+Two posts remain embargoed: 09-11 (written, on `main`) and 09-18.
 
-## Shipped today
+## Shipped this session
 
-- **Stripe environment now comes from the signature.** `?env=` was a
-  required, unauthenticated query parameter gating license issuance; it
-  dropped 21 days of live events in August and test-mode events in
-  September. Also removed the forgeable pre-auth alert branch and made
-  signature comparison constant-time.
-  `mem/incidents/2026-09-04-webhook-env-resolved-from-signature.md`
-- **Suppressions scoped to our own sends.** The Resend webhook is
-  account-wide across nine domains; other products' bounces were suppressing
-  satus addresses, and suppression is fail-closed for transactional mail.
-  `mem/incidents/2026-09-04-account-wide-resend-webhook-poisoned-suppressions.md`
-- **Every page has an `h1` again**, gated by `validate-headings.mjs`.
-- 23 genuine lint errors → 0.
+- **The site has CI.** `.github/workflows/site-ci.yml` — typecheck, tests,
+  gates, lint, build. Run #1 green. Previously only `cli-ci.yml` existed and
+  nothing ran the site's tests.
+- **`scripts/validate-env-files.mjs`** fails the build if a tracked `.env*`
+  holds a secret, by key name or value shape. This repo is public and
+  `.env*` is tracked on purpose; the hazard is the next edit.
 
-## Check for unmerged branches first
+## Graduated this session
 
-`give-every-page-an-h1` sat finished and unmerged for three days while the
-bug it fixed stayed live. Run `git branch -r --no-merged origin/main` before
-starting: a green branch nobody merged looks exactly like a bug nobody
-fixed. Clean as of this writing.
+Nothing new — this session's durable lesson went into an existing file:
+`mem/features/release-and-deploy-traps.md` gained **"Pushing `main` is not
+deploying `main`"**. Read it before any deploy.
 
-## The site has tests now
+## Verify the deployment, not the push
 
-`vitest.config.ts` is separate from `vite.config.ts` on purpose — the Nitro
-plugin cannot load under Vitest. `npm test`. Only
-`src/lib/stripe.server.test.ts` so far, and **no CI runs it**; there is no
-site workflow at all, only `cli-ci.yml`.
+`b1a31b0` went to `main` and never reached production. Pushing the same SHA
+to `main` and a working branch seconds apart made Vercel emit one
+deployment, attributed to the branch, `target: null`. `main` moved,
+production did not, nothing failed. Push `main` alone, then confirm a
+deployment for that SHA with `target: "production"`, state `READY`, and
+`satus.sh` in its `alias` list. **The alias list is the proof** — timings
+and states are not.
 
 ## Flags
 
+- **The prettier decision is the owner's.** ~4,050 pre-existing
+  `prettier/prettier` errors, so CI disables that one rule and only that
+  one. `bunx prettier --write .` fixes it and touches nearly every file.
+  Until then, formatting is unenforced.
+- **`cli-ci.yml` pins `node-version: '20'`,** which GitHub is deprecating.
 - **`NPM_PUBLISH_TOKEN` expires 2026-10-12.**
 - **79 poisoned suppression rows left in place** deliberately; the incident
   note says how to identify them.
-- **Test-mode Stripe endpoint still lacks `?env=sandbox`.** Cosmetic now.
 - **Refund revocation rides on `Charge.invoice`,** which basil removed.
-  `mem/followups/refund-revocation-rides-on-a-removed-field.md`
-- **~4,050 `prettier/prettier` errors** repo-wide, pre-existing.
 
 ## Do not redo
 
@@ -61,7 +61,6 @@ site workflow at all, only `cli-ci.yml`.
 
 ## Next
 
-1. A site CI workflow running `npm test` and `npm run validate`.
-2. Business decision: the three `(planned)` Team features on `/pricing`, and
+1. Business decision: the three `(planned)` Team features on `/pricing`, and
    whether to define a real support SLA.
-3. Content plan resumes at Q3 item 9.
+2. Content plan resumes at Q3 item 9.
