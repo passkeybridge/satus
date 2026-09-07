@@ -1,6 +1,6 @@
 # Release and deploy traps in this repo
 
-Four things that cost real time, all verified by reproduction.
+Six things that cost real time, all verified by reproduction.
 
 ## `.vercel/` must stay gitignored
 
@@ -71,3 +71,27 @@ it.
 that SHA with `target: "production"` and state `READY`, then push the
 working branch. Checking `git push` output or the CI badge is not checking
 the deploy.
+
+**Read the `alias` list, not the state.** A deployment object is `READY`
+with `target: "production"` a moment *before* the domains move. What proves
+it is serving traffic is `satus.sh` appearing in its `alias` array. State
+and timestamps do not distinguish "built" from "live".
+
+## Grep the saved page with `-a`, or it will lie about the `h1`
+
+Verifying headings against production means `curl` to a file and count
+`<h1>`. The pages contain a byte grep treats as binary, so plain
+`grep -o '<h1' page.html | wc -l` prints **`h1=0`** while grep itself says
+`binary file matches` on stderr — a false failure on a page that is fine,
+and easy to misread as a regression worth rolling back. It has happened
+twice.
+
+```sh
+curl -sS --compressed "https://satus.sh$p" -o page.html   # --compressed: gzip is the other way this misreads
+grep -ao '<h1' page.html | wc -l                          # -a: treat as text
+```
+
+Command substitution drops the NUL as well, so write to a file rather than
+capturing the body into a shell variable. Same caution for any future
+rendered-output check: confirm the tool can *see* the thing before trusting
+it to say the thing is missing.
