@@ -47,7 +47,7 @@ const outputTokens = cells * 40
 
 ## The invoice
 
-satus posts a small telemetry record when a run finishes. Ours is the only data in it: satus has no external paying customers yet, and all twelve recorded runs cluster on our own release-testing dates. Three of them are directly comparable, all `gpt-4o-mini`, all 125 rows, four minutes apart on 2026-07-14:
+satus posts a small telemetry record when a run finishes. Ours is the only data in it: satus has no external paying customers yet, and all ten recorded runs fall on two of our own release-testing dates. Three of them are directly comparable, all `gpt-4o-mini`, all 125 rows, inside the same 35 minutes on 2026-07-14:
 
 ```text
  input_tokens | output_tokens | total_cost_usd | duration_ms
@@ -100,7 +100,7 @@ We have been on the wrong side of this before. Through v0.3.6 the Anthropic pric
 
 ## The number nobody can estimate
 
-Look again at the three runs. Input tokens are identical: 1234, three times. Output tokens are 806, 801, and 778, a 3.6 percent spread across runs four minutes apart against the same schema with the same model.
+Look again at the three runs. Input tokens are identical: 1234, three times. Output tokens are 806, 801, and 778, a 3.6 percent spread across three runs inside the same 35 minutes against the same schema with the same model.
 
 That is the whole argument in one table. The input side is deterministic, because we build the prompt. The output side is a sample from a distribution, and no estimator gets to know it in advance. Anything that calls itself cost *accounting* for an LLM run is either measuring after the fact or lying about what it can see.
 
@@ -110,7 +110,7 @@ So satus reports two numbers and is explicit about which is which. `--dry-run` g
 
 Both are ours, and both are the kind of thing this series keeps turning up.
 
-The estimator is not merely imprecise, it is wrong in a fixable way. Charging input per cell is indefensible now that we have measured it; input scales per batch. A better model would be roughly a fixed schema cost per batch plus a small per-row output term, still rounded up. We have not changed it, because a guardrail that is 31x conservative is safe and a guardrail that is newly 2x conservative needs evidence we do not yet have from more than three runs.
+The estimator's input model is wrong in a fixable way. Charging input per cell is indefensible now that we have measured it; input scales per batch. A better model would be roughly a fixed schema cost per batch plus a small per-row output term, still rounded up. We have not changed it, because a guardrail that is 31x conservative is safe and a guardrail that is newly 2x conservative needs evidence we do not yet have from more than three runs.
 
 The second is worse, and it is the reason this post exists in the form it does. Our [security page](/security) has always said telemetry is "off by default." That was true of the failure-fingerprint sharing, which is gated behind a config flag. It was not true of the run record this post is built on: through v0.3.10, `reportRun` was called unconditionally at the end of every `satus generate`, with no environment variable or config key able to stop it.
 
