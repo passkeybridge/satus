@@ -31,11 +31,7 @@ async function sign(secret: string, body: string, ts: number): Promise<string> {
     false,
     ["sign"],
   );
-  const mac = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(`${ts}.${body}`),
-  );
+  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ts}.${body}`));
   return Array.from(new Uint8Array(mac))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
@@ -100,9 +96,7 @@ describe("verifyWebhook — the signature decides the environment", () => {
 
   it("accepts a correct hint and still returns the verified environment", async () => {
     expect((await verifyWebhook(await delivery(LIVE, true), "live")).env).toBe("live");
-    expect((await verifyWebhook(await delivery(SANDBOX, false), "sandbox")).env).toBe(
-      "sandbox",
-    );
+    expect((await verifyWebhook(await delivery(SANDBOX, false), "sandbox")).env).toBe("sandbox");
   });
 
   it("tries the remaining environment when one has no configured secret", async () => {
@@ -117,9 +111,9 @@ describe("verifyWebhook — rejection", () => {
     const ts = nowSeconds();
     const body = eventBody(true);
     const forged = await sign("whsec_not_ours", body, ts);
-    await expect(
-      verifyWebhook(post(body, `t=${ts},v1=${forged}`)),
-    ).rejects.toThrow(/Invalid webhook signature/);
+    await expect(verifyWebhook(post(body, `t=${ts},v1=${forged}`))).rejects.toThrow(
+      /Invalid webhook signature/,
+    );
   });
 
   it("rejects a body tampered with after signing", async () => {
@@ -127,9 +121,9 @@ describe("verifyWebhook — rejection", () => {
     const body = eventBody(true);
     const signature = await sign(LIVE, body, ts);
     const tampered = eventBody(true, "evt_swapped");
-    await expect(
-      verifyWebhook(post(tampered, `t=${ts},v1=${signature}`)),
-    ).rejects.toThrow(/Invalid webhook signature/);
+    await expect(verifyWebhook(post(tampered, `t=${ts},v1=${signature}`))).rejects.toThrow(
+      /Invalid webhook signature/,
+    );
   });
 
   it("rejects a missing signature header", async () => {
@@ -163,9 +157,7 @@ describe("verifyWebhook — rejection", () => {
   it("accepts a timestamp inside the tolerance", async () => {
     const ts = nowSeconds() - 299;
     const body = eventBody(true);
-    const { env } = await verifyWebhook(
-      post(body, `t=${ts},v1=${await sign(LIVE, body, ts)}`),
-    );
+    const { env } = await verifyWebhook(post(body, `t=${ts},v1=${await sign(LIVE, body, ts)}`));
     expect(env).toBe("live");
   });
 
@@ -185,9 +177,7 @@ describe("verifyWebhook — signature header shapes", () => {
     const ts = nowSeconds();
     const body = eventBody(false);
     const real = await sign(SANDBOX, body, ts);
-    const { env } = await verifyWebhook(
-      post(body, `t=${ts},v1=0000deadbeef,v1=${real}`),
-    );
+    const { env } = await verifyWebhook(post(body, `t=${ts},v1=0000deadbeef,v1=${real}`));
     expect(env).toBe("sandbox");
   });
 
@@ -195,9 +185,7 @@ describe("verifyWebhook — signature header shapes", () => {
     const ts = nowSeconds();
     const body = eventBody(true);
     const real = await sign(LIVE, body, ts);
-    const { env } = await verifyWebhook(
-      post(body, `t=${ts},v0=ignored,v1=${real}`),
-    );
+    const { env } = await verifyWebhook(post(body, `t=${ts},v0=ignored,v1=${real}`));
     expect(env).toBe("live");
   });
 });

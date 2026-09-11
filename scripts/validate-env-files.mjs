@@ -79,7 +79,10 @@ for (const file of tracked) {
     if (eq === -1) continue;
 
     const key = line.slice(0, eq).trim();
-    const value = line.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+    const value = line
+      .slice(eq + 1)
+      .trim()
+      .replace(/^["']|["']$/g, "");
     if (!value) continue;
 
     const where = `${file}:${i + 1} ${key}`;
@@ -101,7 +104,9 @@ for (const file of tracked) {
 }
 
 if (failures.length > 0) {
-  console.error(`\n✗ a tracked .env file holds a secret — refusing to build (${failures.length}):\n`);
+  console.error(
+    `\n✗ a tracked .env file holds a secret — refusing to build (${failures.length}):\n`,
+  );
   for (const f of failures) console.error(`    ${f}`);
   console.error(
     "\n  This repository is public. Move the value to .env.local (already\n" +

@@ -9,29 +9,31 @@
  * the result is cached locally under ~/.satus/ for 24h to keep the endpoint
  * cold-path and to allow offline use within the cache window.
  */
-import { Command } from 'commander'
-import pc from 'picocolors'
-import { registerInit } from './commands/init.js'
-import { registerGenerate } from './commands/generate.js'
-import { registerActivate } from './commands/activate.js'
-import { registerWhoami } from './commands/whoami.js'
-import { version } from './version.js'
+import { Command } from "commander";
+import pc from "picocolors";
+import { registerInit } from "./commands/init.js";
+import { registerGenerate } from "./commands/generate.js";
+import { registerActivate } from "./commands/activate.js";
+import { registerWhoami } from "./commands/whoami.js";
+import { version } from "./version.js";
 
-const program = new Command()
+const program = new Command();
 
 program
-  .name('satus')
-  .description('Generate realistic seed data for Postgres. Respects FKs, constraints, and your schema.')
-  .version(version, '-v, --version', 'print CLI version')
-  .showHelpAfterError()
+  .name("satus")
+  .description(
+    "Generate realistic seed data for Postgres. Respects FKs, constraints, and your schema.",
+  )
+  .version(version, "-v, --version", "print CLI version")
+  .showHelpAfterError();
 
-registerInit(program)
-registerGenerate(program)
-registerActivate(program)
-registerWhoami(program)
+registerInit(program);
+registerGenerate(program);
+registerActivate(program);
+registerWhoami(program);
 
 program.parseAsync(process.argv).catch((err: unknown) => {
-  const message = err instanceof Error ? err.message : String(err)
-  console.error(pc.red('error: ') + message)
-  process.exit(1)
-})
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(pc.red("error: ") + message);
+  process.exit(1);
+});

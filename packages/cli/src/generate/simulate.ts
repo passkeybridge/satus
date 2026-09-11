@@ -16,127 +16,128 @@
  * either, so NOT NULL violations the validator surfaces are real bugs in
  * the generation plan, not artifacts of randomized nulls.
  */
-import type { Provider, ProviderRequest, ProviderResponse } from './providers/types.js'
-import type { Table } from './introspect.js'
+import type { Provider, ProviderRequest, ProviderResponse } from "./providers/types.js";
+import type { Table } from "./introspect.js";
 
 interface JsonSchemaNode {
-  type?: string | string[]
-  format?: string
-  pattern?: string
-  maxLength?: number
-  minimum?: number
-  maximum?: number
-  description?: string
-  properties?: Record<string, JsonSchemaNode>
-  items?: JsonSchemaNode
-  minItems?: number
-  maxItems?: number
-  required?: string[]
+  type?: string | string[];
+  format?: string;
+  pattern?: string;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  description?: string;
+  properties?: Record<string, JsonSchemaNode>;
+  items?: JsonSchemaNode;
+  minItems?: number;
+  maxItems?: number;
+  required?: string[];
 }
 
 export function createSimulatedProvider(): Provider {
   return {
-    id: 'simulated',
-    model: 'simulated/dry-run',
+    id: "simulated",
+    model: "simulated/dry-run",
     // The simulator never calls an upstream API, so it costs nothing and
     // reports zero usage. The dry-run *estimate* is priced separately, off
     // the real provider the user selected (see planRun in runner.ts).
     rates: { inputPerMTok: 0, outputPerMTok: 0 },
     async generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>> {
-      const root = req.jsonSchema.schema as unknown as JsonSchemaNode
-      const rowsNode = (root.properties?.rows ?? {}) as JsonSchemaNode
-      const count = rowsNode.minItems ?? rowsNode.maxItems ?? 1
-      const itemSchema = (rowsNode.items ?? {}) as JsonSchemaNode
-      const tableTag = req.jsonSchema.name.replace(/_rows$/, '')
-      const rows: Array<Record<string, unknown>> = []
+      const root = req.jsonSchema.schema as unknown as JsonSchemaNode;
+      const rowsNode = (root.properties?.rows ?? {}) as JsonSchemaNode;
+      const count = rowsNode.minItems ?? rowsNode.maxItems ?? 1;
+      const itemSchema = (rowsNode.items ?? {}) as JsonSchemaNode;
+      const tableTag = req.jsonSchema.name.replace(/_rows$/, "");
+      const rows: Array<Record<string, unknown>> = [];
       for (let i = 0; i < count; i++) {
-        rows.push(synthRow(itemSchema, i, tableTag))
+        rows.push(synthRow(itemSchema, i, tableTag));
       }
       return {
         data: { rows } as unknown as T,
         usage: { inputTokens: 0, outputTokens: 0, usd: 0 },
-      }
+      };
     },
-  }
+  };
 }
 
 function synthRow(item: JsonSchemaNode, i: number, tableTag: string): Record<string, unknown> {
-  const out: Record<string, unknown> = {}
-  const props = item.properties ?? {}
+  const out: Record<string, unknown> = {};
+  const props = item.properties ?? {};
   for (const [name, node] of Object.entries(props)) {
-    out[name] = synthValue(name, node, i, tableTag)
+    out[name] = synthValue(name, node, i, tableTag);
   }
-  return out
+  return out;
 }
 
 function synthValue(name: string, node: JsonSchemaNode, i: number, tableTag: string): unknown {
-  const types = Array.isArray(node.type) ? node.type : node.type ? [node.type] : ['string']
+  const types = Array.isArray(node.type) ? node.type : node.type ? [node.type] : ["string"];
   // Pick the first concrete (non-null) type. Always emit non-null so the
   // validator's NOT NULL findings reflect real planning bugs, not coin flips.
-  const primary = types.find((t) => t !== 'null') ?? 'string'
+  const primary = types.find((t) => t !== "null") ?? "string";
 
   switch (primary) {
-    case 'boolean':
-      return i % 2 === 0
-    case 'integer': {
-      const min = typeof node.minimum === 'number' ? node.minimum : 1
-      const max = typeof node.maximum === 'number' ? node.maximum : min + 1_000_000
-      const v = min < 0 ? i + 1 : min + i
-      return clamp(v, min, max)
+    case "boolean":
+      return i % 2 === 0;
+    case "integer": {
+      const min = typeof node.minimum === "number" ? node.minimum : 1;
+      const max = typeof node.maximum === "number" ? node.maximum : min + 1_000_000;
+      const v = min < 0 ? i + 1 : min + i;
+      return clamp(v, min, max);
     }
-    case 'number': {
-      const base = typeof node.minimum === 'number' ? node.minimum : 0
-      return Number((base + i + 0.5).toFixed(2))
+    case "number": {
+      const base = typeof node.minimum === "number" ? node.minimum : 0;
+      return Number((base + i + 0.5).toFixed(2));
     }
-    case 'object':
-      return {}
-    case 'array':
-      return []
-    case 'string':
+    case "object":
+      return {};
+    case "array":
+      return [];
+    case "string":
     default:
-      return synthString(name, node, i, tableTag)
+      return synthString(name, node, i, tableTag);
   }
 }
 
 function synthString(name: string, node: JsonSchemaNode, i: number, tableTag: string): string {
   if (node.pattern && /\[0-9a-fA-F\]\{8\}-/.test(node.pattern)) {
-    return deterministicUuid(i)
+    return deterministicUuid(i);
   }
-  if (node.format === 'date') return shiftedDate(i).slice(0, 10)
-  if (node.format === 'date-time') return shiftedDate(i)
+  if (node.format === "date") return shiftedDate(i).slice(0, 10);
+  if (node.format === "date-time") return shiftedDate(i);
 
-  const n = name.toLowerCase()
-  let v: string
-  if (n === 'email' || n.endsWith('_email')) v = `user${i + 1}@example.test`
-  else if (n === 'url' || n.endsWith('_url')) v = `https://example.test/${tableTag}/${i + 1}`
-  else if (n === 'phone' || n.endsWith('_phone')) v = `+1-415-555-${String(1000 + (i % 9000)).slice(-4)}`
-  else v = `${name}_${i + 1}`
+  const n = name.toLowerCase();
+  let v: string;
+  if (n === "email" || n.endsWith("_email")) v = `user${i + 1}@example.test`;
+  else if (n === "url" || n.endsWith("_url")) v = `https://example.test/${tableTag}/${i + 1}`;
+  else if (n === "phone" || n.endsWith("_phone"))
+    v = `+1-415-555-${String(1000 + (i % 9000)).slice(-4)}`;
+  else v = `${name}_${i + 1}`;
 
-  return capLen(v, node.maxLength)
+  return capLen(v, node.maxLength);
 }
 
 function capLen(s: string, max?: number): string {
-  if (typeof max === 'number' && s.length > max) return s.slice(0, max)
-  return s
+  if (typeof max === "number" && s.length > max) return s.slice(0, max);
+  return s;
 }
 
 function clamp(v: number, min: number, max: number): number {
-  if (v < min) return min
-  if (v > max) return max
-  return v
+  if (v < min) return min;
+  if (v > max) return max;
+  return v;
 }
 
 function shiftedDate(i: number): string {
   // Stable anchor so two dry-runs produce identical timestamps.
-  const ms = Date.UTC(2026, 0, 1) - i * 86_400_000
-  return new Date(ms).toISOString()
+  const ms = Date.UTC(2026, 0, 1) - i * 86_400_000;
+  return new Date(ms).toISOString();
 }
 
 function deterministicUuid(i: number): string {
-  const hex = (i + 1).toString(16).padStart(12, '0')
+  const hex = (i + 1).toString(16).padStart(12, "0");
   // v4 UUID shape with deterministic suffix; the version/variant bits stay
   // valid so the value survives strict UUID parsers.
-  return `00000000-0000-4000-8000-${hex}`
+  return `00000000-0000-4000-8000-${hex}`;
 }
 
 /**
@@ -165,22 +166,22 @@ export function synthesizePkRows(
   generatedRows: Array<Record<string, unknown>>,
   referencedColumns: string[] = [],
 ): Array<Record<string, unknown>> {
-  const poolColumns = [...new Set([...table.primaryKey, ...referencedColumns])]
-  if (poolColumns.length === 0 || generatedRows.length === 0) return []
-  const rows: Array<Record<string, unknown>> = []
+  const poolColumns = [...new Set([...table.primaryKey, ...referencedColumns])];
+  if (poolColumns.length === 0 || generatedRows.length === 0) return [];
+  const rows: Array<Record<string, unknown>> = [];
   for (let i = 0; i < generatedRows.length; i++) {
-    const row: Record<string, unknown> = {}
+    const row: Record<string, unknown> = {};
     for (const name of poolColumns) {
-      const produced = generatedRows[i]?.[name]
+      const produced = generatedRows[i]?.[name];
       if (produced !== undefined) {
-        row[name] = produced
-        continue
+        row[name] = produced;
+        continue;
       }
-      const col = table.columns.find((c) => c.name === name)
-      const udt = col?.udtName.toLowerCase() ?? 'int4'
-      row[name] = udt === 'uuid' ? deterministicUuid(i) : i + 1
+      const col = table.columns.find((c) => c.name === name);
+      const udt = col?.udtName.toLowerCase() ?? "int4";
+      row[name] = udt === "uuid" ? deterministicUuid(i) : i + 1;
     }
-    rows.push(row)
+    rows.push(row);
   }
-  return rows
+  return rows;
 }

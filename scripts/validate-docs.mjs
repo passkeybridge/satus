@@ -53,14 +53,21 @@ const num = (src, name) => {
 
 const REAL = {
   flags: new Set(
-    // Declared as `.option('--profile <name>', ...)`, so the flag name is
-      // followed by an argument placeholder, not the closing quote.
-      [...generateCmd.matchAll(/'(--[a-z-]+)/g), ...initCmd.matchAll(/'(--[a-z-]+)/g)]
+    // Declared as `.option("--profile <name>", ...)`, so the flag name is
+    // followed by an argument placeholder, not the closing quote.
+    //
+    // Match either quote character. This scan was written against CLI source
+    // that was uniformly single-quoted; `.prettierrc` sets
+    // "singleQuote": false, so running prettier rewrites all of them and a
+    // single-quote-only regex silently yields an EMPTY flag set — which
+    // surfaces as every documented flag reported missing at once, rather than
+    // as a parse error. Keep this quote-agnostic.
+    [...generateCmd.matchAll(/['"](--[a-z-]+)/g), ...initCmd.matchAll(/['"](--[a-z-]+)/g)]
       .map((m) => m[1])
       // commander provides these two on every command.
       .concat(["--help", "--version"])
-      // registered as `-v, --verbose`, so the single-quote scan misses it.
-      .concat(generateCmd.includes("'-v, --verbose'") ? ["--verbose"] : []),
+      // registered as `-v, --verbose`, so the flag scan above misses it.
+      .concat(/['"]-v, --verbose['"]/.test(generateCmd) ? ["--verbose"] : []),
   ),
   exitCodes: new Set([...exitCodes.matchAll(/export const \w+ = (\d+)/g)].map((m) => Number(m[1]))),
   freeRows: num(generateCmd, "FREE_MAX_ROWS"),
@@ -69,11 +76,15 @@ const REAL = {
   profileNames: new Set(
     (/export type ProfileName = ([^\n]+)/.exec(profiles)?.[1] ?? "")
       .split("|")
-      .map((s) => s.trim().replace(/'/g, ""))
+      // Strip either quote style and a trailing semicolon. Same reason as the
+      // flag scan above: a single-quote-only strip leaves literal `"`
+      // characters in every name once the repo is formatted, so each name
+      // fails to match itself.
+      .map((s) => s.trim().replace(/['"]/g, "").replace(/;$/, ""))
       .filter(Boolean),
   ),
   models: new Set(
-    [...generateCmd.matchAll(/(?:openai|anthropic):\s*'([a-z0-9.-]+)'/g)].map((m) => m[1]),
+    [...generateCmd.matchAll(/(?:openai|anthropic):\s*['"]([a-z0-9.-]+)['"]/g)].map((m) => m[1]),
   ),
 };
 
@@ -139,7 +150,9 @@ for (const file of DOC_FILES) {
   }
   for (const m of text.matchAll(/up to (\d+) rows per table across (\d+) tables/gi)) {
     if (Number(m[1]) !== REAL.freeRows || Number(m[2]) !== REAL.freeTables) {
-      fail(`${file}: claims free caps of ${m[1]}x${m[2]}; source says ${REAL.freeRows}x${REAL.freeTables}`);
+      fail(
+        `${file}: claims free caps of ${m[1]}x${m[2]}; source says ${REAL.freeRows}x${REAL.freeTables}`,
+      );
     }
   }
   for (const m of text.matchAll(/capped at (\d+) rows per table across (\d+) tables/gi)) {
@@ -190,7 +203,9 @@ for (const file of DOC_FILES) {
   for (const m of text.matchAll(/defaults?:?\s*\)?\s*([a-z0-9.-]*(?:gpt|claude)[a-z0-9.-]*)/gi)) {
     const model = m[1].toLowerCase();
     if (!REAL.models.has(model)) {
-      fail(`${file}: names default model "${model}"; DEFAULT_MODELS has ${[...REAL.models].join(", ")}`);
+      fail(
+        `${file}: names default model "${model}"; DEFAULT_MODELS has ${[...REAL.models].join(", ")}`,
+      );
     }
   }
 }
@@ -199,9 +214,15 @@ for (const file of DOC_FILES) {
 const versions = {
   "packages/cli/package.json": JSON.parse(read("packages/cli/package.json")).version,
   "packages/cli/package-lock.json": JSON.parse(read("packages/cli/package-lock.json")).version,
-  "packages/cli/src/version.ts": /version = '([^']+)'/.exec(read("packages/cli/src/version.ts"))?.[1],
+  // Quote-agnostic, here and for action.yml below. A single-quote-only match
+  // reports "(unparsed)" rather than a mismatch, so the check goes quiet
+  // instead of going red — and prettier rewrote both files to double quotes
+  // the first time it ran over the repo.
+  "packages/cli/src/version.ts": /version = ['"]([^'"]+)['"]/.exec(
+    read("packages/cli/src/version.ts"),
+  )?.[1],
   "src/lib/version.ts": /SATUS_VERSION = "([^"]+)"/.exec(read("src/lib/version.ts"))?.[1],
-  "packages/action/action.yml": /satus-version:[\s\S]*?default: '([^']+)'/.exec(
+  "packages/action/action.yml": /satus-version:[\s\S]*?default: ['"]([^'"]+)['"]/.exec(
     read("packages/action/action.yml"),
   )?.[1],
   "packages/action/README.md": /`satus-version` \| no \| `([^`]+)`/.exec(
@@ -230,7 +251,8 @@ if (!existsSync(join(ROOT, SECURITY_TXT))) {
     const days = (Date.parse(expires) - Date.now()) / 86_400_000;
     if (Number.isNaN(days)) fail(`${SECURITY_TXT}: Expires "${expires}" is not a valid timestamp`);
     else if (days < 0) fail(`${SECURITY_TXT}: expired ${Math.abs(Math.round(days))} days ago`);
-    else if (days < 30) fail(`${SECURITY_TXT}: expires in ${Math.round(days)} days — refresh it now`);
+    else if (days < 30)
+      fail(`${SECURITY_TXT}: expires in ${Math.round(days)} days — refresh it now`);
   }
 }
 

@@ -12,9 +12,9 @@
   },
   "introspection_ms": {
     "iterations": 15,
-    "rtt_select_1":     { "median": 603, "min": 599,  "max": 626  },
-    "legacy_5_queries": { "median": 981, "min": 963,  "max": 1194 },
-    "cte_1_query":      { "median": 646, "min": 639,  "max": 664  },
+    "rtt_select_1": { "median": 603, "min": 599, "max": 626 },
+    "legacy_5_queries": { "median": 981, "min": 963, "max": 1194 },
+    "cte_1_query": { "median": 646, "min": 639, "max": 664 },
     "wire_only_ms": {
       "legacy_5_queries": 378,
       "cte_1_query": 43,

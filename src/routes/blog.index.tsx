@@ -65,7 +65,13 @@ function BlogIndexPage() {
 
   return (
     <PageShell sections={SECTIONS} currentPath={PATH}>
-      <Section heading="h1" id="log" n="00" label="The log" title={<>field notes from the satus team.</>}>
+      <Section
+        heading="h1"
+        id="log"
+        n="00"
+        label="The log"
+        title={<>field notes from the satus team.</>}
+      >
         {posts.length === 0 ? (
           <p className="font-mono text-[13px] text-[var(--mute)]">
             No posts yet. Check back shortly.
@@ -119,8 +125,8 @@ function BlogIndexPage() {
           >
             /blog/rss.xml
           </a>
-          . Add it to any reader. There are no tracking pixels in the feed
-          and no cookies on this site.
+          . Add it to any reader. There are no tracking pixels in the feed and no cookies on this
+          site.
         </p>
       </Section>
     </PageShell>

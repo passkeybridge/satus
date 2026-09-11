@@ -11,27 +11,27 @@
  * with no behavior change, then adds Anthropic alongside in Pass 3.
  */
 export interface LlmUsage {
-  inputTokens: number
-  outputTokens: number
-  usd: number
+  inputTokens: number;
+  outputTokens: number;
+  usd: number;
 }
 
 export interface ProviderRequest {
   /** System prompt; provider-agnostic plain text. */
-  system: string
+  system: string;
   /** User turn; provider-agnostic plain text. */
-  user: string
+  user: string;
   /**
    * JSON Schema for the desired structured output. Providers map this to
    * their native structured-output surface (OpenAI: response_format
    * json_schema; Anthropic: tool-use with input_schema).
    */
-  jsonSchema: { name: string; schema: Record<string, unknown> }
+  jsonSchema: { name: string; schema: Record<string, unknown> };
 }
 
 export interface ProviderResponse<T> {
-  data: T
-  usage: LlmUsage
+  data: T;
+  usage: LlmUsage;
 }
 
 /**
@@ -45,8 +45,8 @@ export interface ProviderResponse<T> {
  * construction rather than by discipline.
  */
 export interface TokenRates {
-  inputPerMTok: number
-  outputPerMTok: number
+  inputPerMTok: number;
+  outputPerMTok: number;
 }
 
 export interface Provider {
@@ -55,12 +55,12 @@ export interface Provider {
    * 'simulated' variant is used by `satus generate --dry-run` to drive the
    * runner without an upstream LLM call (see ../simulate.ts).
    */
-  readonly id: 'openai' | 'anthropic' | 'simulated'
+  readonly id: "openai" | "anthropic" | "simulated";
   /** Model id actually being called; surfaces in telemetry and logs. */
-  readonly model: string
+  readonly model: string;
   /** Rates used by both the live cost meter and the dry-run estimator. */
-  readonly rates: TokenRates
-  generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>>
+  readonly rates: TokenRates;
+  generate<T>(req: ProviderRequest): Promise<ProviderResponse<T>>;
 }
 
 /**
@@ -69,18 +69,18 @@ export interface Provider {
  * the runner enforces it provider-agnostically.
  */
 export class CostBudget {
-  private spent = 0
+  private spent = 0;
   constructor(public readonly maxUsd: number) {}
   add(usage: LlmUsage) {
-    this.spent += usage.usd
+    this.spent += usage.usd;
   }
   get spentUsd() {
-    return this.spent
+    return this.spent;
   }
   remainingUsd() {
-    return this.maxUsd - this.spent
+    return this.maxUsd - this.spent;
   }
   exceeded() {
-    return this.spent > this.maxUsd
+    return this.spent > this.maxUsd;
   }
 }

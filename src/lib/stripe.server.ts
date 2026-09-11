@@ -26,9 +26,7 @@ const WEBHOOK_SECRET_VAR: Record<StripeEnv, string> = {
 };
 
 export function getStripeSecretKey(env: StripeEnv): string {
-  return env === "sandbox"
-    ? getEnv("STRIPE_SANDBOX_SECRET_KEY")
-    : getEnv("STRIPE_LIVE_SECRET_KEY");
+  return env === "sandbox" ? getEnv("STRIPE_SANDBOX_SECRET_KEY") : getEnv("STRIPE_LIVE_SECRET_KEY");
 }
 
 export function createStripeClient(env: StripeEnv): Stripe {
@@ -56,11 +54,7 @@ async function hmacHex(secret: string, signedPayload: string): Promise<string> {
     false,
     ["sign"],
   );
-  const signed = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(signedPayload),
-  );
+  const signed = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedPayload));
   return Array.from(new Uint8Array(signed))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

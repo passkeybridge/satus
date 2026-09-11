@@ -6,3 +6,18 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+
+# Markdown is not formatted, deliberately.
+#
+# The gate this repo enforces is `eslint .` with prettier/prettier, and
+# eslint does not lint markdown, so formatting it buys nothing. It costs
+# something: the first run re-indented a YAML fragment in
+# packages/action/README.md that is deliberately indented to show where it
+# slots into an existing workflow, and re-padded the columns of the
+# `satus-version` table that scripts/validate-docs.mjs parses to check
+# version drift — which turned a passing gate into "(unparsed)".
+#
+# src/content/blog is the same argument with more at stake: 43 published
+# posts, some embargoed, all rendered by `marked`. Prose is edited
+# deliberately, not by a formatter.
+*.md

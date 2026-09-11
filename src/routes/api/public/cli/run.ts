@@ -27,40 +27,44 @@
  * where we can't ship secrets. Tight zod validation + small INSERTs only.
  */
 
-import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
-import { supabaseAdmin } from '@/integrations/supabase/client.server'
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Max-Age': '86400',
-} as const
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+} as const;
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS },
-  })
+    headers: { "Content-Type": "application/json", ...CORS },
+  });
 
 const TableReport = z.object({
-  name: z.string().min(1).max(128).regex(/^[a-zA-Z0-9_]+$/),
+  name: z
+    .string()
+    .min(1)
+    .max(128)
+    .regex(/^[a-zA-Z0-9_]+$/),
   rows_generated: z.number().int().min(0).max(1_000_000),
-})
+});
 
 /**
  * Keys accepted from pre-0.3.7 clients purely so they receive a 200, then
  * stripped by `toRow` before the insert. Never persisted, never logged.
  */
-const LEGACY_DROPPED_KEYS = ['tables', 'target_schema', 'error_message', 'license_key'] as const
+const LEGACY_DROPPED_KEYS = ["tables", "target_schema", "error_message", "license_key"] as const;
 
 const RunSchema = z.object({
   id: z.string().uuid().optional(),
-  status: z.enum(['running', 'success', 'failed']),
+  status: z.enum(["running", "success", "failed"]),
   profile: z.string().min(1).max(32).optional(),
   // v0.3.0 (optional, backward-compatible with v0.2.x clients which omit it).
-  provider: z.enum(['openai', 'anthropic']).optional(),
+  provider: z.enum(["openai", "anthropic"]).optional(),
   model: z.string().min(1).max(64).optional(),
   // v0.3.7: replaces the per-table `tables` array.
   table_count: z.number().int().min(0).max(10_000).optional(),
@@ -69,11 +73,21 @@ const RunSchema = z.object({
   // v0.3.0 token counts (optional). Bounded to prevent abuse but generous.
   input_tokens: z.number().int().min(0).max(1_000_000_000).optional(),
   output_tokens: z.number().int().min(0).max(1_000_000_000).optional(),
-  duration_ms: z.number().int().min(0).max(24 * 60 * 60 * 1000).optional(),
+  duration_ms: z
+    .number()
+    .int()
+    .min(0)
+    .max(24 * 60 * 60 * 1000)
+    .optional(),
   // v0.3.7: fixed-vocabulary failure class; replaces free-text error_message.
-  error_class: z.string().min(1).max(64).regex(/^[a-zA-Z0-9_]+$/).optional(),
+  error_class: z
+    .string()
+    .min(1)
+    .max(64)
+    .regex(/^[a-zA-Z0-9_]+$/)
+    .optional(),
   cli_version: z.string().min(1).max(32).optional(),
-  environment: z.enum(['dev', 'live']).default('dev'),
+  environment: z.enum(["dev", "live"]).default("dev"),
 
   // --- Legacy, accepted then discarded. See the header. ---
   license_key: z.string().min(8).max(128).optional(),
@@ -83,10 +97,13 @@ const RunSchema = z.object({
   // v0.3.3 opt-in telemetry (all optional; older CLIs never send these).
   // Fingerprint is a 64-char lowercase hex SHA-256; anything else is
   // rejected before it lands in the DB.
-  schema_fingerprint: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  schema_fingerprint: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .optional(),
   validator_class: z.string().min(1).max(64).optional(),
   invocation_sequence: z.array(z.string().min(1).max(32)).max(16).optional(),
-})
+});
 
 /**
  * Build the DB row from a validated payload, dropping every legacy
@@ -96,47 +113,47 @@ const RunSchema = z.object({
  * refuse to store stay named in one place.
  */
 function toRow(data: z.infer<typeof RunSchema>): Record<string, unknown> {
-  const row: Record<string, unknown> = { ...data }
-  for (const key of LEGACY_DROPPED_KEYS) delete row[key]
-  row.finished_at = data.status === 'running' ? null : new Date().toISOString()
-  return row
+  const row: Record<string, unknown> = { ...data };
+  for (const key of LEGACY_DROPPED_KEYS) delete row[key];
+  row.finished_at = data.status === "running" ? null : new Date().toISOString();
+  return row;
 }
 
-export const Route = createFileRoute('/api/public/cli/run')({
+export const Route = createFileRoute("/api/public/cli/run")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
-        let body: unknown
+        let body: unknown;
         try {
-          body = await request.json()
+          body = await request.json();
         } catch {
-          return json(400, { ok: false, reason: 'invalid_json' })
+          return json(400, { ok: false, reason: "invalid_json" });
         }
-        const parsed = RunSchema.safeParse(body)
+        const parsed = RunSchema.safeParse(body);
         if (!parsed.success) {
-          return json(400, { ok: false, reason: 'invalid_payload', issues: parsed.error.issues })
+          return json(400, { ok: false, reason: "invalid_payload", issues: parsed.error.issues });
         }
-        const row = toRow(parsed.data)
+        const row = toRow(parsed.data);
 
         // Upsert by id when the CLI provides one (so a single run shows up
         // as one row across "running" -> "success/failed" updates).
         if (parsed.data.id) {
           const { error } = await supabaseAdmin
-            .from('satus_runs')
-            .upsert(row, { onConflict: 'id' })
-          if (error) return json(500, { ok: false, reason: 'db_error', detail: error.message })
-          return json(200, { ok: true, id: parsed.data.id })
+            .from("satus_runs")
+            .upsert(row, { onConflict: "id" });
+          if (error) return json(500, { ok: false, reason: "db_error", detail: error.message });
+          return json(200, { ok: true, id: parsed.data.id });
         }
 
         const { data, error } = await supabaseAdmin
-          .from('satus_runs')
+          .from("satus_runs")
           .insert(row)
-          .select('id')
-          .single()
-        if (error) return json(500, { ok: false, reason: 'db_error', detail: error.message })
-        return json(200, { ok: true, id: data.id })
+          .select("id")
+          .single();
+        if (error) return json(500, { ok: false, reason: "db_error", detail: error.message });
+        return json(200, { ok: true, id: data.id });
       },
     },
   },
-})
+});

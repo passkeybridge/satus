@@ -1,42 +1,42 @@
-name: 'satus'
-description: 'Generate realistic Postgres seed data that respects your foreign keys and constraints.'
-author: 'PasskeyBridge LLC'
+name: "satus"
+description: "Generate realistic Postgres seed data that respects your foreign keys and constraints."
+author: "PasskeyBridge LLC"
 branding:
-  icon: 'database'
-  color: 'red'
+  icon: "database"
+  color: "red"
 
 inputs:
   database-url:
-    description: 'Postgres connection string. Pass as a secret.'
+    description: "Postgres connection string. Pass as a secret."
     required: true
   rows:
-    description: 'Rows to generate per table. Free tier caps at 25.'
+    description: "Rows to generate per table. Free tier caps at 25."
     required: false
-    default: '50'
+    default: "50"
   profile:
-    description: 'Reference profile: saas | ecommerce | b2b.'
+    description: "Reference profile: saas | ecommerce | b2b."
     required: false
-    default: 'saas'
+    default: "saas"
   provider:
-    description: 'LLM provider: openai | anthropic. Auto-detected from env when omitted.'
+    description: "LLM provider: openai | anthropic. Auto-detected from env when omitted."
     required: false
-    default: ''
+    default: ""
   model:
-    description: 'Model id override. Falls back to the provider default.'
+    description: "Model id override. Falls back to the provider default."
     required: false
-    default: ''
+    default: ""
   max-cost:
-    description: 'USD ceiling for the run. Quote this so YAML keeps it a string.'
+    description: "USD ceiling for the run. Quote this so YAML keeps it a string."
     required: false
-    default: '1.00'
+    default: "1.00"
   dry-run:
     description: 'Validate without inserting or spending. Set to "true" to enable.'
     required: false
-    default: 'false'
+    default: "false"
   truncate:
     description: 'TRUNCATE the target tables before inserting (RESTART IDENTITY, no CASCADE). Set to "true" to enable.'
     required: false
-    default: 'false'
+    default: "false"
   force:
     description: >-
       Bypass the 10,000-row safety guard. Needed when the target database
@@ -44,43 +44,43 @@ inputs:
       with real fixtures, for example. Without it satus exits 11
       (E_DB_NOT_EMPTY) and writes nothing. Set to "true" to enable.
     required: false
-    default: 'false'
+    default: "false"
   working-directory:
-    description: 'Directory to run satus in (where satus.config.json lives).'
+    description: "Directory to run satus in (where satus.config.json lives)."
     required: false
-    default: '.'
+    default: "."
   satus-version:
-    description: 'npm version of @passkeybridge/satus to install.'
+    description: "npm version of @passkeybridge/satus to install."
     required: false
-    default: '0.3.11'
+    default: "0.3.11"
 
 outputs:
   run-id:
-    description: 'Server-side run UUID.'
+    description: "Server-side run UUID."
     value: ${{ steps.run.outputs.run-id }}
   tables-seeded:
-    description: 'Number of tables the run touched.'
+    description: "Number of tables the run touched."
     value: ${{ steps.run.outputs.tables-seeded }}
   rows-inserted:
-    description: 'Total rows inserted (0 on dry-run).'
+    description: "Total rows inserted (0 on dry-run)."
     value: ${{ steps.run.outputs.rows-inserted }}
   tokens-in:
-    description: 'Total input tokens across the run.'
+    description: "Total input tokens across the run."
     value: ${{ steps.run.outputs.tokens-in }}
   tokens-out:
-    description: 'Total output tokens across the run.'
+    description: "Total output tokens across the run."
     value: ${{ steps.run.outputs.tokens-out }}
   spent-usd:
-    description: 'Actual LLM spend in USD.'
+    description: "Actual LLM spend in USD."
     value: ${{ steps.run.outputs.spent-usd }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: "20"
 
     - name: Run satus generate
       id: run

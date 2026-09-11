@@ -138,15 +138,11 @@ export function WaitlistForm({ defaultTier = "pro" }: { defaultTier?: Tier }) {
           </p>
         </div>
 
-        <p
-          role="status"
-          aria-live="polite"
-          className="min-h-[1.25rem] font-mono text-[12px]"
-        >
+        <p role="status" aria-live="polite" className="min-h-[1.25rem] font-mono text-[12px]">
           {status === "ok" && (
             <span className="text-[var(--ink)]">
-              <span className="text-[var(--signal)]">●</span> recorded. you&rsquo;ll hear from
-              us when {tier} opens.
+              <span className="text-[var(--signal)]">●</span> recorded. you&rsquo;ll hear from us
+              when {tier} opens.
             </span>
           )}
           {status === "rate_limited" && (

@@ -3,8 +3,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/action/**'
-      - '.github/workflows/action-selftest.yml'
+      - "packages/action/**"
+      - ".github/workflows/action-selftest.yml"
   workflow_dispatch:
 
 # Serialise selftest runs so two commits landing back-to-back don't fight
@@ -80,10 +80,10 @@ jobs:
         uses: ./packages/action
         with:
           database-url: ${{ env.DATABASE_URL }}
-          rows: '25'
+          rows: "25"
           profile: saas
-          max-cost: '0.10'
-          dry-run: 'true'
+          max-cost: "0.10"
+          dry-run: "true"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
@@ -100,9 +100,9 @@ jobs:
         uses: ./packages/action
         with:
           database-url: ${{ env.DATABASE_URL }}
-          rows: '25'
+          rows: "25"
           profile: saas
-          max-cost: '0.50'
+          max-cost: "0.50"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 

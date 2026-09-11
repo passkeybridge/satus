@@ -42,7 +42,11 @@ const json = (status: number, body: unknown) =>
   });
 
 /** Postgres identifier: bounded, conservative charset. */
-const ident = z.string().min(1).max(63).regex(/^[a-zA-Z_][a-zA-Z0-9_$]*$/);
+const ident = z
+  .string()
+  .min(1)
+  .max(63)
+  .regex(/^[a-zA-Z_][a-zA-Z0-9_$]*$/);
 
 const Column = z.object({
   name: ident,
@@ -157,8 +161,7 @@ export const Route = createFileRoute("/api/public/demo/generate")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
       POST: async ({ request }) => {
-        const apiKey =
-          process.env.DEMO_ANTHROPIC_API_KEY ?? process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.DEMO_ANTHROPIC_API_KEY ?? process.env.ANTHROPIC_API_KEY;
         if (!apiKey) {
           return json(503, { error: "demo_unavailable" });
         }
@@ -250,4 +253,4 @@ export const Route = createFileRoute("/api/public/demo/generate")({
       },
     },
   },
-})
+});

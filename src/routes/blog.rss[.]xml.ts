@@ -34,9 +34,7 @@ export const Route = createFileRoute("/blog/rss.xml")({
     handlers: {
       GET: async () => {
         const posts = getAllPosts();
-        const lastBuildDate = posts[0]
-          ? toRfc822(posts[0].date)
-          : new Date().toUTCString();
+        const lastBuildDate = posts[0] ? toRfc822(posts[0].date) : new Date().toUTCString();
 
         const items = posts
           .map((p) => {

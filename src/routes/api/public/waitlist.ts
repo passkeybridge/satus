@@ -34,13 +34,7 @@ const json = (status: number, body: unknown) =>
   });
 
 const Payload = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(5)
-    .max(254)
-    .email(),
+  email: z.string().trim().toLowerCase().min(5).max(254).email(),
   tier: z.enum(["pro", "team"]),
   note: z.string().trim().max(500).optional(),
   source: z.string().trim().max(64).optional(),
@@ -115,16 +109,14 @@ export const Route = createFileRoute("/api/public/waitlist")({
         const ua = request.headers.get("user-agent")?.slice(0, 512) ?? null;
         const { email, tier, note, source } = parsed.data;
 
-        const { error } = await supabaseAdmin
-          .from("waitlist_signups")
-          .insert({
-            email,
-            tier,
-            note: note ?? null,
-            source: source ?? null,
-            user_agent: ua,
-            ip_hash: ipHash,
-          });
+        const { error } = await supabaseAdmin.from("waitlist_signups").insert({
+          email,
+          tier,
+          note: note ?? null,
+          source: source ?? null,
+          user_agent: ua,
+          ip_hash: ipHash,
+        });
 
         // Treat duplicate (email, tier) as success—same intent, idempotent.
         if (error && error.code !== "23505") {

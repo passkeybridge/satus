@@ -24,15 +24,11 @@
  * revoked_at and skip the email if already revoked.
  */
 
-import type Stripe from 'stripe'
-import { createFileRoute } from '@tanstack/react-router'
-import {
-  createStripeClient,
-  type StripeEnv,
-  verifyWebhook,
-} from '@/lib/stripe.server'
-import { supabaseAdmin } from '@/integrations/supabase/client.server'
-import { notifyWebhookFailure } from '@/lib/webhook-alerts.server'
+import type Stripe from "stripe";
+import { createFileRoute } from "@tanstack/react-router";
+import { createStripeClient, type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { notifyWebhookFailure } from "@/lib/webhook-alerts.server";
 
 /**
  * Two shapes, one handler.
@@ -51,65 +47,62 @@ import { notifyWebhookFailure } from '@/lib/webhook-alerts.server'
  */
 type InvoicePayload = Stripe.Invoice & {
   /** Pre-basil location of `parent.subscription_details.subscription`. */
-  subscription?: string | Stripe.Subscription | null
-}
+  subscription?: string | Stripe.Subscription | null;
+};
 
 type SubscriptionPayload = Stripe.Subscription & {
   /** Pre-basil location of the field now on `items.data[].current_period_end`. */
-  current_period_end?: number | null
-}
+  current_period_end?: number | null;
+};
 
 type ChargePayload = Stripe.Charge & {
   /** Removed from `Charge` in basil; still present on pre-basil payloads. */
-  invoice?: string | InvoicePayload | null
-}
+  invoice?: string | InvoicePayload | null;
+};
 
 const PLAN_LABELS: Record<string, string> = {
-  satus_pro_monthly: 'Pro · monthly',
-  satus_pro_yearly: 'Pro · yearly',
-  satus_team_seat_monthly: 'Team seat · monthly',
-}
+  satus_pro_monthly: "Pro · monthly",
+  satus_pro_yearly: "Pro · yearly",
+  satus_team_seat_monthly: "Team seat · monthly",
+};
 
 /** `satus_live_<32 hex>` for live, `satus_test_<32 hex>` for sandbox. */
 function generateLicenseKey(env: StripeEnv): string {
-  const bytes = new Uint8Array(16)
-  crypto.getRandomValues(bytes)
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
   const hex = Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-  const prefix = env === 'live' ? 'satus_live_' : 'satus_test_'
-  return prefix + hex
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  const prefix = env === "live" ? "satus_live_" : "satus_test_";
+  return prefix + hex;
 }
 
 function planLabel(plan: string | null | undefined): string {
-  if (!plan) return 'satus.sh subscription'
-  return PLAN_LABELS[plan] ?? plan
+  if (!plan) return "satus.sh subscription";
+  return PLAN_LABELS[plan] ?? plan;
 }
 
 function isoDateOnly(ts: number | string | null | undefined): string | null {
-  if (!ts) return null
-  const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts)
-  return d.toISOString().slice(0, 10)
+  if (!ts) return null;
+  const d = typeof ts === "number" ? new Date(ts * 1000) : new Date(ts);
+  return d.toISOString().slice(0, 10);
 }
 
 /** Deep link that opens a fresh Stripe Billing Portal session for this key. */
 function manageUrl(licenseKey: string): string {
-  return `https://satus.sh/api/public/billing/portal?key=${encodeURIComponent(licenseKey)}`
+  return `https://satus.sh/api/public/billing/portal?key=${encodeURIComponent(licenseKey)}`;
 }
 
 /** Item first (basil and later), then the legacy top-level field. */
 function periodEndOf(sub: SubscriptionPayload): number | null {
-  return (
-    sub.items?.data?.[0]?.current_period_end ?? sub.current_period_end ?? null
-  )
+  return sub.items?.data?.[0]?.current_period_end ?? sub.current_period_end ?? null;
 }
 
 /** Lookup key when the price has one, else the price id. */
 function planOf(sub: Stripe.Subscription): string {
-  const price = sub.items?.data?.[0]?.price
-  return price?.lookup_key ?? price?.id ?? 'unknown'
+  const price = sub.items?.data?.[0]?.price;
+  return price?.lookup_key ?? price?.id ?? "unknown";
 }
-
 
 /**
  * Enqueue a transactional email via the internal send route. Same auth
@@ -117,16 +110,16 @@ function planOf(sub: Stripe.Subscription): string {
  * the subscription id + template so retries from Stripe never duplicate.
  */
 async function enqueueTransactionalEmail(args: {
-  templateName: string
-  recipientEmail: string
-  idempotencyKey: string
-  templateData: Record<string, unknown>
+  templateName: string;
+  recipientEmail: string;
+  idempotencyKey: string;
+  templateData: Record<string, unknown>;
 }) {
-  const origin = process.env.PUBLIC_SITE_URL ?? 'https://satus.sh'
+  const origin = process.env.PUBLIC_SITE_URL ?? "https://satus.sh";
   const res = await fetch(`${origin}/api/internal/email/transactional/send`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
     },
     body: JSON.stringify({
@@ -136,88 +129,79 @@ async function enqueueTransactionalEmail(args: {
       templateData: args.templateData,
     }),
   }).catch((err) => {
-    console.error('[payments-webhook] email enqueue failed', args.templateName, err)
-    return null
-  })
+    console.error("[payments-webhook] email enqueue failed", args.templateName, err);
+    return null;
+  });
   if (res && !res.ok) {
-    const body = await res.text().catch(() => '')
-    console.error('[payments-webhook] email enqueue non-2xx', args.templateName, res.status, body)
+    const body = await res.text().catch(() => "");
+    console.error("[payments-webhook] email enqueue non-2xx", args.templateName, res.status, body);
   }
 }
 
-async function handleCheckoutCompleted(
-  session: Stripe.Checkout.Session,
-  env: StripeEnv,
-) {
-  if (session.mode !== 'subscription') return
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session, env: StripeEnv) {
+  if (session.mode !== "subscription") return;
 
   // Past this point the customer has paid. Every missing precondition and
   // failed write throws so the POST handler returns 500 (Stripe retries
   // for ~3 days) and ops gets the alert — a silent return here is a buyer
   // with a receipt and no license, and nobody would know.
   const subscriptionId: string | undefined =
-    typeof session.subscription === 'string'
+    typeof session.subscription === "string"
       ? session.subscription
-      : (session.subscription?.id ?? undefined)
+      : (session.subscription?.id ?? undefined);
   if (!subscriptionId) {
-    throw new Error(`subscription-mode session ${session.id} has no subscription id`)
+    throw new Error(`subscription-mode session ${session.id} has no subscription id`);
   }
 
   const email: string | undefined =
-    session.customer_details?.email ?? session.customer_email ?? undefined
+    session.customer_details?.email ?? session.customer_email ?? undefined;
   if (!email) {
-    throw new Error(`no email on session ${session.id}; license cannot be delivered`)
+    throw new Error(`no email on session ${session.id}; license cannot be delivered`);
   }
 
   const customerId: string | undefined =
-    typeof session.customer === 'string'
-      ? session.customer
-      : session.customer?.id
+    typeof session.customer === "string" ? session.customer : session.customer?.id;
   if (!customerId) {
-    throw new Error(`no customer id on session ${session.id}`)
+    throw new Error(`no customer id on session ${session.id}`);
   }
 
-  const stripe = createStripeClient(env)
-  const sub = await stripe.subscriptions.retrieve(subscriptionId)
-  const plan = planOf(sub)
-  const periodEnd = periodEndOf(sub)
+  const stripe = createStripeClient(env);
+  const sub = await stripe.subscriptions.retrieve(subscriptionId);
+  const plan = planOf(sub);
+  const periodEnd = periodEndOf(sub);
 
   const { data: existing } = await supabaseAdmin
-    .from('licenses')
-    .select('license_key')
-    .eq('stripe_subscription_id', subscriptionId)
-    .maybeSingle()
+    .from("licenses")
+    .select("license_key")
+    .eq("stripe_subscription_id", subscriptionId)
+    .maybeSingle();
 
-  const licenseKey = existing?.license_key ?? generateLicenseKey(env)
+  const licenseKey = existing?.license_key ?? generateLicenseKey(env);
 
-  const { error } = await supabaseAdmin
-    .from('licenses')
-    .upsert(
-      {
-        license_key: licenseKey,
-        email: email.toLowerCase(),
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        plan,
-        status: sub.status,
-        environment: env,
-        current_period_end: periodEnd
-          ? new Date(periodEnd * 1000).toISOString()
-          : null,
-        cancel_at_period_end: sub.cancel_at_period_end ?? false,
-        revoked_at: null,
-      },
-      { onConflict: 'stripe_subscription_id' },
-    )
+  const { error } = await supabaseAdmin.from("licenses").upsert(
+    {
+      license_key: licenseKey,
+      email: email.toLowerCase(),
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      plan,
+      status: sub.status,
+      environment: env,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      cancel_at_period_end: sub.cancel_at_period_end ?? false,
+      revoked_at: null,
+    },
+    { onConflict: "stripe_subscription_id" },
+  );
 
   if (error) {
     // Idempotent on retry: the upsert keys on stripe_subscription_id and
     // the existing-key lookup above reuses an already-issued key.
-    throw new Error(`license upsert failed: ${error.message}`)
+    throw new Error(`license upsert failed: ${error.message}`);
   }
 
   await enqueueTransactionalEmail({
-    templateName: 'license-delivery',
+    templateName: "license-delivery",
     recipientEmail: email,
     idempotencyKey: `license-${subscriptionId}`,
     templateData: {
@@ -226,17 +210,13 @@ async function handleCheckoutCompleted(
       renewsOn: isoDateOnly(periodEnd),
       manageUrl: manageUrl(licenseKey),
     },
-  })
+  });
 }
 
-
-async function handleSubscriptionUpdated(
-  subscription: SubscriptionPayload,
-  env: StripeEnv,
-) {
-  const plan = planOf(subscription)
-  const periodEnd = periodEndOf(subscription)
-  const cancelAtPeriodEnd = subscription.cancel_at_period_end ?? false
+async function handleSubscriptionUpdated(subscription: SubscriptionPayload, env: StripeEnv) {
+  const plan = planOf(subscription);
+  const periodEnd = periodEndOf(subscription);
+  const cancelAtPeriodEnd = subscription.cancel_at_period_end ?? false;
 
   // Snapshot the existing row so we can detect the cancel_at_period_end
   // transition (false -> true) and send the cancellation email exactly
@@ -244,11 +224,11 @@ async function handleSubscriptionUpdated(
   // plan change, payment method update)—without this guard we'd email
   // on every one.
   const { data: existing } = await supabaseAdmin
-    .from('licenses')
-    .select('email, cancel_at_period_end, license_key, revoked_at')
-    .eq('stripe_subscription_id', subscription.id)
-    .eq('environment', env)
-    .maybeSingle()
+    .from("licenses")
+    .select("email, cancel_at_period_end, license_key, revoked_at")
+    .eq("stripe_subscription_id", subscription.id)
+    .eq("environment", env)
+    .maybeSingle();
 
   /**
    * Un-revoke on reactivation.
@@ -268,27 +248,24 @@ async function handleSubscriptionUpdated(
    * reverse a revocation. The 24-hour verdict cache means a customer sees
    * this within a day of Stripe reporting them live again.
    */
-  const reactivated =
-    subscription.status === 'active' || subscription.status === 'trialing'
+  const reactivated = subscription.status === "active" || subscription.status === "trialing";
 
   const { error: updateErr } = await supabaseAdmin
-    .from('licenses')
+    .from("licenses")
     .update({
       status: subscription.status,
       plan,
-      current_period_end: periodEnd
-        ? new Date(periodEnd * 1000).toISOString()
-        : null,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: cancelAtPeriodEnd,
       ...(reactivated ? { revoked_at: null } : {}),
     })
-    .eq('stripe_subscription_id', subscription.id)
-    .eq('environment', env)
+    .eq("stripe_subscription_id", subscription.id)
+    .eq("environment", env);
 
   if (updateErr) {
     // Throw so the POST handler returns 500 and Stripe retries—silent
     // 200s here cause license state to drift from Stripe's source of truth.
-    throw new Error(`license update failed: ${updateErr.message}`)
+    throw new Error(`license update failed: ${updateErr.message}`);
   }
 
   // Rare and worth seeing in the log when it happens: a license that was
@@ -296,34 +273,24 @@ async function handleSubscriptionUpdated(
   if (reactivated && existing?.revoked_at) {
     console.log(
       `[payments-webhook] un-revoked ${subscription.id} (${env}): status=${subscription.status}, was revoked ${existing.revoked_at}`,
-    )
+    );
   }
 
-  if (
-    existing?.email &&
-    cancelAtPeriodEnd &&
-    !existing.cancel_at_period_end
-  ) {
+  if (existing?.email && cancelAtPeriodEnd && !existing.cancel_at_period_end) {
     await enqueueTransactionalEmail({
-      templateName: 'subscription-canceled',
+      templateName: "subscription-canceled",
       recipientEmail: existing.email as string,
       idempotencyKey: `cancel-${subscription.id}`,
       templateData: {
         planLabel: planLabel(plan),
         accessEndsOn: isoDateOnly(periodEnd),
-        manageUrl: existing.license_key
-          ? manageUrl(existing.license_key as string)
-          : undefined,
+        manageUrl: existing.license_key ? manageUrl(existing.license_key as string) : undefined,
       },
-    })
+    });
   }
 }
 
-
-async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription,
-  env: StripeEnv,
-) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, env: StripeEnv) {
   // Read email + plan + prior cancel_at_period_end BEFORE we mutate the row.
   // The prior flag tells us WHY this delete fired:
   //   - true  -> customer previously scheduled cancel; period now elapsed
@@ -334,46 +301,46 @@ async function handleSubscriptionDeleted(
   // unreliable across historical events; the row we already own is the
   // single source of truth we trust.
   const { data: existing } = await supabaseAdmin
-    .from('licenses')
-    .select('email, plan, license_key, cancel_at_period_end')
-    .eq('stripe_subscription_id', subscription.id)
-    .eq('environment', env)
-    .maybeSingle()
+    .from("licenses")
+    .select("email, plan, license_key, cancel_at_period_end")
+    .eq("stripe_subscription_id", subscription.id)
+    .eq("environment", env)
+    .maybeSingle();
 
-  const nowIso = new Date().toISOString()
+  const nowIso = new Date().toISOString();
 
   const { error: revokeErr } = await supabaseAdmin
-    .from('licenses')
+    .from("licenses")
     .update({
-      status: 'canceled',
+      status: "canceled",
       revoked_at: nowIso,
     })
-    .eq('stripe_subscription_id', subscription.id)
-    .eq('environment', env)
+    .eq("stripe_subscription_id", subscription.id)
+    .eq("environment", env);
 
   if (revokeErr) {
-    throw new Error(`license revoke failed: ${revokeErr.message}`)
+    throw new Error(`license revoke failed: ${revokeErr.message}`);
   }
 
-  if (!existing?.email) return
+  if (!existing?.email) return;
 
-  const scheduledCancel = existing.cancel_at_period_end === true
-  const licenseKey = (existing.license_key as string | null) ?? null
+  const scheduledCancel = existing.cancel_at_period_end === true;
+  const licenseKey = (existing.license_key as string | null) ?? null;
 
   if (scheduledCancel) {
     await enqueueTransactionalEmail({
-      templateName: 'subscription-expired',
+      templateName: "subscription-expired",
       recipientEmail: existing.email as string,
       idempotencyKey: `expired-${subscription.id}`,
       templateData: {
         planLabel: planLabel(existing.plan as string | null),
         manageUrl: licenseKey ? manageUrl(licenseKey) : undefined,
       },
-    })
+    });
   } else {
     // Immediate cancel: access ends today, not at a future period_end.
     await enqueueTransactionalEmail({
-      templateName: 'subscription-canceled',
+      templateName: "subscription-canceled",
       recipientEmail: existing.email as string,
       idempotencyKey: `cancel-immediate-${subscription.id}`,
       templateData: {
@@ -381,10 +348,9 @@ async function handleSubscriptionDeleted(
         accessEndsOn: nowIso.slice(0, 10),
         manageUrl: licenseKey ? manageUrl(licenseKey) : undefined,
       },
-    })
+    });
   }
 }
-
 
 /**
  * Pull the subscription id out of an invoice, whichever shape it is in.
@@ -393,10 +359,9 @@ async function handleSubscriptionDeleted(
  * always yields the former, since our client is pinned to dahlia.
  */
 function subscriptionIdFromInvoice(invoice: InvoicePayload): string | null {
-  const sub =
-    invoice.parent?.subscription_details?.subscription ?? invoice.subscription
-  if (!sub) return null
-  return typeof sub === 'string' ? sub : (sub.id ?? null)
+  const sub = invoice.parent?.subscription_details?.subscription ?? invoice.subscription;
+  if (!sub) return null;
+  return typeof sub === "string" ? sub : (sub.id ?? null);
 }
 
 /**
@@ -414,70 +379,70 @@ async function subscriptionIdFromCharge(
   charge: ChargePayload,
   env: StripeEnv,
 ): Promise<string | null> {
-  const invoiceField = charge?.invoice
-  if (!invoiceField) return null
-  if (typeof invoiceField === 'object') {
-    return subscriptionIdFromInvoice(invoiceField)
+  const invoiceField = charge?.invoice;
+  if (!invoiceField) return null;
+  if (typeof invoiceField === "object") {
+    return subscriptionIdFromInvoice(invoiceField);
   }
-  const stripe = createStripeClient(env)
-  const invoice = await stripe.invoices.retrieve(invoiceField)
-  return subscriptionIdFromInvoice(invoice)
+  const stripe = createStripeClient(env);
+  const invoice = await stripe.invoices.retrieve(invoiceField);
+  return subscriptionIdFromInvoice(invoice);
 }
 
 async function handleChargeRefunded(charge: ChargePayload, env: StripeEnv) {
-  const subscriptionId = await subscriptionIdFromCharge(charge, env)
+  const subscriptionId = await subscriptionIdFromCharge(charge, env);
   if (!subscriptionId) {
     // One-time charge or untraceable; nothing to revoke. Logged so we
     // notice if a real subscription refund ever lands here.
-    console.log('[payments-webhook] charge.refunded with no subscription', charge.id)
-    return
+    console.log("[payments-webhook] charge.refunded with no subscription", charge.id);
+    return;
   }
 
   const { data: existing } = await supabaseAdmin
-    .from('licenses')
-    .select('email, plan, revoked_at')
-    .eq('stripe_subscription_id', subscriptionId)
-    .eq('environment', env)
-    .maybeSingle()
+    .from("licenses")
+    .select("email, plan, revoked_at")
+    .eq("stripe_subscription_id", subscriptionId)
+    .eq("environment", env)
+    .maybeSingle();
 
   if (!existing) {
-    console.log('[payments-webhook] charge.refunded: no license for', subscriptionId)
-    return
+    console.log("[payments-webhook] charge.refunded: no license for", subscriptionId);
+    return;
   }
 
   // Already revoked (e.g. earlier refund or subscription.deleted ran
   // first). Skip the write and email so retries stay quiet.
-  if (existing.revoked_at) return
+  if (existing.revoked_at) return;
 
   const { error } = await supabaseAdmin
-    .from('licenses')
+    .from("licenses")
     .update({
-      status: 'refunded',
+      status: "refunded",
       revoked_at: new Date().toISOString(),
     })
-    .eq('stripe_subscription_id', subscriptionId)
-    .eq('environment', env)
+    .eq("stripe_subscription_id", subscriptionId)
+    .eq("environment", env);
 
   if (error) {
     // Same contract as the other write failures: 500 for Stripe's retry
     // schedule plus the ops alert. Retries are safe — the revoked_at guard
     // above short-circuits once the write lands.
-    throw new Error(`refund revoke failed: ${error.message}`)
+    throw new Error(`refund revoke failed: ${error.message}`);
   }
 
   if (existing.email) {
     await enqueueTransactionalEmail({
-      templateName: 'subscription-expired',
+      templateName: "subscription-expired",
       recipientEmail: existing.email as string,
       idempotencyKey: `refunded-${subscriptionId}`,
       templateData: {
         planLabel: planLabel(existing.plan as string | null),
       },
-    })
+    });
   }
 }
 
-export const Route = createFileRoute('/api/public/payments/webhook')({
+export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
@@ -488,20 +453,19 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
         // That dropped 21 days of live events in August 2026 and then did
         // the same to test mode in September. The signature decides the
         // environment now; see `verifyWebhook`.
-        const rawEnv = new URL(request.url).searchParams.get('env')
-        const hint: StripeEnv | null =
-          rawEnv === 'sandbox' || rawEnv === 'live' ? rawEnv : null
+        const rawEnv = new URL(request.url).searchParams.get("env");
+        const hint: StripeEnv | null = rawEnv === "sandbox" || rawEnv === "live" ? rawEnv : null;
 
-        let event: Stripe.Event
-        let env: StripeEnv
+        let event: Stripe.Event;
+        let env: StripeEnv;
         try {
-          ;({ event, env } = await verifyWebhook(request, hint))
+          ({ event, env } = await verifyWebhook(request, hint));
         } catch (err) {
           // Signature failures are often probe traffic. Log only — alerting
           // on these would be a spam vector for anyone hitting the public
           // /api/public/* path with a bogus body.
-          console.error('[payments-webhook] signature verification failed', err)
-          return new Response('Invalid signature', { status: 400 })
+          console.error("[payments-webhook] signature verification failed", err);
+          return new Response("Invalid signature", { status: 400 });
         }
 
         // Past this line the body is signed, so everything below is Stripe.
@@ -511,39 +475,39 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
           // wake anyone.
           console.warn(
             `[payments-webhook] endpoint URL has no valid ?env= (got ${JSON.stringify(rawEnv)}); resolved ${env} from the signature`,
-          )
+          );
         }
 
         // The secret that verified is the authority. `livemode` disagreeing
         // with it would mean Stripe signed a test event with the live
         // endpoint secret or vice versa, which should be impossible—log it
         // rather than act on it.
-        if (event.livemode !== (env === 'live')) {
+        if (event.livemode !== (env === "live")) {
           console.warn(
             `[payments-webhook] livemode/secret mismatch: livemode=${event.livemode} resolved=${env} event=${event.id}`,
-          )
+          );
         }
 
         try {
           switch (event.type) {
-            case 'checkout.session.completed':
-              await handleCheckoutCompleted(event.data.object, env)
-              break
-            case 'customer.subscription.updated':
-              await handleSubscriptionUpdated(event.data.object, env)
-              break
-            case 'customer.subscription.deleted':
-              await handleSubscriptionDeleted(event.data.object, env)
-              break
-            case 'charge.refunded':
-              await handleChargeRefunded(event.data.object, env)
-              break
+            case "checkout.session.completed":
+              await handleCheckoutCompleted(event.data.object, env);
+              break;
+            case "customer.subscription.updated":
+              await handleSubscriptionUpdated(event.data.object, env);
+              break;
+            case "customer.subscription.deleted":
+              await handleSubscriptionDeleted(event.data.object, env);
+              break;
+            case "charge.refunded":
+              await handleChargeRefunded(event.data.object, env);
+              break;
             default:
-              break
+              break;
           }
-          return Response.json({ received: true })
+          return Response.json({ received: true });
         } catch (err) {
-          console.error('[payments-webhook] handler error', event.type, err)
+          console.error("[payments-webhook] handler error", event.type, err);
           // Fire-and-await the alert so the DB dedup insert lands before
           // we return 500 and Stripe queues an immediate retry. notify…
           // never throws, so it can't bump us off the 500 path.
@@ -552,13 +516,13 @@ export const Route = createFileRoute('/api/public/payments/webhook')({
             eventType: event.type,
             environment: env,
             error: err,
-          })
+          });
           // 500 keeps Stripe's retry schedule alive; a 200 here would
           // silently drop the event and the alert would be our only
           // record that it ever happened.
-          return new Response('Handler error', { status: 500 })
+          return new Response("Handler error", { status: 500 });
         }
       },
     },
   },
-})
+});

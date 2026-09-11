@@ -42,9 +42,8 @@ function CheckoutSuccessPage() {
         </h1>
         <hr className="mt-6" />
         <p className="mt-6 max-w-[60ch] text-[15px] leading-[1.65] text-[var(--ink)]/80">
-          Stripe has confirmed the charge. Your license key is on its way to
-          the email you entered at checkout, sent from{" "}
-          <span className="font-mono">noreply@mail.satus.sh</span>. If it
+          Stripe has confirmed the charge. Your license key is on its way to the email you entered
+          at checkout, sent from <span className="font-mono">noreply@mail.satus.sh</span>. If it
           hasn't arrived in a few minutes, check spam, then email{" "}
           <a
             href="mailto:support@satus.sh"
@@ -52,8 +51,8 @@ function CheckoutSuccessPage() {
           >
             support@satus.sh
           </a>{" "}
-          and we'll re-send it. To change payment method or cancel, the same
-          address routes to the Stripe billing portal.
+          and we'll re-send it. To change payment method or cancel, the same address routes to the
+          Stripe billing portal.
         </p>
 
         {sessionId && (
