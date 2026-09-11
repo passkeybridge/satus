@@ -1,57 +1,73 @@
 # HANDOFF
 
-Written 2026-09-07. Replace this file next session; do not append.
+Written 2026-09-11. Replace this file next session; do not append.
 
 ## State
 
-`main` is `a0e3984`, and production is confirmed serving it —
-`dpl_5PeaBDyC4J4Ra5TuwP9gUgQuBWDb`, `target: "production"`, `READY`, alias
-list contains `satus.sh`. The branch is level. Nothing is waiting to ship;
-`git branch -r --no-merged origin/main` is empty.
+`main` is `6e261a9`, production confirmed serving it
+(`dpl_AqzjXarR7httLL1iUh2egGZoPg3o`, `target: "production"`, `READY`,
+`satus.sh` in its alias list). The working branch is level.
 `@passkeybridge/satus@0.3.11` is `latest` on npm.
 
-Gates: `tsc` clean, 0 genuine lint errors, 15 site tests, 70 CLI tests, four
-build validators (blog, docs, headings, env-files). Post-deploy e2e health
-passed all four checks against production.
+Gates: tsc clean, **eslint 0 errors with `prettier/prettier` now enforced**,
+15 site tests, 70 CLI tests, four validators, `prettier --check .` clean.
+site-ci run #5 green. Post-deploy e2e passed all four checks and all ten
+spot-checked routes return one `h1`.
 
-Two posts remain embargoed: 09-11 (written, on `main`) and 09-18.
+Today's post published on schedule. One embargoed post remains: 09-18.
 
-## Shipped this session
+## Shipped today
 
-- **The site has CI.** `.github/workflows/site-ci.yml` — typecheck, tests,
-  gates, lint, build. Run #1 green. Previously only `cli-ci.yml` existed and
-  nothing ran the site's tests.
-- **`scripts/validate-env-files.mjs`** fails the build if a tracked `.env*`
-  holds a secret, by key name or value shape. This repo is public and
-  `.env*` is tracked on purpose; the hazard is the next edit.
+- **Security audit** (a third party claimed an issue by email; the mail was
+  never visible here, so this was an independent audit).
+  - `/api/public/hooks/e2e-health` took unauthenticated GET with no limit.
+    One request writes a row, mints a magic link, makes two outbound calls,
+    and mails support on failure — and the `license_verify` check runs
+    against our own limiter from this function's egress IP, so a flood
+    turns every later request into an email. Now 10/hour/IP and 60/day
+    global, failing **closed**. Nobody had exploited it.
+  - No `vercel.json` existed, so only HSTS was set. Added nosniff,
+    SAMEORIGIN, Referrer-Policy, Permissions-Policy.
+- **Two published posts corrected.** `satus_runs` holds ten rows; today's
+  post and the v0.3.11 release notes both said twelve. "Four minutes apart"
+  was 35 minutes. Numbers otherwise verified against the DB and source.
+- **The codebase is formatted and formatting is enforced.** 4,084
+  `prettier/prettier` errors to 0; the CI override is gone.
 
-## Graduated this session
+## Markdown is not formatted, on purpose
 
-Nothing new — this session's durable lesson went into an existing file:
-`mem/features/release-and-deploy-traps.md` gained **"Pushing `main` is not
-deploying `main`"**. Read it before any deploy.
-
-## Verify the deployment, not the push
-
-`b1a31b0` went to `main` and never reached production. Pushing the same SHA
-to `main` and a working branch seconds apart made Vercel emit one
-deployment, attributed to the branch, `target: null`. `main` moved,
-production did not, nothing failed. Push `main` alone, then confirm a
-deployment for that SHA with `target: "production"`, state `READY`, and
-`satus.sh` in its `alias` list. **The alias list is the proof** — timings
-and states are not.
+`*.md` is in `.prettierignore`. The first full prettier run re-indented a
+YAML fragment in `packages/action/README.md` and re-padded the
+`satus-version` table that `validate-docs.mjs` parses — which reports
+"(unparsed)" rather than failing. eslint does not lint markdown, so
+formatting it bought nothing. `validate-docs.mjs` is quote-agnostic in four
+places now; its scans assumed single quotes, and a regex matching nothing
+reads as "no findings", not as a broken parser.
 
 ## Flags
 
-- **The prettier decision is the owner's.** ~4,050 pre-existing
-  `prettier/prettier` errors, so CI disables that one rule and only that
-  one. `bunx prettier --write .` fixes it and touches nearly every file.
-  Until then, formatting is unenforced.
-- **`cli-ci.yml` pins `node-version: '20'`,** which GitHub is deprecating.
+- **Two dead branches cannot be deleted from here.**
+  `claude/mem-handoff-and-claude-md` (`0b061f5`, fully superseded) and
+  `format-the-codebase` (`137d2a1`, superseded by `6e261a9`). The sandbox
+  git proxy refuses delete-refspecs the way it refuses tag pushes, and the
+  GitHub MCP server has no delete-branch tool. **Delete them in the GitHub
+  UI** or the pre-flight check stays noisy.
+- **TanStack bump deferred by the owner to the next pass.**
+  GHSA-9m65-766c-r333 flags `start-server-core` 1.167.22, but it is not
+  exploitable here: root cause is seroval ≤1.5.2 and we resolve 1.6.2 (only
+  copy, pinned in `bun.lock`), and `createCheckoutSession` already has
+  `.inputValidator()`. Clearing it means `@tanstack/react-start`
+  1.167.50 → 1.168.52, which moves six sibling packages.
+- **CSP is still missing**, deliberately. `/demo` runs PGlite (WASM) and
+  `/checkout` mounts Stripe Embedded Checkout; a policy written without
+  testing both would break the two pages that matter most.
+- **e2e-health is still unauthenticated**, only rate limited. The real fix
+  is a shared secret in a header, which needs a new deployment env var —
+  cron job 4 calls a bare `net.http_get`.
+- **`cli-ci.yml` pins deprecated `node-version: '20'`.**
 - **`NPM_PUBLISH_TOKEN` expires 2026-10-12.**
-- **79 poisoned suppression rows left in place** deliberately; the incident
-  note says how to identify them.
-- **Refund revocation rides on `Charge.invoice`,** which basil removed.
+- **79 poisoned suppression rows** left in place deliberately.
+- **Refund revocation rides on `Charge.invoice`,** removed in basil.
 
 ## Do not redo
 
@@ -61,6 +77,7 @@ and states are not.
 
 ## Next
 
-1. Business decision: the three `(planned)` Team features on `/pricing`, and
-   whether to define a real support SLA.
-2. Content plan resumes at Q3 item 9.
+1. The TanStack upgrade, which the owner asked for as its own pass.
+2. Business decision: three `(planned)` Team features on `/pricing`, and
+   whether to define a support SLA.
+3. Content plan resumes at Q3 item 9.
