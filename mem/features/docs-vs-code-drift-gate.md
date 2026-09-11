@@ -48,3 +48,30 @@ or the team learns to skip it.
 assertion, and would sail through. Numbers are now assertions in a test
 suite; sentences still need a human reading the page next to the code at
 each release. Do not let the green checkmark imply more coverage than it has.
+
+(Since 2026-09-11 the *mechanical* half of prose has its own gate —
+`validate-language.mjs`, see `mem/features/house-voice.md`. It catches fixed
+phrases, not empty paragraphs. The caveat above still stands.)
+
+## A regex that matches nothing reads as "no findings"
+
+The most dangerous failure in any of these validators is silence, and it has
+now happened three times in this repo.
+
+1. **2026-09-11, this script.** Its scans were written against a uniformly
+   single-quoted tree. `.prettierrc` sets `"singleQuote": false`, so the
+   first prettier run rewrote every quote and the flag scan returned an
+   *empty set* — every documented flag reported missing at once — while two
+   version reads silently became `(unparsed)`. Fixed by making four regexes
+   quote-agnostic.
+2. **2026-09-11, `validate-language.mjs`.** Its first version spelled the
+   negation as `is not` / `was not` and so sailed straight past
+   `It wasn't about X, it was about Y` — the canonical case the gate exists
+   to catch.
+3. **The 2026-08 flag scan**, above, in the other direction: false
+   positives.
+
+A broken parser and a clean repo produce the same green checkmark. So:
+**feed every new or edited validator a file of deliberate violations and
+confirm it goes red before trusting a pass.** Reading the regex is not
+enough; both misses above survived being read.
