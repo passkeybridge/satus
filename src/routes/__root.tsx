@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 
 import { Analytics } from "@vercel/analytics/react";
@@ -98,7 +99,16 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+/**
+ * Props come from the router's own `ErrorComponentProps` rather than a local
+ * shape. It used to declare `error: Error`, which router 1.170 widened to
+ * `unknown` — correct, since a thrown value need not be an Error, and it
+ * broke the build on upgrade. Taking the type from upstream means the next
+ * such change is a compile error here rather than a silent mismatch.
+ *
+ * Nothing below reads a property off `error`, so `unknown` costs nothing.
+ */
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   // Surface the error in the dev console so we can triage in production logs,
   // but never render error.message to users (it can leak stack-trace internals).
   if (typeof window !== "undefined") {

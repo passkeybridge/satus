@@ -9,94 +9,44 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SecurityRouteImport } from './routes/security'
-import { Route as RecipesRouteImport } from './routes/recipes'
-import { Route as QuickstartRouteImport } from './routes/quickstart'
-import { Route as ProfilesRouteImport } from './routes/profiles'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as DemoRouteImport } from './routes/demo'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as CliRouteImport } from './routes/cli'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DocsIndexRouteImport } from './routes/docs.index'
-import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
+import { Route as CliRouteImport } from './routes/cli'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfilesRouteImport } from './routes/profiles'
+import { Route as QuickstartRouteImport } from './routes/quickstart'
+import { Route as RecipesRouteImport } from './routes/recipes'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
-import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
-import { Route as DocsHowItWorksRouteImport } from './routes/docs.how-it-works'
-import { Route as DocsGithubActionRouteImport } from './routes/docs.github-action'
-import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
-import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
-import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as BlogRssDotxmlRouteImport } from './routes/blog.rss[.]xml'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
+import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as DocsGithubActionRouteImport } from './routes/docs.github-action'
+import { Route as DocsHowItWorksRouteImport } from './routes/docs.how-it-works'
+import { Route as DocsTroubleshootingRouteImport } from './routes/docs.troubleshooting'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiPublicWaitlistRouteImport } from './routes/api/public/waitlist'
-import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
-import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
-import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
-import { Route as ApiPublicDemoGenerateRouteImport } from './routes/api/public/demo/generate'
-import { Route as ApiPublicCliRunRouteImport } from './routes/api/public/cli/run'
-import { Route as ApiPublicBillingPortalRouteImport } from './routes/api/public/billing/portal'
 import { Route as ApiInternalEmailSuppressionRouteImport } from './routes/api/internal/email/suppression'
-import { Route as ApiInternalEmailTransactionalSendRouteImport } from './routes/api/internal/email/transactional/send'
+import { Route as ApiPublicBillingPortalRouteImport } from './routes/api/public/billing/portal'
+import { Route as ApiPublicCliRunRouteImport } from './routes/api/public/cli/run'
+import { Route as ApiPublicDemoGenerateRouteImport } from './routes/api/public/demo/generate'
+import { Route as ApiPublicHooksE2eHealthRouteImport } from './routes/api/public/hooks/e2e-health'
+import { Route as ApiPublicLicenseVerifyRouteImport } from './routes/api/public/license/verify'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiInternalEmailQueueProcessRouteImport } from './routes/api/internal/email/queue/process'
+import { Route as ApiInternalEmailTransactionalSendRouteImport } from './routes/api/internal/email/transactional/send'
 
-const UnsubscribeRoute = UnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SecurityRoute = SecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecipesRoute = RecipesRouteImport.update({
-  id: '/recipes',
-  path: '/recipes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QuickstartRoute = QuickstartRouteImport.update({
-  id: '/quickstart',
-  path: '/quickstart',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfilesRoute = ProfilesRouteImport.update({
-  id: '/profiles',
-  path: '/profiles',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareRoute = CompareRouteImport.update({
-  id: '/compare',
-  path: '/compare',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CliRoute = CliRouteImport.update({
@@ -104,19 +54,59 @@ const CliRoute = CliRouteImport.update({
   path: '/cli',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsIndexRoute = DocsIndexRouteImport.update({
-  id: '/docs/',
-  path: '/docs/',
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
-  id: '/checkout/',
-  path: '/checkout/',
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilesRoute = ProfilesRouteImport.update({
+  id: '/profiles',
+  path: '/profiles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuickstartRoute = QuickstartRouteImport.update({
+  id: '/quickstart',
+  path: '/quickstart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecipesRoute = RecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -124,34 +114,9 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
-  id: '/email/unsubscribe',
-  path: '/email/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
-  id: '/docs/troubleshooting',
-  path: '/docs/troubleshooting',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsHowItWorksRoute = DocsHowItWorksRouteImport.update({
-  id: '/docs/how-it-works',
-  path: '/docs/how-it-works',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocsGithubActionRoute = DocsGithubActionRouteImport.update({
-  id: '/docs/github-action',
-  path: '/docs/github-action',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
-  id: '/checkout/success',
-  path: '/checkout/success',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
-  id: '/checkout/cancel',
-  path: '/checkout/cancel',
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRssDotxmlRoute = BlogRssDotxmlRouteImport.update({
@@ -159,45 +124,49 @@ const BlogRssDotxmlRoute = BlogRssDotxmlRouteImport.update({
   path: '/blog/rss.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/blog/$slug',
-  path: '/blog/$slug',
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
+  id: '/checkout/cancel',
+  path: '/checkout/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/checkout/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsGithubActionRoute = DocsGithubActionRouteImport.update({
+  id: '/docs/github-action',
+  path: '/docs/github-action',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsHowItWorksRoute = DocsHowItWorksRouteImport.update({
+  id: '/docs/how-it-works',
+  path: '/docs/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsTroubleshootingRoute = DocsTroubleshootingRouteImport.update({
+  id: '/docs/troubleshooting',
+  path: '/docs/troubleshooting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWaitlistRoute = ApiPublicWaitlistRouteImport.update({
   id: '/api/public/waitlist',
   path: '/api/public/waitlist',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicPaymentsWebhookRoute =
-  ApiPublicPaymentsWebhookRouteImport.update({
-    id: '/api/public/payments/webhook',
-    path: '/api/public/payments/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicLicenseVerifyRoute = ApiPublicLicenseVerifyRouteImport.update({
-  id: '/api/public/license/verify',
-  path: '/api/public/license/verify',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicHooksE2eHealthRoute = ApiPublicHooksE2eHealthRouteImport.update({
-  id: '/api/public/hooks/e2e-health',
-  path: '/api/public/hooks/e2e-health',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicDemoGenerateRoute = ApiPublicDemoGenerateRouteImport.update({
-  id: '/api/public/demo/generate',
-  path: '/api/public/demo/generate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
-  id: '/api/public/cli/run',
-  path: '/api/public/cli/run',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicBillingPortalRoute = ApiPublicBillingPortalRouteImport.update({
-  id: '/api/public/billing/portal',
-  path: '/api/public/billing/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiInternalEmailSuppressionRoute =
@@ -206,16 +175,47 @@ const ApiInternalEmailSuppressionRoute =
     path: '/api/internal/email/suppression',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiInternalEmailTransactionalSendRoute =
-  ApiInternalEmailTransactionalSendRouteImport.update({
-    id: '/api/internal/email/transactional/send',
-    path: '/api/internal/email/transactional/send',
+const ApiPublicBillingPortalRoute = ApiPublicBillingPortalRouteImport.update({
+  id: '/api/public/billing/portal',
+  path: '/api/public/billing/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCliRunRoute = ApiPublicCliRunRouteImport.update({
+  id: '/api/public/cli/run',
+  path: '/api/public/cli/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDemoGenerateRoute = ApiPublicDemoGenerateRouteImport.update({
+  id: '/api/public/demo/generate',
+  path: '/api/public/demo/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksE2eHealthRoute = ApiPublicHooksE2eHealthRouteImport.update({
+  id: '/api/public/hooks/e2e-health',
+  path: '/api/public/hooks/e2e-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicLicenseVerifyRoute = ApiPublicLicenseVerifyRouteImport.update({
+  id: '/api/public/license/verify',
+  path: '/api/public/license/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiInternalEmailQueueProcessRoute =
   ApiInternalEmailQueueProcessRouteImport.update({
     id: '/api/internal/email/queue/process',
     path: '/api/internal/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiInternalEmailTransactionalSendRoute =
+  ApiInternalEmailTransactionalSendRouteImport.update({
+    id: '/api/internal/email/transactional/send',
+    path: '/api/internal/email/transactional/send',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -478,81 +478,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/unsubscribe': {
-      id: '/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/security': {
-      id: '/security'
-      path: '/security'
-      fullPath: '/security'
-      preLoaderRoute: typeof SecurityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recipes': {
-      id: '/recipes'
-      path: '/recipes'
-      fullPath: '/recipes'
-      preLoaderRoute: typeof RecipesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/quickstart': {
-      id: '/quickstart'
-      path: '/quickstart'
-      fullPath: '/quickstart'
-      preLoaderRoute: typeof QuickstartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profiles': {
-      id: '/profiles'
-      path: '/profiles'
-      fullPath: '/profiles'
-      preLoaderRoute: typeof ProfilesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cli': {
@@ -562,25 +492,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CliRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs/': {
-      id: '/docs/'
-      path: '/docs'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof DocsIndexRouteImport
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checkout/': {
-      id: '/checkout/'
-      path: '/checkout'
-      fullPath: '/checkout/'
-      preLoaderRoute: typeof CheckoutIndexRouteImport
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profiles': {
+      id: '/profiles'
+      path: '/profiles'
+      fullPath: '/profiles'
+      preLoaderRoute: typeof ProfilesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quickstart': {
+      id: '/quickstart'
+      path: '/quickstart'
+      fullPath: '/quickstart'
+      preLoaderRoute: typeof QuickstartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recipes': {
+      id: '/recipes'
+      path: '/recipes'
+      fullPath: '/recipes'
+      preLoaderRoute: typeof RecipesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/': {
@@ -590,46 +576,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/troubleshooting': {
-      id: '/docs/troubleshooting'
-      path: '/docs/troubleshooting'
-      fullPath: '/docs/troubleshooting'
-      preLoaderRoute: typeof DocsTroubleshootingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/how-it-works': {
-      id: '/docs/how-it-works'
-      path: '/docs/how-it-works'
-      fullPath: '/docs/how-it-works'
-      preLoaderRoute: typeof DocsHowItWorksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/docs/github-action': {
-      id: '/docs/github-action'
-      path: '/docs/github-action'
-      fullPath: '/docs/github-action'
-      preLoaderRoute: typeof DocsGithubActionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout/success': {
-      id: '/checkout/success'
-      path: '/checkout/success'
-      fullPath: '/checkout/success'
-      preLoaderRoute: typeof CheckoutSuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout/cancel': {
-      id: '/checkout/cancel'
-      path: '/checkout/cancel'
-      fullPath: '/checkout/cancel'
-      preLoaderRoute: typeof CheckoutCancelRouteImport
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/rss.xml': {
@@ -639,11 +590,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRssDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/blog/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/cancel': {
+      id: '/checkout/cancel'
+      path: '/checkout/cancel'
+      fullPath: '/checkout/cancel'
+      preLoaderRoute: typeof CheckoutCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/github-action': {
+      id: '/docs/github-action'
+      path: '/docs/github-action'
+      fullPath: '/docs/github-action'
+      preLoaderRoute: typeof DocsGithubActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/how-it-works': {
+      id: '/docs/how-it-works'
+      path: '/docs/how-it-works'
+      fullPath: '/docs/how-it-works'
+      preLoaderRoute: typeof DocsHowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/troubleshooting': {
+      id: '/docs/troubleshooting'
+      path: '/docs/troubleshooting'
+      fullPath: '/docs/troubleshooting'
+      preLoaderRoute: typeof DocsTroubleshootingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/waitlist': {
@@ -653,39 +653,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWaitlistRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/payments/webhook': {
-      id: '/api/public/payments/webhook'
-      path: '/api/public/payments/webhook'
-      fullPath: '/api/public/payments/webhook'
-      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/license/verify': {
-      id: '/api/public/license/verify'
-      path: '/api/public/license/verify'
-      fullPath: '/api/public/license/verify'
-      preLoaderRoute: typeof ApiPublicLicenseVerifyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/e2e-health': {
-      id: '/api/public/hooks/e2e-health'
-      path: '/api/public/hooks/e2e-health'
-      fullPath: '/api/public/hooks/e2e-health'
-      preLoaderRoute: typeof ApiPublicHooksE2eHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/demo/generate': {
-      id: '/api/public/demo/generate'
-      path: '/api/public/demo/generate'
-      fullPath: '/api/public/demo/generate'
-      preLoaderRoute: typeof ApiPublicDemoGenerateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cli/run': {
-      id: '/api/public/cli/run'
-      path: '/api/public/cli/run'
-      fullPath: '/api/public/cli/run'
-      preLoaderRoute: typeof ApiPublicCliRunRouteImport
+    '/api/internal/email/suppression': {
+      id: '/api/internal/email/suppression'
+      path: '/api/internal/email/suppression'
+      fullPath: '/api/internal/email/suppression'
+      preLoaderRoute: typeof ApiInternalEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/billing/portal': {
@@ -695,18 +667,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBillingPortalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/internal/email/suppression': {
-      id: '/api/internal/email/suppression'
-      path: '/api/internal/email/suppression'
-      fullPath: '/api/internal/email/suppression'
-      preLoaderRoute: typeof ApiInternalEmailSuppressionRouteImport
+    '/api/public/cli/run': {
+      id: '/api/public/cli/run'
+      path: '/api/public/cli/run'
+      fullPath: '/api/public/cli/run'
+      preLoaderRoute: typeof ApiPublicCliRunRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/internal/email/transactional/send': {
-      id: '/api/internal/email/transactional/send'
-      path: '/api/internal/email/transactional/send'
-      fullPath: '/api/internal/email/transactional/send'
-      preLoaderRoute: typeof ApiInternalEmailTransactionalSendRouteImport
+    '/api/public/demo/generate': {
+      id: '/api/public/demo/generate'
+      path: '/api/public/demo/generate'
+      fullPath: '/api/public/demo/generate'
+      preLoaderRoute: typeof ApiPublicDemoGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/e2e-health': {
+      id: '/api/public/hooks/e2e-health'
+      path: '/api/public/hooks/e2e-health'
+      fullPath: '/api/public/hooks/e2e-health'
+      preLoaderRoute: typeof ApiPublicHooksE2eHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/license/verify': {
+      id: '/api/public/license/verify'
+      path: '/api/public/license/verify'
+      fullPath: '/api/public/license/verify'
+      preLoaderRoute: typeof ApiPublicLicenseVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/internal/email/queue/process': {
@@ -714,6 +707,13 @@ declare module '@tanstack/react-router' {
       path: '/api/internal/email/queue/process'
       fullPath: '/api/internal/email/queue/process'
       preLoaderRoute: typeof ApiInternalEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/email/transactional/send': {
+      id: '/api/internal/email/transactional/send'
+      path: '/api/internal/email/transactional/send'
+      fullPath: '/api/internal/email/transactional/send'
+      preLoaderRoute: typeof ApiInternalEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
