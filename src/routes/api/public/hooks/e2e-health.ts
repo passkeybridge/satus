@@ -6,9 +6,27 @@
  * support@satus.sh via Resend only on failure. Every run is recorded in
  * `e2e_health_log`.
  *
- * Public route by necessity (pg_cron → net.http_post). No auth header
- * required, but the handler is cheap and idempotent. Each run also
- * accepts GET for manual smoke-testing from a browser.
+ * Public route by necessity: the pg_cron job calls it with a bare
+ * `net.http_get` and cannot present a credential today (job 4,
+ * `satus-e2e-health-daily`). It also accepts GET for manual smoke-testing
+ * from a browser.
+ *
+ * This handler is NOT cheap, whatever an earlier version of this comment
+ * claimed. One unauthenticated request costs a row in `e2e_health_log`, a
+ * Supabase admin `generateLink` call, two outbound HTTP requests to our own
+ * API, and — when any check fails — an email to support@satus.sh. The
+ * license_verify check runs against our own rate limiter from this
+ * function's egress IP, so a flood can push that check into failure and
+ * then every further request mails us. Unauthenticated request amplified
+ * into unbounded email is the part that matters.
+ *
+ * So the work is rate limited before any of it happens: per-IP and global,
+ * both failing CLOSED, because every side effect below costs something.
+ * The daily job needs one call, well inside both caps.
+ *
+ * This is a mitigation, not the fix. The fix is a shared secret the cron
+ * job presents in a header, which needs a new env var in the deployment
+ * before the check can be enforced.
  *
  * Checks:
  *   1. license_verify         —POST satus.sh/api/public/license/verify with
@@ -25,6 +43,7 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
+import crypto from 'node:crypto'
 import { supabaseAdmin } from '@/integrations/supabase/client.server'
 
 const ORIGIN = 'https://satus.sh'
@@ -231,10 +250,74 @@ function sanitizeBy(raw: string | null): string {
   return cleaned.length > 0 ? cleaned : 'manual'
 }
 
+// Per-IP and global caps. The scheduled job makes one call a day, so these
+// are generous for every legitimate caller and still bound the blast radius
+// of an unauthenticated flood.
+const RATE_BUCKET_IP = 'e2e_health_ip'
+const RATE_LIMIT_IP = 10
+const RATE_WINDOW_IP_SECONDS = 3600
+const RATE_BUCKET_GLOBAL = 'e2e_health_global'
+const RATE_LIMIT_GLOBAL = 60
+const RATE_WINDOW_GLOBAL_SECONDS = 86400
+
+function hashIp(ip: string | null): string {
+  if (!ip) return 'unknown'
+  return crypto.createHash('sha256').update(ip).digest('hex').slice(0, 32)
+}
+
+/**
+ * Fails CLOSED, unlike /license/verify. That endpoint fails open because a
+ * broken counter there costs a few extra reads; here it costs magic links,
+ * outbound requests and mail. A counter that will not answer is a reason to
+ * do nothing, and the cost of that is one missed daily sample.
+ */
+async function overLimit(
+  bucket: string,
+  key: string,
+  windowSeconds: number,
+  limit: number,
+): Promise<boolean> {
+  const { data, error } = await supabaseAdmin.rpc('check_rate_limit', {
+    p_bucket: bucket,
+    p_key: key,
+    p_window_seconds: windowSeconds,
+  })
+  if (error) {
+    console.error('[e2e] rate-limit counter failed—refusing to run', error)
+    return true
+  }
+  return typeof data === 'number' && data > limit
+}
+
+async function rateLimitedResponse(request: Request): Promise<Response | null> {
+  const ip =
+    request.headers.get('cf-connecting-ip') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    null
+
+  if (await overLimit(RATE_BUCKET_IP, hashIp(ip), RATE_WINDOW_IP_SECONDS, RATE_LIMIT_IP)) {
+    return Response.json({ error: 'rate_limited', scope: 'ip' }, { status: 429 })
+  }
+  if (
+    await overLimit(
+      RATE_BUCKET_GLOBAL,
+      'all',
+      RATE_WINDOW_GLOBAL_SECONDS,
+      RATE_LIMIT_GLOBAL,
+    )
+  ) {
+    return Response.json({ error: 'rate_limited', scope: 'global' }, { status: 429 })
+  }
+  return null
+}
+
 export const Route = createFileRoute('/api/public/hooks/e2e-health')({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        const limited = await rateLimitedResponse(request)
+        if (limited) return limited
+
         const url = new URL(request.url)
         const result = await runE2E(sanitizeBy(url.searchParams.get('by')))
         return new Response(JSON.stringify(publicSafe(result), null, 2), {
@@ -242,7 +325,10 @@ export const Route = createFileRoute('/api/public/hooks/e2e-health')({
           headers: { 'Content-Type': 'application/json' },
         })
       },
-      POST: async () => {
+      POST: async ({ request }) => {
+        const limited = await rateLimitedResponse(request)
+        if (limited) return limited
+
         const result = await runE2E('cron')
         return new Response(JSON.stringify(publicSafe(result)), {
           status: result.status === 'pass' ? 200 : 500,
