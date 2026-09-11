@@ -18,7 +18,7 @@ The narrow opt-in, `telemetry.share_failure_fingerprints`, was genuinely gated: 
 
 The run record was not gated at all. `reportRun` was called unconditionally at the end of every `satus generate`, and there was no config key, environment variable, or flag that could stop it.
 
-What that record contains has not changed, and it is worth being precise about the blast radius: a random run UUID, the CLI version, provider, model, profile name, the *number* of tables touched, total rows, token totals, an estimated spend, a duration, and on failure a fixed-vocabulary error class such as `pg_23505`. No table names, no column names, no schema name, no row data, no raw error text. v0.3.7 cut it to exactly that. Nothing identifying was collected in the window, and all twelve records in the table are our own release-test runs.
+What that record contains has not changed, and it is worth being precise about the blast radius: a random run UUID, the CLI version, provider, model, profile name, the *number* of tables touched, total rows, token totals, an estimated spend, a duration, and on failure a fixed-vocabulary error class such as `pg_23505`. No table names, no column names, no schema name, no row data, no raw error text. v0.3.7 cut it to exactly that. Nothing identifying was collected in the window, and all ten records in the table are our own release-test runs.
 
 So this was not a data leak. It was a promise that did not match the product, which is the thing we have spent the last month systematically finding and fixing.
 
