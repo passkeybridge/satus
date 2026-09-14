@@ -1,60 +1,54 @@
 # HANDOFF
 
-Written 2026-09-11. Replace this file next session; do not append.
+Written 2026-09-14. Replace this file next session; do not append.
 
 ## State
 
-`main` is `28329ef`, production serving it. `@passkeybridge/satus@0.3.11` is
-npm `latest`. No unmerged branches.
+`main` is `e67213a`, production serving it. `@passkeybridge/satus@0.3.11` is
+npm `latest`. No unmerged branches. Health endpoint `status: pass`, all four
+checks ok this evening.
 
 Gates: tsc clean, eslint 0 errors with `prettier/prettier` enforced, 15 site
-tests, 70 CLI tests, **five** validators (blog, docs, headings, env,
-language), `prettier --check .` clean.
+tests, 70 CLI tests, five validators, `prettier --check .` clean.
 
-Today's post published on schedule. 09-18 remains embargoed.
+## Today
 
-## Shipped today
+No code shipped. Verified Friday's work: CI never went red, and the TanStack
+build break was local to the working tree, fixed before commit. Then triaged
+the open flags, dates checked rather than recalled. Owner circles back
+tomorrow.
 
-- **Security audit.** `/api/public/hooks/e2e-health` took unauthenticated
-  GET with no limit; one request writes a row, mints a magic link, makes two
-  outbound calls, and mails support on failure — and its `license_verify`
-  check hits our own limiter from this function's egress IP, so a flood
-  turns every later request into email. Now 10/hour/IP, 60/day global,
-  failing **closed**. Added the four missing headers.
-- **Two posts corrected.** `satus_runs` holds ten rows; today's post and the
-  v0.3.11 notes said twelve. "Four minutes apart" was 35 minutes.
-- **Formatted and enforced**, 4,084 lint errors to 0. **TanStack upgraded**,
-  clearing GHSA-9m65-766c-r333. **House voice gated.**
+## The flags, ranked
 
-## The voice is now a build gate
+1. **`NPM_PUBLISH_TOKEN` expires 2026-10-12** — 28 days. The 401 would land
+   on the last step of `cli-publish.yml`, after install, tests, typecheck and
+   build have all passed, so the failure arrives mid-release. The owner
+   rotates it in GitHub Secrets; do not handle the value.
+2. **Node 20 has been EOL since 2026-04-30** (endoflife.date, checked).
+   Pinned in `cli-ci.yml:24` and `cli-publish.yml:25`. Runner Node, not user
+   Node, so the blast radius is small, but `cli-publish.yml` builds the npm
+   tarball: bump it before a release week, not during one. 24 is Active LTS
+   to 2026-10-20 and supported to 2028; 22 runs to 2027-04-30. Separate from
+   `"engines": ">=20"` in the CLI's package.json, a published promise that
+   must not move as a side effect. **Awaiting a go.**
+3. **e2e-health auth.** The limiter closed the amplification (10/hour/IP,
+   60/day, fails closed). A shared-secret header needs a new env var and a
+   Supabase cron edit. Scheduled work, not a fire.
+4. **CSP.** Ship `Content-Security-Policy-Report-Only` first; it collects
+   violations from live traffic without breaking `/demo` (PGlite WASM) or
+   `/checkout` (Stripe Embedded, the page that takes money).
 
-`mem/features/house-voice.md` records the rules, measured from 66,969
-published words rather than invented, including what is deliberately **not**
-linted (em dashes, contractions, rhetorical questions are house style).
-`scripts/validate-language.mjs` enforces 24 phrases. The corpus needed no
-edits.
+Unchanged and fine: 19 `bun audit` findings, all dev-tree tooling absent from
+the server bundle. 79 poisoned suppression rows, deliberate.
 
 ## Graduated this session
 
-`mem/features/house-voice.md` (new). `mem/features/docs-vs-code-drift-gate.md`
-gained **"A regex that matches nothing reads as no findings"** — three
-instances now, two of them today. Read it before editing any validator.
-
-## Flags
-
-- **`minimumReleaseAge = 86400` in `bunfig.toml`** blocked the newest
-  TanStack (19h old). Took 1.168.51, same patched `start-server-core`
-  1.169.33, no exemption. That file says to confirm before adding a bypass.
-- **CSP still missing, deliberately.** `/demo` runs PGlite (WASM),
-  `/checkout` mounts Stripe Embedded Checkout; an untested policy breaks
-  both.
-- **e2e-health is rate limited, not authenticated.** The fix is a shared
-  secret header, needing a new env var.
-- **19 `bun audit` findings remain**, all dev-tree tooling absent from the
-  server bundle. The published CLI has four deps.
-- `cli-ci.yml` pins deprecated Node 20. `NPM_PUBLISH_TOKEN` expires
-  2026-10-12. 79 poisoned suppression rows left deliberately. Refund
-  revocation rides on `Charge.invoice`, removed in basil.
+`mem/followups/refund-revocation-rides-on-a-removed-field.md` gained
+**"`apiVersion` in `stripe.server.ts` does not answer this"**. The dahlia pin
+was read aloud today as proof the refund gap is latent. It is not proof: the
+pin governs outbound calls, while inbound payload shape comes from the
+endpoint's registered `api_version`, which is `null`. Still open; needs the
+Dashboard read.
 
 ## Do not redo
 
@@ -63,5 +57,6 @@ validator); purging the app-builder platform (`3abfa27`).
 
 ## Next
 
-1. `(planned)` Team features on `/pricing`, and a support SLA.
-2. Content plan resumes at Q3 item 9.
+1. The Node bump, on a go.
+2. `(planned)` Team features on `/pricing`, and a support SLA.
+3. Content plan resumes at Q3 item 9.

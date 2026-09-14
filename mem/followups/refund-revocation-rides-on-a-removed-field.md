@@ -47,6 +47,23 @@ is separately cancelled.
   that could be inspected. Read it from Dashboard → Developers → API
   version; that single fact decides whether this is live or latent.
 
+## `apiVersion` in `stripe.server.ts` does not answer this
+
+Checked on 2026-09-14 and got it wrong out loud, so it is written down here.
+`stripe.server.ts:36` pins `apiVersion: "2026-03-25.dahlia"`, which still
+carries `Charge.invoice`. It is tempting — and incorrect — to read that pin
+as proof this is latent.
+
+That pin governs the *outbound* calls we make, which here is only the
+`stripe.invoices.retrieve()` on `webhook.ts:388`. The `charge` argument
+arrives in the request body, and `subscriptionIdFromCharge` reads
+`charge.invoice` straight off it at `webhook.ts:382`. Inbound payload shape
+is set by the endpoint's own registered `api_version` — `null` for the satus
+live endpoint, so Stripe renders at the account default.
+
+Our pin and the payload we are handed are decided by two different settings.
+Only the Dashboard read above closes this.
+
 ## Why nothing was changed
 
 The two moved fields are handled — both readings are typed and tried in
