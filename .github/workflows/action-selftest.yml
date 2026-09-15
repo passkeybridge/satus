@@ -21,8 +21,14 @@ jobs:
     services:
       # pagila-schema.sql runs `ALTER SCHEMA public OWNER TO postgres;`, so
       # the DB user must be `postgres` — anything else aborts the load.
+      #
+      # 18, not 16: the schema is fetched from pagila's `master` below, and
+      # upstream now declares `uuid DEFAULT uuidv7()`, a built-in that exists
+      # from PostgreSQL 18. On 16 the load died at `CREATE TABLE customer`
+      # and this workflow was red on main from 2026-08-14 to 2026-09-15.
+      # The fetch is still unpinned, so upstream can do this again.
       postgres:
-        image: postgres:16
+        image: postgres:18
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
