@@ -18,12 +18,12 @@ jobs:
       contents: read
       id-token: write # for npm provenance
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # 24: Active LTS, supported to 2028-04-30. This is the runtime that
       # builds the tarball that ships, so it moves only outside a release
       # week. 20 (EOL 2026-04-30) is still tested in cli-ci.yml as the floor.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
@@ -99,10 +99,21 @@ jobs:
         working-directory: packages/cli
         run: npm run build
 
+      # npm 11 (Node 24) checks the registry even on --dry-run and refuses a
+      # version that is already published, so between releases the dry run
+      # could never pass. When the version is taken, pack instead: same
+      # tarball, same file list, no registry write either way. Caught by the
+      # first dry run on Node 24, 2026-09-15.
       - name: Publish (dry run)
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run
         working-directory: packages/cli
-        run: npm publish --access public --dry-run
+        run: |
+          if [ "${{ steps.registry.outputs.published }}" = "true" ]; then
+            echo "::notice::${{ steps.registry.outputs.version }} is already on the registry; packing instead of a publish dry run."
+            npm pack --dry-run
+          else
+            npm publish --access public --dry-run
+          fi
 
       - name: Publish
         if: steps.registry.outputs.published == 'false' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))

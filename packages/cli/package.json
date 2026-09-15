@@ -15,7 +15,7 @@
     "email": "support@satus.sh"
   },
   "bin": {
-    "satus": "./dist/cli.js"
+    "satus": "dist/cli.js"
   },
   "files": [
     "dist",

@@ -39,7 +39,7 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/pagila
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Pagila is the same fixture the corpus audit uses. Loading only the
       # schema (not the sample data) keeps the run fast and gives satus a
