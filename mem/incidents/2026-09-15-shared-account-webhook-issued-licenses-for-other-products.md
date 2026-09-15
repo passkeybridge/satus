@@ -57,13 +57,11 @@ The other three handlers (`subscription.updated`, `subscription.deleted`,
 `stripe_subscription_id`, so a foreign event finds nothing and does nothing.
 They needed no guard.
 
-## Left open, on purpose
+## The rows
 
-The three stray rows are still in the table. Deleting from a production
-licenses table is the owner's call; the statement is in the handoff. Until
-the `booked_pro_monthly` row goes, `subscription.updated` for that booked.co
-subscription keeps it in sync — harmless, but it is a live satus key issued
-for a scheduling app.
+Deleted the same day on the owner's explicit go, with `returning` so the
+three ids came back and nothing else did. Live `licenses` holds only
+`satus_pro_monthly` rows now.
 
 ## The lesson
 

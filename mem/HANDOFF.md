@@ -23,15 +23,12 @@ Gates: tsc clean, eslint 0 errors, 34 site tests (19 in the new
    lookup key); anything else gets a 200 and a log line. A satus-*named*
    product with no marker throws rather than skipping.
 
-Both were mutation-tested: guard removed, tests red, guard restored.
+Both were mutation-tested: guard removed, tests red, guard restored. The
+three stray rows (one booked.co, two PasskeyBridge) were deleted on the
+owner's go; `licenses` live now holds only `satus_pro_monthly` rows.
 
 ## Needs the owner
 
-- **Three stray rows in `licenses`**, all revoked or the owner's own. Delete
-  when ready:
-  `delete from licenses where environment = 'live' and stripe_subscription_id in ('sub_1UEzATGTWx4Bh4zbkLPjq2bV', 'sub_1TbhXvGTWx4Bh4zbj0f9yHxd', 'sub_1TbhX4GTWx4Bh4zbd0qJp3U0');`
-  The first is a live booked.co subscription; `subscription.updated` keeps
-  its row in sync until it goes.
 - **`NPM_PUBLISH_TOKEN` expires 2026-10-12.** Rotate in GitHub Secrets; do
   not handle the value.
 - **Node 20 in `cli-ci.yml:24` and `cli-publish.yml:25`**, EOL since
