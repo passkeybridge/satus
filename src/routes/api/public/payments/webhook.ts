@@ -369,23 +369,61 @@ function subscriptionIdFromInvoice(invoice: InvoicePayload): string | null {
  * the invoice, not the charge—so we follow charge → invoice → subscription.
  * Returns null for one-time charges or any shape we can't trace back.
  *
- * Caveat worth knowing before trusting this: `Charge.invoice` is the only
- * entry point we have, and basil removed it. On a post-basil payload there
- * is no charge → invoice edge at all, so this returns null and the refund
- * revokes nothing. The `no subscription` log line below is what that looks
- * like from the outside.
+ * Two entry points, because there is no single one that spans both eras:
+ *
+ * - **Pre-basil:** `Charge.invoice`, read directly off the payload.
+ * - **basil and later:** that field is gone from `Charge`, and nothing
+ *   replaced it on the charge side. `PaymentIntent` has no `invoice` either.
+ *   The edge runs the other way now—`InvoicePayment` carries the payment
+ *   intent, and the list endpoint filters on it. So: charge →
+ *   `payment_intent` → `invoice_payments` → invoice → subscription.
+ *
+ * Which one fires is not ours to choose. This endpoint is registered with
+ * `api_version: null`, so Stripe renders its events at the *account's*
+ * default version—a Dashboard setting that can change without touching this
+ * repo. The `apiVersion` pin in `stripe.server.ts` governs the calls we make,
+ * not the payloads we are handed. Handling both shapes is what makes that
+ * setting stop mattering.
+ *
+ * Verified against the live account on 2026-09-15, not inferred: invoice
+ * payment `inpay_1UEzAUGTWx4Bh4zbN5qX2q0j` resolves from payment intent
+ * `pi_3UEzARGTWx4Bh4zb22KeO3zV` to invoice `in_1UEzAQGTWx4Bh4zbN9C7qD6R`,
+ * whose `parent.subscription_details.subscription` is the subscription.
  */
-async function subscriptionIdFromCharge(
+export async function subscriptionIdFromCharge(
   charge: ChargePayload,
   env: StripeEnv,
 ): Promise<string | null> {
-  const invoiceField = charge?.invoice;
-  if (!invoiceField) return null;
-  if (typeof invoiceField === "object") {
-    return subscriptionIdFromInvoice(invoiceField);
-  }
   const stripe = createStripeClient(env);
-  const invoice = await stripe.invoices.retrieve(invoiceField);
+
+  const invoiceField = charge?.invoice;
+  if (invoiceField) {
+    if (typeof invoiceField === "object") {
+      return subscriptionIdFromInvoice(invoiceField);
+    }
+    const invoice = await stripe.invoices.retrieve(invoiceField);
+    return subscriptionIdFromInvoice(invoice);
+  }
+
+  const paymentIntentField = charge?.payment_intent;
+  if (!paymentIntentField) return null;
+  const paymentIntentId =
+    typeof paymentIntentField === "string" ? paymentIntentField : paymentIntentField.id;
+
+  const payments = await stripe.invoicePayments.list({
+    payment: { type: "payment_intent", payment_intent: paymentIntentId },
+    limit: 1,
+  });
+
+  const invoiceRef = payments.data[0]?.invoice;
+  if (!invoiceRef) return null;
+
+  // A deleted invoice carries no subscription details; treat it as untraceable
+  // rather than reading fields that are not there.
+  if (typeof invoiceRef === "object") {
+    return "deleted" in invoiceRef ? null : subscriptionIdFromInvoice(invoiceRef);
+  }
+  const invoice = await stripe.invoices.retrieve(invoiceRef);
   return subscriptionIdFromInvoice(invoice);
 }
 
