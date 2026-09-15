@@ -20,9 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 24: Active LTS, supported to 2028-04-30. This is the runtime that
+      # builds the tarball that ships, so it moves only outside a release
+      # week. 20 (EOL 2026-04-30) is still tested in cli-ci.yml as the floor.
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
       - name: Verify tag matches package.json
