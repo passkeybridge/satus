@@ -1,62 +1,64 @@
 # HANDOFF
 
-Written 2026-09-14. Replace this file next session; do not append.
+Written 2026-09-15. Replace this file next session; do not append.
 
 ## State
 
-`main` is `e67213a`, production serving it. `@passkeybridge/satus@0.3.11` is
-npm `latest`. No unmerged branches. Health endpoint `status: pass`, all four
-checks ok this evening.
+`main` carries two payment-webhook fixes shipped today, both live and
+verified against production. `@passkeybridge/satus@0.3.11` is npm `latest`.
+No unmerged branches.
 
-Gates: tsc clean, eslint 0 errors with `prettier/prettier` enforced, 15 site
-tests, 70 CLI tests, five validators, `prettier --check .` clean.
+Gates: tsc clean, eslint 0 errors, 34 site tests (19 in the new
+`webhook.test.ts`), 70 CLI tests, five validators, prettier clean.
 
-## Today
+## Shipped today
 
-No code shipped. Verified Friday's work: CI never went red, and the TanStack
-build break was local to the working tree, fixed before commit. Then triaged
-the open flags, dates checked rather than recalled. Owner circles back
-tomorrow.
+1. **Refund revocation works on basil-or-later payloads.** `Charge.invoice`
+   is gone there; the handler now goes `payment_intent` → `invoice_payments`
+   → invoice → subscription. Verified on the live account first.
+2. **The webhook no longer issues satus licenses for other products.** The
+   Stripe account is shared with booked.co, petsupplies.co and PasskeyBridge,
+   and `checkout.session.completed` arrives for all of them. `ownershipOf`
+   requires a satus marker (our `source: "satus.sh"` metadata, or a `satus_`
+   lookup key); anything else gets a 200 and a log line. A satus-*named*
+   product with no marker throws rather than skipping.
 
-## The flags, ranked
+Both were mutation-tested: guard removed, tests red, guard restored.
 
-1. **`NPM_PUBLISH_TOKEN` expires 2026-10-12** — 28 days. The 401 would land
-   on the last step of `cli-publish.yml`, after install, tests, typecheck and
-   build have all passed, so the failure arrives mid-release. The owner
-   rotates it in GitHub Secrets; do not handle the value.
-2. **Node 20 has been EOL since 2026-04-30** (endoflife.date, checked).
-   Pinned in `cli-ci.yml:24` and `cli-publish.yml:25`. Runner Node, not user
-   Node, so the blast radius is small, but `cli-publish.yml` builds the npm
-   tarball: bump it before a release week, not during one. 24 is Active LTS
-   to 2026-10-20 and supported to 2028; 22 runs to 2027-04-30. Separate from
-   `"engines": ">=20"` in the CLI's package.json, a published promise that
-   must not move as a side effect. **Awaiting a go.**
-3. **e2e-health auth.** The limiter closed the amplification (10/hour/IP,
-   60/day, fails closed). A shared-secret header needs a new env var and a
-   Supabase cron edit. Scheduled work, not a fire.
-4. **CSP.** Ship `Content-Security-Policy-Report-Only` first; it collects
-   violations from live traffic without breaking `/demo` (PGlite WASM) or
-   `/checkout` (Stripe Embedded, the page that takes money).
+## Needs the owner
 
-Unchanged and fine: 19 `bun audit` findings, all dev-tree tooling absent from
-the server bundle. 79 poisoned suppression rows, deliberate.
+- **Three stray rows in `licenses`**, all revoked or the owner's own. Delete
+  when ready:
+  `delete from licenses where environment = 'live' and stripe_subscription_id in ('sub_1UEzATGTWx4Bh4zbkLPjq2bV', 'sub_1TbhXvGTWx4Bh4zbj0f9yHxd', 'sub_1TbhX4GTWx4Bh4zbd0qJp3U0');`
+  The first is a live booked.co subscription; `subscription.updated` keeps
+  its row in sync until it goes.
+- **`NPM_PUBLISH_TOKEN` expires 2026-10-12.** Rotate in GitHub Secrets; do
+  not handle the value.
+- **Node 20 in `cli-ci.yml:24` and `cli-publish.yml:25`**, EOL since
+  2026-04-30. Bump to 22 or 24 outside a release week. Do not move
+  `"engines": ">=20"` as a side effect. Awaiting a go.
 
 ## Graduated this session
 
-`mem/followups/refund-revocation-rides-on-a-removed-field.md` gained
-**"`apiVersion` in `stripe.server.ts` does not answer this"**. The dahlia pin
-was read aloud today as proof the refund gap is latent. It is not proof: the
-pin governs outbound calls, while inbound payload shape comes from the
-endpoint's registered `api_version`, which is `null`. Still open; needs the
-Dashboard read.
+`mem/incidents/2026-09-15-shared-account-webhook-issued-licenses-for-other-products.md`
+(new). `mem/features/stripe-webhook-payload-shape.md` (moved from followups;
+the dahlia pin was misread twice and the note says how).
+
+## Flags, unchanged
+
+CSP still absent — ship `Content-Security-Policy-Report-Only` first.
+e2e-health is rate limited, not authenticated. 19 `bun audit` findings, all
+dev-tree. 79 poisoned suppression rows, deliberate. `minimumReleaseAge`
+blocks packages under 24h; confirm before bypassing.
 
 ## Do not redo
 
 `strict: true` on the Anthropic tool; the docs-vs-code audit (run the
-validator); purging the app-builder platform (`3abfa27`).
+validator); purging the app-builder platform (`3abfa27`); the Stripe account
+default API version — moot now that both payload shapes are handled.
 
 ## Next
 
-1. The Node bump, on a go.
+1. Node bump on a go.
 2. `(planned)` Team features on `/pricing`, and a support SLA.
 3. Content plan resumes at Q3 item 9.

@@ -104,6 +104,74 @@ function planOf(sub: Stripe.Subscription): string {
   return price?.lookup_key ?? price?.id ?? "unknown";
 }
 
+/** What `payments.functions.ts` stamps on every session and subscription it creates. */
+const SATUS_SOURCE = "satus.sh";
+/** Every satus price in the catalog carries a lookup key with this prefix. */
+const SATUS_LOOKUP_PREFIX = "satus_";
+
+type Ownership =
+  | { ours: true; via: "session.metadata" | "subscription.metadata" | "lookup_key" }
+  | { ours: false; product: string; namedSatus: boolean };
+
+/** The product's name when expanded; null for a bare id or a deleted product. */
+function productNameOf(
+  product: string | Stripe.Product | Stripe.DeletedProduct | null | undefined,
+): string | null {
+  if (!product || typeof product === "string") return null;
+  if ("deleted" in product && product.deleted) return null;
+  return product.name;
+}
+
+/**
+ * Whether a completed checkout is a satus.sh sale.
+ *
+ * This endpoint is one of five on a Stripe account shared with booked.co,
+ * petsupplies.co and PasskeyBridge, and Stripe delivers every
+ * `checkout.session.completed` on the account to every endpoint subscribed
+ * to it. Until 2026-09-15 nothing here asked whose sale it was: any
+ * subscription checkout issued a satus license and emailed the key. A
+ * booked.co subscription created on 2026-09-12 has a satus license row.
+ *
+ * Three markers, any one of which is enough. The first two are ours:
+ * `payments.functions.ts` stamps `source: "satus.sh"` on the Checkout
+ * Session and on the subscription it creates. The third is the catalog
+ * convention — every satus price carries a `satus_` lookup key (checked
+ * against the live account: satus_pro_monthly, satus_pro_yearly,
+ * satus_team_seat_monthly, satus_live_smoke_test). booked.co's keys start
+ * `booked_`; PasskeyBridge's prices have no lookup key at all.
+ *
+ * `namedSatus` is the tripwire for the failure that matters. A sale we skip
+ * is a buyer with a receipt and no license, so when the product's *name*
+ * says satus and none of the markers do, the caller throws rather than
+ * quietly returning: 500, Stripe retries, ops gets the alert. That needs
+ * `items.data.price.product` expanded on the subscription; unexpanded, the
+ * tripwire is inert and the markers still decide.
+ */
+export function ownershipOf(
+  session: Pick<Stripe.Checkout.Session, "metadata">,
+  sub: Pick<Stripe.Subscription, "metadata" | "items">,
+): Ownership {
+  if (session.metadata?.source === SATUS_SOURCE) return { ours: true, via: "session.metadata" };
+  if (sub.metadata?.source === SATUS_SOURCE) return { ours: true, via: "subscription.metadata" };
+
+  const items = sub.items?.data ?? [];
+  if (items.some((item) => item.price?.lookup_key?.startsWith(SATUS_LOOKUP_PREFIX))) {
+    return { ours: true, via: "lookup_key" };
+  }
+
+  const names = items
+    .map((item) => productNameOf(item.price?.product))
+    .filter((name): name is string => name !== null);
+  // For the log line: names when expanded, else whatever ids we have.
+  const ids = items
+    .map((item) =>
+      typeof item.price?.product === "string" ? item.price.product : (item.price?.id ?? ""),
+    )
+    .filter(Boolean);
+  const product = names.join(", ") || ids.join(", ") || "unknown";
+  return { ours: false, product, namedSatus: /satus/i.test(names.join(" ")) };
+}
+
 /**
  * Enqueue a transactional email via the internal send route. Same auth
  * pattern as license-delivery: service-role bearer, idempotency keyed off
@@ -138,13 +206,9 @@ async function enqueueTransactionalEmail(args: {
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session, env: StripeEnv) {
+export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, env: StripeEnv) {
   if (session.mode !== "subscription") return;
 
-  // Past this point the customer has paid. Every missing precondition and
-  // failed write throws so the POST handler returns 500 (Stripe retries
-  // for ~3 days) and ops gets the alert — a silent return here is a buyer
-  // with a receipt and no license, and nobody would know.
   const subscriptionId: string | undefined =
     typeof session.subscription === "string"
       ? session.subscription
@@ -153,6 +217,31 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, env: St
     throw new Error(`subscription-mode session ${session.id} has no subscription id`);
   }
 
+  // Whose sale is this? Decided before the paid-customer contract below
+  // applies, because another product's checkout is not our customer: it
+  // gets a 200 and a log line — never a license, and never a 500 that would
+  // page ops and put a booked.co sale on Stripe's three-day retry schedule.
+  const stripe = createStripeClient(env);
+  const sub = await stripe.subscriptions.retrieve(subscriptionId, {
+    expand: ["items.data.price.product"],
+  });
+  const ownership = ownershipOf(session, sub);
+  if (!ownership.ours) {
+    if (ownership.namedSatus) {
+      throw new Error(
+        `session ${session.id}: product "${ownership.product}" is named satus but carries no satus marker (session.metadata.source, subscription.metadata.source, or a satus_ lookup key); refusing to guess`,
+      );
+    }
+    console.log(
+      `[payments-webhook] ${session.id} is another product on the shared account (${ownership.product}); no license issued`,
+    );
+    return;
+  }
+
+  // Past this point the customer has paid us. Every missing precondition and
+  // failed write throws so the POST handler returns 500 (Stripe retries
+  // for ~3 days) and ops gets the alert — a silent return here is a buyer
+  // with a receipt and no license, and nobody would know.
   const email: string | undefined =
     session.customer_details?.email ?? session.customer_email ?? undefined;
   if (!email) {
@@ -165,8 +254,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, env: St
     throw new Error(`no customer id on session ${session.id}`);
   }
 
-  const stripe = createStripeClient(env);
-  const sub = await stripe.subscriptions.retrieve(subscriptionId);
   const plan = planOf(sub);
   const periodEnd = periodEndOf(sub);
 
