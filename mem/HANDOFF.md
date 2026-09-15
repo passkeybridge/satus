@@ -27,13 +27,23 @@ Both were mutation-tested: guard removed, tests red, guard restored. The
 three stray rows (one booked.co, two PasskeyBridge) were deleted on the
 owner's go; `licenses` live now holds only `satus_pro_monthly` rows.
 
+3. **CLI CI off Node 20.** `cli-publish.yml` builds on 24; `cli-ci.yml`
+   is a 20/24 matrix because `engines` still says `>=20`. `checkout` and
+   `setup-node` moved to v5. Publish dry run passes on npm 11 (it packs
+   when the version is already on the registry). CLI `bin` is
+   `dist/cli.js`, the form npm 11 wants — its "removed" warning was
+   misleading; the bin was never dropped.
+4. **`action-selftest` green for the first time since 2026-08-14.** It
+   fetches pagila's schema from upstream `master`, which now needs
+   PostgreSQL 18 and pgvector; the container is `pgvector/pgvector:pg18`.
+
 ## Needs the owner
 
 - **`NPM_PUBLISH_TOKEN` expires 2026-10-12.** Rotate in GitHub Secrets; do
   not handle the value.
-- **Node 20 in `cli-ci.yml:24` and `cli-publish.yml:25`**, EOL since
-  2026-04-30. Bump to 22 or 24 outside a release week. Do not move
-  `"engines": ">=20"` as a side effect. Awaiting a go.
+- **The self-test's pagila fetch is unpinned.** Upstream broke it twice
+  this year. Pinning to a commit means reading another repository, which
+  this session is not scoped to.
 
 ## Graduated this session
 
@@ -56,6 +66,5 @@ default API version — moot now that both payload shapes are handled.
 
 ## Next
 
-1. Node bump on a go.
-2. `(planned)` Team features on `/pricing`, and a support SLA.
-3. Content plan resumes at Q3 item 9.
+1. `(planned)` Team features on `/pricing`, and a support SLA.
+2. Content plan resumes at Q3 item 9.
