@@ -30,13 +30,16 @@ export const Route = createFileRoute("/docs/github-action")({
   component: GitHubActionPage,
   head: () => ({
     meta: [
-      { title: "GitHub Action—satus" },
+      { title: "satus GitHub Action—seed a preview Postgres database in CI" },
       {
         name: "description",
         content:
           "passkeybridge/satus/packages/action@main: a composite GitHub Action that runs `satus generate` against your PR-preview Postgres database. Inputs, outputs, security notes.",
       },
-      { property: "og:title", content: "GitHub Action—satus" },
+      {
+        property: "og:title",
+        content: "satus GitHub Action—seed a preview Postgres database in CI",
+      },
       {
         property: "og:description",
         content:

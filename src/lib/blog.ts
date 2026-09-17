@@ -240,6 +240,32 @@ function publicPosts(now: number = Date.now()): Post[] {
 }
 
 /** All published posts, newest first. */
+/**
+ * What the /blog index needs per post, and nothing else.
+ *
+ * The index route used to return `getAllPosts()` from its loader. It only
+ * rendered five fields, but TanStack Start serialises the whole loader result
+ * into the page for hydration, so every post's pre-rendered `html` and
+ * `excerpt` shipped inside the index HTML: 630 KB for 43 posts on
+ * 2026-09-17, against a 150 KB budget. Picking the fields here keeps the
+ * loader honest about what the page consumes.
+ */
+export type PostSummary = Pick<
+  Post,
+  "slug" | "title" | "description" | "date" | "tags" | "readingMinutes"
+>;
+
+export function getPostSummaries(now?: number): PostSummary[] {
+  return getAllPosts(now).map(({ slug, title, description, date, tags, readingMinutes }) => ({
+    slug,
+    title,
+    description,
+    date,
+    tags,
+    readingMinutes,
+  }));
+}
+
 export function getAllPosts(now?: number): Post[] {
   return publicPosts(now);
 }

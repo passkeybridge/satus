@@ -123,13 +123,16 @@ export const Route = createFileRoute("/docs/troubleshooting")({
   component: TroubleshootingPage,
   head: () => ({
     meta: [
-      { title: "Troubleshooting—satus" },
+      { title: "satus troubleshooting—exit codes, FK cycles, seeding errors" },
       {
         name: "description",
         content:
           "Every known satus failure mode with the fix. Install errors, schema errors (E_FK_CYCLE, E_DB_NOT_EMPTY), LLM rate limits, license activation, recovery.",
       },
-      { property: "og:title", content: "Troubleshooting—satus" },
+      {
+        property: "og:title",
+        content: "satus troubleshooting—exit codes, FK cycles, seeding errors",
+      },
       {
         property: "og:description",
         content:

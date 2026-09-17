@@ -9,7 +9,7 @@ verified against production. `@passkeybridge/satus@0.3.11` is npm `latest`.
 No unmerged branches.
 
 Gates: tsc clean, eslint 0 errors, 34 site tests (19 in the new
-`webhook.test.ts`), 70 CLI tests, five validators, prettier clean.
+`webhook.test.ts`), 70 CLI tests, six validators, prettier clean.
 
 ## Shipped today
 
@@ -36,6 +36,15 @@ owner's go; `licenses` live now holds only `satus_pro_monthly` rows.
 4. **`action-selftest` green for the first time since 2026-08-14.** It
    fetches pagila's schema from upstream `master`, which now needs
    PostgreSQL 18 and pgvector; the container is `pgvector/pgvector:pg18`.
+5. **SEO 4.1 and 4.2 (2026-09-17).** Thirteen sitemap routes had titles of
+   10–26 characters; all are 54–60 now and name the product function.
+   `scripts/validate-titles.mjs` is the **sixth** validator: it parses
+   STATIC_ROUTES out of the sitemap route and fails the build on any title
+   outside 30–60 (posts: floor only). It caught one the byte-counting audit
+   missed — "The CITEXT trap" was 29 *characters*; the post is retitled.
+   `/blog` was 630 KB because the loader returned full posts and TanStack
+   serialises loader data into the page; `getPostSummaries()` returns the
+   six fields the index renders. 78 KB on the dev server.
 
 ## Needs the owner
 

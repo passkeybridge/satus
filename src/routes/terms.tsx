@@ -41,13 +41,16 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
   head: () => ({
     meta: [
-      { title: "Terms of Service—satus" },
+      { title: "satus terms of service—the Postgres seed-data CLI and site" },
       {
         name: "description",
         content:
           "Terms of Service for the satus.sh CLI and marketing site, operated by PasskeyBridge LLC. Effective May 26, 2026.",
       },
-      { property: "og:title", content: "Terms of Service—satus" },
+      {
+        property: "og:title",
+        content: "satus terms of service—the Postgres seed-data CLI and site",
+      },
       {
         property: "og:description",
         content:

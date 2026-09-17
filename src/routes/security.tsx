@@ -28,13 +28,13 @@ export const Route = createFileRoute("/security")({
   component: SecurityPage,
   head: () => ({
     meta: [
-      { title: "Security—satus" },
+      { title: "satus security—disclosure policy for the seed-data CLI" },
       {
         name: "description",
         content:
           "Coordinated vulnerability disclosure policy for satus.sh and the satus CLI: how to report, response timeline, scope, and safe harbor.",
       },
-      { property: "og:title", content: "Security—satus" },
+      { property: "og:title", content: "satus security—disclosure policy for the seed-data CLI" },
       {
         property: "og:description",
         content:

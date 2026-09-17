@@ -104,13 +104,16 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
   head: () => ({
     meta: [
-      { title: "Pricing—satus" },
+      { title: "satus pricing—free tier, Pro and Team for Postgres seed data" },
       {
         name: "description",
         content:
           "satus pricing: Free tier (25 rows × 5 tables), Pro at $19/mo, Team at $49/seat. Bring-your-own LLM key on every tier. We don't resell tokens.",
       },
-      { property: "og:title", content: "Pricing—satus" },
+      {
+        property: "og:title",
+        content: "satus pricing—free tier, Pro and Team for Postgres seed data",
+      },
       {
         property: "og:description",
         content:

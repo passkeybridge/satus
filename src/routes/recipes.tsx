@@ -29,13 +29,16 @@ export const Route = createFileRoute("/recipes")({
   component: RecipesPage,
   head: () => ({
     meta: [
-      { title: "Recipes—satus" },
+      { title: "satus recipes—copy-paste Postgres seeding for CI, previews" },
       {
         name: "description",
         content:
           "Copy-paste recipes for satus: seed a preview branch, wire into GitHub Actions, reset a Cypress database between tests, seed a fresh Neon branch.",
       },
-      { property: "og:title", content: "Recipes—satus" },
+      {
+        property: "og:title",
+        content: "satus recipes—copy-paste Postgres seeding for CI, previews",
+      },
       {
         property: "og:description",
         content: "Four short, copy-paste recipes covering the most common satus integrations.",

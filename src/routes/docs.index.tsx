@@ -25,13 +25,16 @@ export const Route = createFileRoute("/docs/")({
   component: DocsPage,
   head: () => ({
     meta: [
-      { title: "Docs—satus" },
+      { title: "satus docs—schema-aware seed data for Postgres, from one CLI" },
       {
         name: "description",
         content:
           "Documentation hub for satus: quickstart, CLI reference, profile catalogue, and conceptual guides for the seeding CLI that respects every foreign key.",
       },
-      { property: "og:title", content: "Docs—satus" },
+      {
+        property: "og:title",
+        content: "satus docs—schema-aware seed data for Postgres, from one CLI",
+      },
       {
         property: "og:description",
         content: "Quickstart, CLI reference, profile catalogue, concepts. Everything in one place.",

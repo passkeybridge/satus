@@ -37,12 +37,12 @@ export const Route = createFileRoute("/cli")({
   component: CliPage,
   head: () => ({
     meta: [
-      { title: "CLI reference—satus" },
+      { title: "satus CLI reference—every flag and environment variable" },
       {
         name: "description",
         content: `Complete reference for the satus CLI ${SATUS_VERSION_TAG}: init, generate, activate, whoami. Every flag, every environment variable, taken directly from the published binary.`,
       },
-      { property: "og:title", content: "CLI reference—satus" },
+      { property: "og:title", content: "satus CLI reference—every flag and environment variable" },
       {
         property: "og:description",
         content:

@@ -26,13 +26,16 @@ export const Route = createFileRoute("/quickstart")({
   component: QuickstartPage,
   head: () => ({
     meta: [
-      { title: "Quickstart—satus" },
+      { title: "satus quickstart—install the CLI, seed a Postgres database" },
       {
         name: "description",
         content:
           "Zero to a seeded Postgres database in under a minute. Install satus, point at Supabase / Neon / Railway / RDS / local, pick a profile, ship.",
       },
-      { property: "og:title", content: "Quickstart—satus" },
+      {
+        property: "og:title",
+        content: "satus quickstart—install the CLI, seed a Postgres database",
+      },
       {
         property: "og:description",
         content:

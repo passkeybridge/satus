@@ -40,13 +40,16 @@ export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
   head: () => ({
     meta: [
-      { title: "Privacy Policy—satus" },
+      { title: "satus privacy policy—what the seed-data CLI and site collect" },
       {
         name: "description",
         content:
           "Privacy policy for satus.sh. The CLI runs on your machine; we never see your schemas, your data, or your LLM prompts. Effective May 26, 2026.",
       },
-      { property: "og:title", content: "Privacy Policy—satus" },
+      {
+        property: "og:title",
+        content: "satus privacy policy—what the seed-data CLI and site collect",
+      },
       {
         property: "og:description",
         content:

@@ -27,13 +27,13 @@ export const Route = createFileRoute("/docs/how-it-works")({
   component: HowItWorksPage,
   head: () => ({
     meta: [
-      { title: "How it works—satus" },
+      { title: "How satus works—FK planner, row guard, one transaction" },
       {
         name: "description",
         content:
           "The three guarantees satus makes: the FK-cycle planner, the 10,000-row safety guard, and the single-transaction write that is all-or-nothing.",
       },
-      { property: "og:title", content: "How it works—satus" },
+      { property: "og:title", content: "How satus works—FK planner, row guard, one transaction" },
       {
         property: "og:description",
         content:

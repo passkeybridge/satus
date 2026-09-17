@@ -10,10 +10,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/chrome";
 import { Section, type SectionMeta } from "@/components/site/primitives";
-import { getAllPosts, type Post } from "@/lib/blog";
+import { getPostSummaries, type PostSummary } from "@/lib/blog";
 
 const SITE_URL = "https://satus.sh";
 const PATH = "/blog";
+const TITLE = "satus blog—field notes on Postgres schemas and seed data";
 
 const SECTIONS: SectionMeta[] = [
   { id: "log", n: "00", label: "The log" },
@@ -22,17 +23,21 @@ const SECTIONS: SectionMeta[] = [
 
 export const Route = createFileRoute("/blog/")({
   /* Loader is synchronous because all posts are bundled. ensureQueryData is
-   * unnecessary; the parsed POSTS array is in module scope. */
-  loader: () => ({ posts: getAllPosts() }),
+   * unnecessary; the parsed POSTS array is in module scope.
+   *
+   * Summaries, not posts: the loader result is serialised into the page, so
+   * returning full posts shipped every article body inside the index (630 KB
+   * on 2026-09-17). See getPostSummaries. */
+  loader: () => ({ posts: getPostSummaries() }),
   head: () => ({
     meta: [
-      { title: "Blog—satus.sh" },
+      { title: TITLE },
       {
         name: "description",
         content:
           "Field notes on Postgres schemas, satus CLI changelogs, and post-mortems on seed-data edge cases. Written for engineers who ship.",
       },
-      { property: "og:title", content: "Blog—satus.sh" },
+      { property: "og:title", content: TITLE },
       {
         property: "og:description",
         content:
@@ -40,7 +45,7 @@ export const Route = createFileRoute("/blog/")({
       },
       { property: "og:url", content: SITE_URL + PATH },
       { property: "og:image", content: SITE_URL + "/og-image.png" },
-      { name: "twitter:title", content: "Blog—satus.sh" },
+      { name: "twitter:title", content: TITLE },
       {
         name: "twitter:description",
         content:
@@ -78,7 +83,7 @@ function BlogIndexPage() {
           </p>
         ) : (
           <ol className="divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
-            {posts.map((p: Post) => (
+            {posts.map((p: PostSummary) => (
               <li key={p.slug}>
                 <Link
                   to="/blog/$slug"

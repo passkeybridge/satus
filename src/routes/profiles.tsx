@@ -113,13 +113,16 @@ export const Route = createFileRoute("/profiles")({
   component: ProfilesPage,
   head: () => ({
     meta: [
-      { title: "Reference profiles—satus" },
+      { title: "satus reference profiles—domain-shaped Postgres seed data" },
       {
         name: "description",
         content:
           "Three reference profiles for satus—saas, ecommerce, b2b—each a prose hint that biases generated values toward a domain. Documented alongside the CLI source.",
       },
-      { property: "og:title", content: "Reference profiles—satus" },
+      {
+        property: "og:title",
+        content: "satus reference profiles—domain-shaped Postgres seed data",
+      },
       {
         property: "og:description",
         content:
