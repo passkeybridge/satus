@@ -9,17 +9,17 @@ tags: [pricing, product, cli]
 draft: false
 ---
 
-satus is free up to 25 rows per table across 5 tables, with no time limit and no card. Above that it is $19 a month. This post is about how those two numbers were chosen, what they do and do not restrict, and one place where our own pricing copy currently overstates the product.
+satus is free up to 25 rows per table across 5 tables, with no time limit and no card. Above that it is $19 a month. This post is about how those two numbers were chosen, what they do and do not restrict, and one place where our own pricing copy overstated the product until v0.3.11.
 
 ## The whole of the paid gate
 
 Every difference between Free and Pro lives in one variable, and that variable is consulted exactly three times in the codebase:
 
 ```text
-181:  const isPaid = license?.valid && (license.plan === 'pro' || license.plan === 'team')
-184:    isPaid ? requestedRows : Math.min(requestedRows, FREE_MAX_ROWS)
-185:  if (!isPaid && requestedRows > FREE_MAX_ROWS) {
-271:  if (!isPaid && ordered.length > FREE_MAX_TABLES) {
+187:  const isPaid = license?.valid && (license.plan === "pro" || license.plan === "team");
+189:  const rowsPerTable = isPaid ? requestedRows : Math.min(requestedRows, FREE_MAX_ROWS);
+190:  if (!isPaid && requestedRows > FREE_MAX_ROWS) {
+282:  if (!isPaid && ordered.length > FREE_MAX_TABLES) {
 ```
 
 A clamp on rows, a clamp on tables, and the warnings that announce them. That is the entire commercial boundary.
@@ -41,7 +41,7 @@ satus generate
 
 ## The 5 tables are never an arbitrary 5
 
-The cap is `ordered.slice(0, 5)`, and `ordered` is the topological sort, not the schema's alphabetical or `pg_class` order. That distinction is doing real work.
+The cap is `ordered.slice(0, FREE_MAX_TABLES)` with `FREE_MAX_TABLES` at 5, and `ordered` is the topological sort, not the schema's alphabetical or `pg_class` order. That distinction is doing real work.
 
 A prefix of a topological order is closed under the parent relation. Every table's foreign-key targets sort before it, so if a table is in the first five, everything it references is too. Truncation therefore cannot produce an orphan: you get a smaller schema that still satisfies its own constraints, rather than five tables with dangling references.
 
@@ -69,7 +69,7 @@ Team is $49 per seat per month. The price exists in Stripe as `satus_team_seat_m
 
 ## Where our own copy overstates it
 
-Two claims on the site do not survive contact with the source.
+Two claims on the site did not survive contact with the source until v0.3.11 shipped.
 
 Our pricing FAQ says "Free is fully offline forever." In the context of that answer, which is about license verification, it is true: Free never contacts the license server, because there is no key to verify. Read plainly, through v0.3.10 it was not, and the plain reading is the one a user will take.
 
