@@ -69,6 +69,30 @@ fixing bugs. It is reproducing them." earns its shape because both halves
 carry information and the second is the post's subject. The test: delete
 the first half. If nothing is lost, it was decoration.
 
+## Admitting mistakes
+
+Owner's rule, 2026-09-18: we admit mistakes; we do not beat ourselves up.
+Everything published is according to the code, and when the code was
+wrong we say so — the fact, the fix, the version — and stop. What we do
+not do is dwell, cross-reference every other page that was also wrong, or
+frame a past issue that affected nobody as a confession.
+
+The test is who the sentence is for. "Since v0.3.11 the run record is
+opt-in; a default install of Free runs without talking to us at all" is for
+the reader. "Two claims on the site did not survive contact with the
+source" is for us, and it reads as weird to anyone else.
+
+Before and after, from the free-tier post on the day it published:
+
+- Heading "Where our own copy overstates it" → "What 'fully offline' means
+  on Free".
+- "That grace was documented before it was implemented and only became
+  true in v0.3.10, which is a story we have already told on ourselves" →
+  "That grace has been enforced since v0.3.10."
+
+Release notes are the place for the full account of what was wrong and
+why. A post on another subject links to them and moves on.
+
 ## When the gate is wrong
 
 `scripts/validate-language.mjs` prints `file:line` and the phrase. Reword
