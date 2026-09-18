@@ -95,3 +95,21 @@ Command substitution drops the NUL as well, so write to a file rather than
 capturing the body into a shell variable. Same caution for any future
 rendered-output check: confirm the tool can *see* the thing before trusting
 it to say the thing is missing.
+
+## A 403 from `curl` in this sandbox is probably about the sandbox
+
+2026-09-18, verifying the embargoed post: `curl https://satus.sh/...` from
+the session container returned `403 Forbidden` with a 70-byte body and a
+Vercel `iad1::` request id — on `/`, `/pricing`, the health endpoint, and
+the new post, intermittently, even with six seconds between requests. The
+same URLs fetched through `mcp__Vercel__web_fetch_vercel_url` (Vercel's
+own network) were 200, and the Supabase cron's health run that morning
+had passed. Deployment protection was not involved: SSO applies to
+non-custom domains only.
+
+It is Vercel's edge rate-limiting one IP that had just made a few hundred
+automated requests. Before reporting a 403 as a production fault, fetch
+the URL from a second vantage point — the Vercel fetch tool, or the
+`e2e_health_log` table, which is written from Supabase's network — and
+compare. Two hundreds from elsewhere and a 403 from here is a fact about
+here.
