@@ -63,7 +63,7 @@ That is also why there is no free *trial*. A time-limited Pro would tell you wha
 
 $19 a month, or $190 a year, both live in Stripe as `satus_pro_monthly` and `satus_pro_yearly`. Annual is a little under ten months at the monthly rate.
 
-You get the caps lifted, and a 24-hour offline license grace: the CLI caches its verdict locally so a flight or a license-server outage does not stop a build. Past 24 hours with no network, activation fails closed and you drop to Free caps with a printed reason rather than silently continuing. That grace was documented before it was implemented and only became true in v0.3.10, which is a story we have [already told on ourselves](/blog/v0-3-10-release-notes).
+You get the caps lifted, and a 24-hour offline license grace: the CLI caches its verdict locally so a flight or a license-server outage does not stop a build. Past 24 hours with no network, activation fails closed and you drop to Free caps with a printed reason rather than silently continuing. That grace has been enforced since [v0.3.10](/blog/v0-3-10-release-notes).
 
 Team is $49 per seat per month. The price exists in Stripe as `satus_team_seat_monthly`; the tier does not exist as a product you can buy. It is a waitlist, the pricing page says so, and it stays a waitlist until enough teams ask for the same handful of features to make it a real tier rather than a bigger number.
 
