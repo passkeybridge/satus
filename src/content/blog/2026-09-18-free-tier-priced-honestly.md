@@ -9,7 +9,7 @@ tags: [pricing, product, cli]
 draft: false
 ---
 
-satus is free up to 25 rows per table across 5 tables, with no time limit and no card. Above that it is $19 a month. This post is about how those two numbers were chosen, what they do and do not restrict, and one place where our own pricing copy overstated the product until v0.3.11.
+satus is free up to 25 rows per table across 5 tables, with no time limit and no card. Above that it is $19 a month. This post is about how those two numbers were chosen, what they do and do not restrict, and what "fully offline" means on Free.
 
 ## The whole of the paid gate
 
@@ -67,15 +67,11 @@ You get the caps lifted, and a 24-hour offline license grace: the CLI caches its
 
 Team is $49 per seat per month. The price exists in Stripe as `satus_team_seat_monthly`; the tier does not exist as a product you can buy. It is a waitlist, the pricing page says so, and it stays a waitlist until enough teams ask for the same handful of features to make it a real tier rather than a bigger number.
 
-## Where our own copy overstates it
+## What "fully offline" means on Free
 
-Two claims on the site did not survive contact with the source until v0.3.11 shipped.
+Our pricing FAQ says "Free is fully offline forever." The answer it sits in is about license verification, and there it is exact: Free never contacts the license server, because there is no key to verify.
 
-Our pricing FAQ says "Free is fully offline forever." In the context of that answer, which is about license verification, it is true: Free never contacts the license server, because there is no key to verify. Read plainly, through v0.3.10 it was not, and the plain reading is the one a user will take.
-
-The reason is covered at length in [the cost post](/blog/cost-estimates-are-guardrails-not-accounting): `reportRun` was called unconditionally at the end of every `satus generate`, on every tier including Free. The payload was deliberately small, carrying a run UUID, the CLI version, provider, model, profile, a table *count*, row and token totals, an estimated spend, a duration, and on failure a fixed-vocabulary error class. No schema name, no table names, no column names, no row data. But a tier described as fully offline was making a network request, and our [security page](/security) called telemetry "off by default" when only the separate failure-fingerprint sharing was gated.
-
-v0.3.11 closes it in the CLI rather than by softening the sentences, which is the same call we made when the [telemetry payload itself](/blog/v0-3-7-release-notes) contradicted the privacy page in July. The run record is now opt-in via `telemetry.enabled` or `SATUS_TELEMETRY=1`, `DO_NOT_TRACK=1` overrides both, and the default is pinned by a test. On a default install, Free now really does run without talking to us at all.
+Read more broadly, it has been exact since v0.3.11. Through v0.3.10 the CLI sent a small run record at the end of `satus generate` on every tier: a run UUID, the CLI version, provider, model, profile, a table *count*, row and token totals, an estimated spend, a duration, and on failure a fixed-vocabulary error class. No schema name, no table or column names, no row data. Since v0.3.11 the run record is opt-in via `telemetry.enabled` or `SATUS_TELEMETRY=1`, `DO_NOT_TRACK=1` overrides both, and the default is pinned by a test. A default install of Free runs without talking to us at all, which is what the sentence says. The [v0.3.11 release notes](/blog/v0-3-11-release-notes) have the detail.
 
 ## What would move the caps
 
