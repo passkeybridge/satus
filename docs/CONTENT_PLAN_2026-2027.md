@@ -41,6 +41,10 @@ The launch sequence, each post paired with a channel moment:
 3. "Introspecting a Postgres schema in one round-trip" — the CTE
    catalog query, why information_schema lies about FKs under RLS-ish
    privilege setups, partition re-attribution. (r/PostgreSQL)
+   **Shipped in pieces, marked 2026-09-25.** The round-trip in the
+   v0.2.0 notes (06-04) with loopback numbers added 08-21; the privilege
+   filtering in full on 08-21; partition re-attribution on 07-31 and
+   again on 08-21. Writing it as one post now would restate all three.
 4. "Breaking FK cycles without lying to your database" — Kahn's
    algorithm + nullable back-edges + back-patching. (lobste.rs)
    **Shipped 2026-08-28 as "The cycle-breaking heuristic we documented
@@ -64,6 +68,10 @@ The launch sequence, each post paired with a channel moment:
 10–12. Seeding-practice pieces: "Fixtures vs generation: when each
    wins", "pg_dump snapshots as test fixtures", "Seeding Supabase
    branches in CI".
+   **Item 10 shipped 2026-09-25 as "Fixtures vs generation, and when
+   each wins."** Every transcript run on PostgreSQL 16.13 against the
+   shipped 0.3.11; the dry-run needs no key, so the whole post was
+   gated without one.
 
 ## Q4 2026 (Dec–Feb): The realism series
 
