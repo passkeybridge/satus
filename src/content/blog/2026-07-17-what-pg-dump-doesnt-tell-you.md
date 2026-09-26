@@ -8,7 +8,7 @@ tags: [postgres, introspection, pg_dump]
 draft: false
 ---
 
-> **Correction (2026-10-05).** As published, this post said satus reads planner statistics from `pg_stats`, enumerates extension-owned objects through `pg_extension` and `pg_depend`, and reads indexes from `pg_index` and `CHECK` constraints from `pg_constraint`, and it linked a `satus plan` command. None of that is in the CLI. Checked against `packages/cli/src` in 0.3.11: introspection reads tables from `pg_class`, column types from `information_schema.columns`, and primary keys, foreign keys and single-column unique constraints from `pg_constraint`. There is no `plan` command; the dry run is `satus generate --dry-run`. The three "What we do instead" paragraphs and the closing link have been corrected to match. The sections on `pg_dump` itself are unchanged.
+> **Correction (2026-10-05).** As published, this post said satus reads planner statistics from `pg_stats`, enumerates extension-owned objects through `pg_extension` and `pg_depend`, and reads indexes from `pg_index` and `CHECK` constraints from `pg_constraint`, and it linked a `satus plan` command. None of that is in the CLI. Checked against `packages/cli/src` in 0.3.11: introspection reads tables from `pg_class`, column types from `information_schema.columns`, and primary keys, foreign keys and single-column unique constraints from `pg_constraint`. There is no `plan` command; the dry run is `satus generate --dry-run`. The three "What we do instead" paragraphs and the closing link have been corrected to match. The worked example in section 3 was also corrected: it declared `UNIQUE (lower(email))`, which PostgreSQL rejects as a syntax error, and showed approximated `pg_dump` output. It now uses a unique expression index and a real `pg_dump` 17.11 transcript. The rest of the sections on `pg_dump` are unchanged.
 
 `pg_dump` is the canonical way to serialise a Postgres database to a file, and for restoring a database that is precisely what it should do. It is not, and does not claim to be, a faithful description of your schema as the server sees it. Early in [satus](/) we treated the output of `pg_dump --schema-only` as ground truth for what a seeder needed to know about a table. We were wrong three times in a row, in three different ways, and each of the three is documented behaviour rather than a bug. This post names them, points at the [`pg_dump` reference](https://www.postgresql.org/docs/current/app-pgdump.html) for each, and describes what we read out of [`pg_catalog`](https://www.postgresql.org/docs/current/catalogs.html) instead.
 
@@ -57,9 +57,10 @@ A worked example makes the split obvious. This schema, written the way an engine
 ```sql
 CREATE TABLE customers (
   id    bigserial PRIMARY KEY,
-  email text NOT NULL,
-  CONSTRAINT customers_email_lower_unique UNIQUE (lower(email))
+  email text NOT NULL
 );
+
+CREATE UNIQUE INDEX customers_email_lower_unique ON customers (lower(email));
 
 CREATE TABLE orders (
   id          bigserial PRIMARY KEY,
@@ -70,38 +71,157 @@ CREATE TABLE orders (
 CREATE INDEX orders_customer_id_idx ON orders (customer_id);
 ```
 
-comes back out of `pg_dump --schema-only` in roughly this shape (irrelevant boilerplate removed):
+comes back out of `pg_dump` 17.11 (PostgreSQL 17.11) as the file below. Nothing has been removed from it; `--no-owner` leaves out the ownership statements, and `--restrict-key` pins the `\restrict` key so that two runs print the same thing:
 
 ```text
--- pre-data
+$ pg_dump --schema-only --no-owner --restrict-key=example -d example
+--
+-- PostgreSQL database dump
+--
+
+\restrict example
+
+-- Dumped from database version 17.11 (Debian 17.11-0+deb13u1)
+-- Dumped by pg_dump version 17.11 (Debian 17.11-0+deb13u1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: customers; Type: TABLE; Schema: public; Owner: -
+--
+
 CREATE TABLE public.customers (
     id bigint NOT NULL,
     email text NOT NULL
 );
+
+
+--
+-- Name: customers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.customers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: customers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.customers_id_seq OWNED BY public.customers.id;
+
+
+--
+-- Name: orders; Type: TABLE; Schema: public; Owner: -
+--
+
 CREATE TABLE public.orders (
     id bigint NOT NULL,
     customer_id bigint NOT NULL,
     total_cents integer NOT NULL,
-    CONSTRAINT orders_total_cents_check CHECK (total_cents >= 0)
+    CONSTRAINT orders_total_cents_check CHECK ((total_cents >= 0))
 );
--- (sequences, defaults, etc.)
 
--- post-data
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.orders_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.orders_id_seq OWNED BY public.orders.id;
+
+
+--
+-- Name: customers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.customers ALTER COLUMN id SET DEFAULT nextval('public.customers_id_seq'::regclass);
+
+
+--
+-- Name: orders id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.orders_id_seq'::regclass);
+
+
+--
+-- Name: customers customers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY public.customers
     ADD CONSTRAINT customers_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY public.customers
-    ADD CONSTRAINT customers_email_lower_unique UNIQUE (lower(email));
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY public.orders
     ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: customers_email_lower_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX customers_email_lower_unique ON public.customers USING btree (lower(email));
+
+
+--
+-- Name: orders_customer_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
 CREATE INDEX orders_customer_id_idx ON public.orders USING btree (customer_id);
+
+
+--
+-- Name: orders orders_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY public.orders
-    ADD CONSTRAINT orders_customer_id_fkey
-    FOREIGN KEY (customer_id) REFERENCES public.customers(id);
+    ADD CONSTRAINT orders_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.customers(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict example
 ```
 
-Neither `CREATE TABLE` block, on its own, tells you that `customers.id` is a primary key, that `customers.email` participates in a case-insensitive uniqueness constraint, that `orders.customer_id` has an index, or that it points at `customers.id`. All of that arrives later, in `ALTER TABLE` form, in the post-data section. The validated `CHECK` on `total_cents` is the only structural fact the pre-data section keeps inline, and that only because Postgres and `pg_dump` treat validated `CHECK` constraints specially.
+Neither `CREATE TABLE` block, on its own, tells you that `customers.id` is a primary key, that `customers.email` is unique case-insensitively, that `orders.customer_id` has an index, or that it points at `customers.id`. All of that arrives near the end of the file, after the sequences and defaults, as `ALTER TABLE ... ADD CONSTRAINT` and `CREATE INDEX` statements. Apart from `NOT NULL`, the validated `CHECK` on `total_cents` is the only constraint the `CREATE TABLE` keeps inline, because validated `CHECK` constraints are the exception in the `--section` description quoted above.
 
-What we do instead. `satus` builds the dependency graph from `pg_constraint` joined against `pg_attribute` and `pg_class`. Primary keys have `contype = 'p'`, single-column unique constraints have `contype = 'u'`, and foreign keys have `contype = 'f'` plus `confrelid` and `confkey` for the target. It does not read `pg_index`, so a bare `CREATE UNIQUE INDEX` is not seen, and `CHECK` constraints are not introspected yet. The topological order our DAG produces is derived from those foreign-key edges, not from the position of `ALTER TABLE ADD CONSTRAINT` statements in a file.
+What we do instead. `satus` builds the dependency graph from `pg_constraint` joined against `pg_attribute` and `pg_class`. Primary keys have `contype = 'p'`, single-column unique constraints have `contype = 'u'`, and foreign keys have `contype = 'f'` plus `confrelid` and `confkey` for the target. It does not read `pg_index`, so a bare `CREATE UNIQUE INDEX`, like `customers_email_lower_unique` above, is not seen, and `CHECK` constraints are not introspected yet. The topological order our DAG produces is derived from those foreign-key edges, not from the position of `ALTER TABLE ADD CONSTRAINT` statements in a file.
 
 ## What to read out of pg_catalog instead
 
