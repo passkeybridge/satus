@@ -28,6 +28,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
+import { TELEMETRY_PROVIDERS } from "@/lib/telemetry-providers";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
@@ -64,7 +65,8 @@ const RunSchema = z.object({
   status: z.enum(["running", "success", "failed"]),
   profile: z.string().min(1).max(32).optional(),
   // v0.3.0 (optional, backward-compatible with v0.2.x clients which omit it).
-  provider: z.enum(["openai", "anthropic"]).optional(),
+  // "xai" added 2026-09-26 for the CLI's xai provider; unknown values 400.
+  provider: z.enum(TELEMETRY_PROVIDERS).optional(),
   model: z.string().min(1).max(64).optional(),
   // v0.3.7: replaces the per-table `tables` array.
   table_count: z.number().int().min(0).max(10_000).optional(),
