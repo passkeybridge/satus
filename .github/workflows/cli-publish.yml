@@ -14,9 +14,12 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Least privilege. id-token: write lets npm exchange this job's GitHub
+    # OIDC token for a short-lived publish token (trusted publishing) and
+    # sign provenance. Nothing here writes to the repo.
     permissions:
       contents: read
-      id-token: write # for npm provenance
+      id-token: write
     steps:
       - uses: actions/checkout@v5
 
@@ -27,6 +30,21 @@ jobs:
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing (OIDC) needs npm >= 11.5.1
+      # (https://docs.npmjs.com/trusted-publishers). Every Node 24 from
+      # 24.5.0 bundles at least that, so this is normally a no-op; it exists
+      # so a stale runner toolcache can't silently drop us back to token auth.
+      - name: Ensure npm supports trusted publishing
+        run: |
+          have=$(npm --version)
+          if node -e 'const [a,b,c]=process.argv[1].split(".").map(Number);process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$have"; then
+            echo "npm $have supports trusted publishing."
+          else
+            echo "::warning::npm $have predates trusted publishing (11.5.1); installing npm@11.19.0."
+            npm install -g npm@11.19.0
+            npm --version
+          fi
 
       - name: Verify tag matches package.json
         if: startsWith(github.ref, 'refs/tags/v')
@@ -115,9 +133,45 @@ jobs:
             npm publish --access public --dry-run
           fi
 
+      # Auth: npm trusted publishing (OIDC). npm >= 11.5.1 detects GitHub
+      # Actions, exchanges this job's OIDC token for a short-lived publish
+      # token, and only if that exchange fails falls back to the configured
+      # token (docs.npmjs.com/trusted-publishers: "uses them for
+      # authentication before falling back to traditional tokens").
+      #
+      # TRANSITION: NODE_AUTH_TOKEN stays as that fallback until the trusted
+      # publisher is saved on npmjs.com and one release has gone out through
+      # it (the step below reports which path was used). Then delete this
+      # env block and the NPM_PUBLISH_TOKEN secret in a follow-up. The token
+      # expires 2026-10-12; after that the fallback is dead either way.
+      #
+      # --provenance is automatic under OIDC; it stays explicit so the token
+      # path keeps signing provenance too.
       - name: Publish
         if: steps.registry.outputs.published == 'false' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
         working-directory: packages/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: npm publish --access public --provenance
+
+      # Read-only, unauthenticated registry lookup. A version published via
+      # trusted publishing carries `_npmUser.trustedPublisher`; one published
+      # with a token does not. This is what tells us the fallback can go.
+      - name: Report publish auth path
+        if: steps.registry.outputs.published == 'false' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
+        env:
+          VERSION: ${{ steps.registry.outputs.version }}
+        run: |
+          tp=""
+          for i in 1 2 3 4 5 6; do
+            if npm view "@passkeybridge/satus@$VERSION" version > /dev/null 2>&1; then
+              tp=$(npm view "@passkeybridge/satus@$VERSION" _npmUser.trustedPublisher.id 2>/dev/null || true)
+              break
+            fi
+            sleep 10
+          done
+          if [ -n "$tp" ]; then
+            echo "::notice title=npm auth::@passkeybridge/satus@$VERSION was published via trusted publishing ($tp). The NPM_PUBLISH_TOKEN fallback can be removed."
+          else
+            echo "::warning title=npm auth::@passkeybridge/satus@$VERSION was NOT published via trusted publishing (token fallback, or registry not yet consistent). Check the trusted publisher on npmjs.com before the token expires 2026-10-12."
+          fi
