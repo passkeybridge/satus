@@ -162,7 +162,7 @@ function TermsPage() {
           </p>
           <p>
             The in-browser demo at satus.sh/demo is the exception: it runs on our API key, and the
-            column names, types and enum labels you enter are sent to Anthropic to generate rows.
+            column names, types and enum labels you enter are sent to xAI to generate rows.
           </p>
         </Prose>
       </Section>
