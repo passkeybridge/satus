@@ -113,3 +113,21 @@ the URL from a second vantage point — the Vercel fetch tool, or the
 `e2e_health_log` table, which is written from Supabase's network — and
 compare. Two hundreds from elsewhere and a 403 from here is a fact about
 here.
+
+## Reading Vercel runtime logs for an audit finding
+
+From the 2026-09-21 "Soft 404" on `/blog/agent-mode-postponed`
+(investigated 09-26):
+
+- **Audit timestamps are Eastern; the logs are UTC.** "13:52" in the SEO
+  audit had no request in the logs. 17:52:52 UTC did — the same minute in
+  America/New_York. Convert before concluding a request never happened.
+- **`get_runtime_logs` times out on windows wider than about an hour**
+  when returning lines. `group_by` works over a whole day; for lines, use
+  windows of a few hours or less, and the `query` filter.
+- Retention reached back at least five days on 09-26.
+
+The finding itself: four 200s from the then-production deployment, cache
+MISS, no deploy in flight, no error cluster. Google judged a 200 page as
+not-found content; the server side gave it nothing to judge from. The
+page passed Google's live test the same week. No code change.
