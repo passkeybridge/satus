@@ -20,6 +20,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
+import { blogPosts } from "./scripts/vite-plugin-blog-posts";
 
 export default defineConfig(({ mode }) => ({
   /* Inline every VITE_* value as a literal, rather than leaning on Vite's
@@ -68,6 +69,9 @@ export default defineConfig(({ mode }) => ({
   },
 
   plugins: [
+    /* Blog sources, with drafts and embargoed posts removed at build time
+     * so they never reach any bundle. See the plugin's header. */
+    blogPosts(),
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart({

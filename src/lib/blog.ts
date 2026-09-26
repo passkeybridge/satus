@@ -1,9 +1,18 @@
 /**
  * Blog content loader.
  *
- * Posts live as `.md` files under `src/content/blog/` and are bundled into
- * the Worker at build time via `import.meta.glob`. No filesystem reads at
- * runtime, Cloudflare Workers safe.
+ * Posts live as `.md` files under `src/content/blog/` and are bundled at
+ * build time via the `virtual:blog-posts` module
+ * (scripts/vite-plugin-blog-posts.ts). No filesystem reads at runtime,
+ * Cloudflare Workers safe.
+ *
+ * Production builds only ever see publishable posts: the plugin drops
+ * `draft: true` posts and posts whose `publishAt` is after the build instant
+ * before bundling. This module is reachable from client routes, so anything
+ * it imports ships in public JS; until 2026-09-26 it globbed the whole
+ * folder and the full markdown of unpublished posts was readable in the
+ * browser bundle. An embargoed post goes live on the first build after its
+ * `publishAt` (.github/workflows/scheduled-publish.yml triggers one).
  *
  * Frontmatter contract is documented in `src/content/blog/README.md`.
  * Validation is intentionally strict, and is enforced in two places:
@@ -28,6 +37,11 @@
 
 import { marked } from "marked";
 import { z } from "zod";
+/* Raw markdown keyed by `/src/content/blog/<file>.md`. In `vite build` this
+ * holds publishable posts only; in `vite dev` it is every post, and
+ * publicPosts() below does the hiding. The README is filtered out further
+ * down by filename so it doesn't ship as a (malformed) post. */
+import modules from "virtual:blog-posts";
 
 /* GFM gives us tables + autolinks; pedantic off so we accept the lightly
  * extended CommonMark engineers actually write. */
@@ -87,15 +101,6 @@ export interface Post extends PostFrontmatter {
    */
   publishAtMs: number | null;
 }
-
-/* eager:true bundles content at build time. query:'?raw' pulls the markdown
- * source as a string instead of trying to module-load it. The README is
- * filtered out by filename so it doesn't ship as a (malformed) post. */
-const modules = import.meta.glob("/src/content/blog/*.md", {
-  eager: true,
-  query: "?raw",
-  import: "default",
-}) as Record<string, string>;
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
@@ -220,6 +225,11 @@ const POSTS: Post[] = Object.entries(modules)
 
 /**
  * Posts visible to the public right now.
+ *
+ * In production builds the drafts and not-yet-due posts were already
+ * removed at build time, so this is a second, request-time check. It still
+ * matters in `vite dev`, and it keeps a post hidden if a build ever runs
+ * with a clock ahead of real time.
  *
  * Deliberately a function, not the module-scope const this used to be.
  * `POSTS` can be computed once because markdown does not change between
