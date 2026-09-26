@@ -110,16 +110,19 @@ License keys are verified against `https://satus.sh/api/public/license/verify` a
 |---|---|---|---|
 | OpenAI | `OPENAI_API_KEY` | `gpt-4o-mini` | <https://platform.openai.com/api-keys> |
 | Anthropic | `ANTHROPIC_API_KEY` | `claude-haiku-4-5` | <https://console.anthropic.com/settings/keys> |
+| xAI | `XAI_API_KEY` | `grok-4.20-0309-non-reasoning` | <https://console.x.ai> |
+
+The `xai` provider was added after 0.3.11 and ships in the next release. It calls `https://api.x.ai/v1/chat/completions` with strict `json_schema` output. On reasoning models (for example `grok-4.3`) the cost meter counts reasoning tokens as output tokens, because xAI bills them.
 
 ### Selecting a provider
 
 Precedence (highest first):
 
-1. `--provider openai|anthropic` flag on `satus generate`.
+1. `--provider openai|anthropic|xai` flag on `satus generate`.
 2. `provider` field in `satus.config.json`.
 3. **Auto-detect** from which env var is set.
 
-If both `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` are exported and you pass no flag and no config, the run aborts with a clear message — auto-detect deliberately refuses to guess so a misplaced key never spends on the wrong invoice.
+If both `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` are exported and you pass no flag and no config, the run aborts with a clear message — auto-detect deliberately refuses to guess so a misplaced key never spends on the wrong invoice. `XAI_API_KEY` is auto-detected only when neither of the other two is set; otherwise pass `--provider xai`.
 
 Model resolution is the same shape: `--model` flag wins, otherwise the config field, otherwise the provider's default model. Cross-provider model names are not validated client-side; the upstream 4xx surfaces verbatim if you pass `gpt-4o-mini` with `--provider anthropic`.
 
@@ -139,11 +142,11 @@ For CI, pass `--json` to get a single newline-terminated JSON object on stdout w
 {"run_id":"...","status":"success","provider":"openai","model":"gpt-4o-mini","profile":"saas","target_schema":"public","tables":[{"name":"users","rows_generated":25}],"total_rows":25,"total_cost_usd":0.001100,"input_tokens":842,"output_tokens":1310,"duration_ms":3142}
 ```
 
-Both cost numbers you see for a run — the `--dry-run` estimate and the live meter — read the same per-model rate table, selected by `--provider` and `--model`. Rates are pinned and dated in `packages/cli/src/generate/providers/openai.ts` and `anthropic.ts`; a model id not in either table falls back to the most expensive entry in its own table, so an unpriced model can only make `--max-cost` abort early, never overshoot. Rates drift — treat every figure as an estimate and your provider's dashboard as the invoice.
+Both cost numbers you see for a run — the `--dry-run` estimate and the live meter — read the same per-model rate table, selected by `--provider` and `--model`. Rates are pinned and dated in `packages/cli/src/generate/providers/openai.ts`, `anthropic.ts` and `xai.ts`; a model id not in its provider's table falls back to the most expensive entry in its own table, so an unpriced model can only make `--max-cost` abort early, never overshoot. Rates drift — treat every figure as an estimate and your provider's dashboard as the invoice.
 
 ### Custom endpoints
 
-`OPENAI_BASE_URL` and `ANTHROPIC_BASE_URL` are honored if you need to point at an OpenAI- or Anthropic-compatible proxy (Groq, Together, a local gateway, a corporate egress).
+`OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL` and `XAI_BASE_URL` are honored if you need to point at an OpenAI- or Anthropic-compatible proxy (Groq, Together, a local gateway, a corporate egress).
 
 ## Privacy
 

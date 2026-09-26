@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 # Serialise selftest runs so two commits landing back-to-back don't fight
-# over the same OpenAI key rate window.
+# over the same xAI key rate window.
 concurrency:
   group: action-selftest
   cancel-in-progress: false
@@ -92,8 +92,9 @@ jobs:
           profile: saas
           max-cost: "0.10"
           dry-run: "true"
+          provider: xai
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
       - name: Assert dry-run touched at least one table
         run: |
@@ -103,6 +104,9 @@ jobs:
             exit 1
           fi
 
+      # Runs on xAI (default model grok-4.20-0309-non-reasoning) since
+      # 2026-09-26. The in-repo CLI is on PATH, so this exercises the xai
+      # provider before it ships in an npm release.
       - name: Run action for real
         id: real
         uses: ./packages/action
@@ -111,8 +115,9 @@ jobs:
           rows: "25"
           profile: saas
           max-cost: "0.50"
+          provider: xai
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
       - name: Assert real run inserted rows
         run: |
