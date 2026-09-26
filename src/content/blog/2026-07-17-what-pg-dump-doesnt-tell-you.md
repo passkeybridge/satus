@@ -8,6 +8,8 @@ tags: [postgres, introspection, pg_dump]
 draft: false
 ---
 
+> **Correction (2026-10-05).** As published, this post said satus reads planner statistics from `pg_stats`, enumerates extension-owned objects through `pg_extension` and `pg_depend`, and reads indexes from `pg_index` and `CHECK` constraints from `pg_constraint`, and it linked a `satus plan` command. None of that is in the CLI. Checked against `packages/cli/src` in 0.3.11: introspection reads tables from `pg_class`, column types from `information_schema.columns`, and primary keys, foreign keys and single-column unique constraints from `pg_constraint`. There is no `plan` command; the dry run is `satus generate --dry-run`. The three "What we do instead" paragraphs and the closing link have been corrected to match. The sections on `pg_dump` itself are unchanged.
+
 `pg_dump` is the canonical way to serialise a Postgres database to a file, and for restoring a database that is precisely what it should do. It is not, and does not claim to be, a faithful description of your schema as the server sees it. Early in [satus](/) we treated the output of `pg_dump --schema-only` as ground truth for what a seeder needed to know about a table. We were wrong three times in a row, in three different ways, and each of the three is documented behaviour rather than a bug. This post names them, points at the [`pg_dump` reference](https://www.postgresql.org/docs/current/app-pgdump.html) for each, and describes what we read out of [`pg_catalog`](https://www.postgresql.org/docs/current/catalogs.html) instead.
 
 ## The short version
@@ -32,7 +34,7 @@ For a dump-and-restore workflow the default is correct, because `ANALYZE` on the
 
 Even with `--statistics` set, the reference names three categories the flag does not cover: user-defined `CREATE STATISTICS` objects that are extended-statistics rather than per-column, statistics added by extensions, and everything in the [cumulative statistics system](https://www.postgresql.org/docs/current/monitoring-stats.html) (`pg_stat_user_tables`, `pg_stat_all_indexes`, and the family). The `pg_dump` reference calls this out explicitly and recommends running `ANALYZE` after restore.
 
-What we do instead. `satus` reads `pg_stats` directly for every non-system table it is planning against, keyed on `schemaname` and `tablename`. The columns we care about are `null_frac`, `n_distinct`, `most_common_vals`, `most_common_freqs`, and `histogram_bounds`; a nullable text column with `n_distinct = -0.6` and a histogram_bounds array that skews toward short strings is a very different sampling problem from one with `n_distinct = 40` and a most-common list that covers most of the mass. We wrote about the sampling side of this decision in [Picking distributions, not values](/blog/picking-distributions-not-values); the point here is that the input to any of it is a catalog read, not a dump parse. If we had shipped v0.1 on top of `pg_dump` we would have shipped v0.1 blind.
+What we do instead. For statistics, nothing yet. `satus` does not read `pg_stats`: introspection covers tables, columns, primary keys, foreign keys, and single-column unique constraints, and value choices come from the selected profile (`saas`, `ecommerce`, or `b2b`) and the model. `pg_stats` is where a seeder would get the shape of production data without pulling the data, through `null_frac`, `n_distinct`, `most_common_vals`, `most_common_freqs`, and `histogram_bounds`. We wrote about the sampling side in [Picking distributions, not values](/blog/picking-distributions-not-values).
 
 ## 2. Extension member objects are hidden behind CREATE EXTENSION
 
@@ -42,7 +44,7 @@ The consequence is that `pg_dump` emits one line, `CREATE EXTENSION IF NOT EXIST
 
 The related trap is version drift. A schema that was designed against `postgis` 3.3 can be replayed on a server that has `postgis` 3.5 installed, and the geometry types will resolve, but the exact set of operators and functions available will differ. `pg_dump` does not pin the extension version by default; the header records the extension name and the schema it lives in, and that is all. The [`CREATE EXTENSION`](https://www.postgresql.org/docs/current/sql-createextension.html) documentation covers the `VERSION` clause and its restore-time behaviour.
 
-What we do instead. During introspection `satus` queries `pg_extension` for the installed extensions and their versions, then joins `pg_depend` on `refclassid = 'pg_extension'::regclass` to enumerate every object that belongs to each one. Types like `citext` and `geometry` are recognised by their `pg_type.typname` in the extension member set, not by textual matching in a `CREATE TABLE`. The [`citext` field guide](/blog/the-citext-trap) is the longer version of why this matters for a seeder specifically; the general point is that any schema that uses extensions has meaningful surface area that a `pg_dump` script cannot describe on its own.
+What we do instead. `satus` does not query `pg_extension` or `pg_depend`. It reads each column's type name (`udt_name`) from `information_schema.columns`, so a `citext` column arrives named as `citext`, with no `CREATE TABLE` text to parse. The row schema maps it to a string, which is also the fallback for any type the mapping does not recognise; a `geometry` column receives no special handling, and the other objects an extension installs are not enumerated. The [`citext` field guide](/blog/the-citext-trap) is the longer version of why this matters for a seeder specifically; the general point is that any schema that uses extensions has meaningful surface area that a `pg_dump` script cannot describe on its own.
 
 ## 3. Constraints and indexes are hoisted to a post-data section
 
@@ -99,9 +101,9 @@ ALTER TABLE ONLY public.orders
 
 Neither `CREATE TABLE` block, on its own, tells you that `customers.id` is a primary key, that `customers.email` participates in a case-insensitive uniqueness constraint, that `orders.customer_id` has an index, or that it points at `customers.id`. All of that arrives later, in `ALTER TABLE` form, in the post-data section. The validated `CHECK` on `total_cents` is the only structural fact the pre-data section keeps inline, and that only because Postgres and `pg_dump` treat validated `CHECK` constraints specially.
 
-What we do instead. `satus` builds the dependency graph from `pg_constraint` joined against `pg_attribute` and `pg_class`, and reads indexes from `pg_index`. The queries are boring and the results are exact: primary keys have `contype = 'p'`, unique constraints have `contype = 'u'`, foreign keys have `contype = 'f'` plus `confrelid` and `confkey` for the target, `CHECK` constraints have `contype = 'c'` and the expression is recovered with `pg_get_constraintdef(oid)`. The topological order our DAG produces is derived from `confrelid` edges, not from the position of `ALTER TABLE ADD CONSTRAINT` statements in a file.
+What we do instead. `satus` builds the dependency graph from `pg_constraint` joined against `pg_attribute` and `pg_class`. Primary keys have `contype = 'p'`, single-column unique constraints have `contype = 'u'`, and foreign keys have `contype = 'f'` plus `confrelid` and `confkey` for the target. It does not read `pg_index`, so a bare `CREATE UNIQUE INDEX` is not seen, and `CHECK` constraints are not introspected yet. The topological order our DAG produces is derived from those foreign-key edges, not from the position of `ALTER TABLE ADD CONSTRAINT` statements in a file.
 
-## What we read out of pg_catalog instead
+## What to read out of pg_catalog instead
 
 For anyone starting from scratch, the smallest set of catalogs that gives you back what `pg_dump` normalised away is short:
 
@@ -123,7 +125,7 @@ These are all documented in the [System Catalogs](https://www.postgresql.org/doc
 
 We use `pg_dump` daily, for exactly what it was written for: capturing a database so it can be restored. Backups against production, seed captures for a staging environment that already has representative data, migrations across major Postgres versions, cluster moves. The three limitations above are the price of the guarantees the tool provides. It is a restore plan first, and a restore plan is not the same object as a schema description.
 
-If you have been treating a `pg_dump --schema-only` file as the schema for tooling you are writing, [`satus plan`](/quickstart) reads the same catalogs described in the table above and prints the composed view the dump can't. If the tooling you are writing is more general than a seeder, the sections here are the ones we would spend our own time re-reading; the catalog is small, well-named, and stable across releases in a way very little else in this ecosystem is.
+If you have been treating a `pg_dump --schema-only` file as the schema for tooling you are writing, start with the table above. For satus itself, `satus generate --dry-run` (see the [quickstart](/quickstart)) prints the plan it derives from the catalog, the tables in foreign-key order with a cost estimate and validation findings, and writes nothing. If the tooling you are writing is more general than a seeder, the sections here are the ones we would spend our own time re-reading; the catalog is small, well-named, and stable across releases in a way very little else in this ecosystem is.
 
 ## References
 
