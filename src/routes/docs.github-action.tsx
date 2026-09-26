@@ -192,7 +192,8 @@ function GitHubActionPage() {
           <p>
             Swap <code>OPENAI_API_KEY</code> for <code>ANTHROPIC_API_KEY</code> and add{" "}
             <code>provider: anthropic</code> under <code>with:</code> to drive Anthropic instead.
-            The CLI auto-detects from whichever env key is present.
+            For xAI, use <code>XAI_API_KEY</code> and <code>provider: xai</code> (needs the CLI
+            release after 0.3.11). The CLI auto-detects from whichever env key is present.
           </p>
         </Prose>
       </Section>
@@ -218,7 +219,12 @@ function GitHubActionPage() {
                   cells={["profile", "no", "saas", "Reference profile: saas | ecommerce | b2b."]}
                 />
                 <TableRow
-                  cells={["provider", "no", "auto", "openai | anthropic. Auto-detected from env."]}
+                  cells={[
+                    "provider",
+                    "no",
+                    "auto",
+                    "openai | anthropic | xai. Auto-detected from env.",
+                  ]}
                 />
                 <TableRow cells={["model", "no", "provider default", "Model id override."]} />
                 <TableRow
@@ -341,7 +347,7 @@ function GitHubActionPage() {
         <Prose>
           <ul className="ml-5 list-disc space-y-2">
             <li>
-              <strong>No hosted-key tier.</strong> Bring your own OpenAI or Anthropic key. A
+              <strong>No hosted-key tier.</strong> Bring your own OpenAI, Anthropic or xAI key. A
               managed-key mode is on the roadmap for a later release, not this one.
             </li>
             <li>
